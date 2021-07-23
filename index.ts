@@ -37,6 +37,10 @@ client.on("message", msg => {
       case "easteregg":
         msg.reply(config["easteregg"][Math.floor(Math.random() * config["easteregg"].length)]);
         break;
+
+      case "":
+        msg.reply(config["easteregg"][Math.floor(Math.random() * config["easteregg"].length)]);
+        break;
       default:
         break;
     }
