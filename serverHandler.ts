@@ -22,6 +22,12 @@ export const start = () => {
       commandProcess = undefined;
       console.log("Process stopped!");
     });
+
+    commandProcess.on("exit", () => {
+      stdoutLastLine = undefined;
+      commandProcess = undefined;
+      console.log("Process stopped!");
+    });
   }
 }
 
