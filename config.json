@@ -1,0 +1,13 @@
+{
+  "token": "ODY3OTQwOTkyMzc0OTMxNTI3.YPobCg.Ovf2Ih7TuYeU1SgllHokDNsmwmY",
+  "command": "cd test && java -Xmx1024M -Xms1024M -jar server.jar nogui",
+  "prefix": "/retard ",
+  "channelID": "868036579384524811",
+  "easteregg": [
+    "please don't call be retard :cry:",
+    "no u :cry:",
+    "why are you spamming me?!",
+    "shut up :cry:",
+    "stop calling me retard, seriously!"
+  ]
+}
