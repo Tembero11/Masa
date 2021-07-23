@@ -6,6 +6,8 @@ let commandProcess: ChildProcessWithoutNullStreams | undefined;
 
 let stdoutLastLine: string | undefined;
 
+let restartMode = false;
+
 
 export const start = () => {
   if (!commandProcess) {
@@ -17,15 +19,15 @@ export const start = () => {
       console.log(`[${commandProcess?.pid || ""}]${stdoutLastLine}`);
     });
 
-    commandProcess.stdout.on("close", () => {
+    commandProcess.on("close", () => {
       stdoutLastLine = undefined;
       commandProcess = undefined;
-      console.log("Process stopped!");
-    });
 
-    commandProcess.on("exit", () => {
-      stdoutLastLine = undefined;
-      commandProcess = undefined;
+      if (restartMode) {
+        start();
+        restartMode = false;
+      }
+
       console.log("Process stopped!");
     });
   }
@@ -38,8 +40,12 @@ export const stop = () => {
 }
 
 export const restart = () => {
-  stop();
-  start();
+  if (commandProcess) {
+    restartMode = true;
+    stop();
+  }else {
+    start()
+  }
 }
 
 export const getSeed = (): string => {
