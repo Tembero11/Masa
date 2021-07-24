@@ -37,10 +37,6 @@ client.on("message", msg => {
       case "easteregg":
         msg.reply(config["easteregg"][Math.floor(Math.random() * config["easteregg"].length)]);
         break;
-
-      case "":
-        msg.reply(config["easteregg"][Math.floor(Math.random() * config["easteregg"].length)]);
-        break;
       default:
         break;
     }
@@ -48,3 +44,18 @@ client.on("message", msg => {
 });
 
 client.login(config["token"]);
+
+process.on("uncaughtException", (err) => {
+  const logs = path.join(__dirname, "logs");
+  
+  if (!fs.existsSync(logs)) {
+    fs.mkdirSync(logs);
+  }
+
+  let date = new Date();
+  let logName = `${date.getDate()}.${date.getMonth() + 1}-${date.getHours()}.${date.getMinutes()}.log`;
+
+  const errorMessage = `${err.name}:\n${err.message}\n${err.stack}`;
+
+  fs.writeFileSync(path.join(logs, logName), errorMessage);
+});
