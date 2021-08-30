@@ -38,9 +38,12 @@ export class Commands {
     if (handler) {
       handler(msg);
     }else {
-      
+      let embed = new Discord.MessageEmbed()
+      .setColor("#ff0000")
+      .setAuthor(msg.author.username, msg.author.avatarURL() || undefined)
+      .setDescription("Unknown command")
 
-      msg.channel.send("Unknown Command")
+      msg.channel.send(embed);
     }
   }
 }
