@@ -1,5 +1,6 @@
 import { spawn, ChildProcessWithoutNullStreams } from "child_process";
-import { config } from "./index";
+import path from "path";
+import { config } from "../index";
 
 let commandProcess: ChildProcessWithoutNullStreams | undefined;
 
@@ -10,8 +11,12 @@ let restartMode = false;
 
 
 export const start = () => {
+  console.log("Hello from start 2")
   if (!commandProcess) {
-    commandProcess = spawn(config["command"], {shell: true, cwd: "./server"});
+
+    console.log("Hello from start")
+
+    commandProcess = spawn(config["command"], {shell: true, cwd: path.join(process.cwd(), "server")});
 
     
 
