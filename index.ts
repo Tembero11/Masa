@@ -2,16 +2,18 @@ import Discord from "discord.js";
 import fs from "fs";
 import path from "path";
 import { Commands } from "./src/commands";
-import { isAllowedChannel, usesPrefix, withoutPrefix } from "./src/helpers";
+import { isAllowedChannel, Presence, setPresence, usesPrefix, withoutPrefix } from "./src/helpers";
 import { start, stop, restart } from "./src/serverHandler";
 
 export const config = JSON.parse(fs.readFileSync(path.join(__dirname, "config.json"), {encoding: "utf-8"}));
 
-const client = new Discord.Client();
+export const client = new Discord.Client();
 
 client.on("ready", () => {
   if (client.user) {
     console.log(`Logged in as ${client.user.tag}!`);
+
+    setPresence(Presence.SERVER_OFFLINE);
   }
 });
 

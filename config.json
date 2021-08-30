@@ -3,6 +3,7 @@
   "command": "java -Xmx1024M -Xms1024M -jar server.jar nogui",
   "prefix": "/retard ",
   "allowedChannels": ["868036579384524811", "880098108665634859"],
+  "serverName": "HomoCraft",
   "easteregg": [
     "please don't call be retard :cry:",
     "no u :cry:",
