@@ -1,7 +1,7 @@
 import Discord from "discord.js";
 import { config } from "../index";
 
-import { withoutPrefix } from "./helpers";
+import { getDefaultCommandEmbed, withoutPrefix } from "./helpers";
 import * as ServerHandler from "./serverHandler";
 
 export type CommandHandler = (msg: Discord.Message) => void
@@ -38,9 +38,8 @@ export class Commands {
     if (handler) {
       handler(msg);
     }else {
-      let embed = new Discord.MessageEmbed()
+      let embed = getDefaultCommandEmbed(msg)
       .setColor("#ff0000")
-      .setAuthor(msg.author.username, msg.author.avatarURL() || undefined)
       .setDescription("Unknown command")
 
       msg.channel.send(embed);
@@ -50,7 +49,14 @@ export class Commands {
 
 // Add Commands
 Commands.addCommand("start", (msg) => {
-  msg.reply("Server starting now... :slight_smile:");
+  let embed = getDefaultCommandEmbed(msg)
+  .setDescription("Server is starting...")
+
+  // embed.addField("Status", ServerHandler.serverStatus, true)
+
+  // msg.channel.send(embed).then((msg) => {
+  //    msg.edit(embed.addField("Status", ServerHandler.serverStatus, true));
+  // });
 
   ServerHandler.start();
 });

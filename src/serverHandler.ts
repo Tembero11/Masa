@@ -11,14 +11,15 @@ let restartMode = false;
  * Is true if the server is joinable
  */
 let isServerJoinable = false;
+export let serverStatus: Presence = Presence.SERVER_OFFLINE;
 
 export const start = () => {
   if (!commandProcess) {
 
     commandProcess = spawn(config["command"], {shell: true, cwd: path.join(process.cwd(), "server")});
 
-    
-    setPresence(Presence.SERVER_STARTING);
+    serverStatus = Presence.SERVER_STARTING;
+    setPresence(serverStatus);
 
     
     commandProcess.stdout.on("data", (d) => {
@@ -30,7 +31,8 @@ export const start = () => {
         if (result) {
           isServerJoinable = true;
 
-          setPresence(Presence.SERVER_ONLINE);
+          serverStatus = Presence.SERVER_ONLINE;
+          setPresence(serverStatus);
         }
       }
 
@@ -42,7 +44,8 @@ export const start = () => {
 
       isServerJoinable = false;
 
-      setPresence(Presence.SERVER_OFFLINE);
+      serverStatus = Presence.SERVER_OFFLINE;
+      setPresence(serverStatus);
 
       if (restartMode) {
         start();
@@ -58,7 +61,8 @@ export const start = () => {
 
 export const stop = () => {
   if (commandProcess) {
-    setPresence(Presence.SERVER_STOPPING);
+    serverStatus = Presence.SERVER_STOPPING;
+    setPresence(serverStatus);
 
     commandProcess.stdin.write("stop\n");
   }

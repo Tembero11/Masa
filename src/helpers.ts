@@ -1,3 +1,4 @@
+import { Message, MessageEmbed } from "discord.js";
 import { client, config } from "../index";
 
 
@@ -17,10 +18,10 @@ export const isAllowedChannel = (channelID: string) => {
 }
 
 export enum Presence {
-  SERVER_ONLINE,
-  SERVER_STARTING,
-  SERVER_STOPPING,
-  SERVER_OFFLINE
+  SERVER_ONLINE = "Server is joinable!",
+  SERVER_STARTING = "Server is starting...",
+  SERVER_STOPPING = "Server is stopping...",
+  SERVER_OFFLINE = "Server is offline."
 }
 
 export const setPresence = (presence: Presence) => {
@@ -70,3 +71,10 @@ export const setPresence = (presence: Presence) => {
     }
   }
 } 
+
+
+export const getDefaultCommandEmbed = (msg: Message) => {
+  return new MessageEmbed()
+      .setColor(config["embedColor"] || "#5800fc")
+      .setAuthor(msg.author.username, msg.author.avatarURL() || undefined);
+}
