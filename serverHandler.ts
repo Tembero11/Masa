@@ -11,7 +11,9 @@ let restartMode = false;
 
 export const start = () => {
   if (!commandProcess) {
-    commandProcess = spawn(config["command"], {shell: true});
+    commandProcess = spawn(config["command"], {shell: true, cwd: "./server"});
+
+    
 
 
     commandProcess.stdout.on("data", (data) => {
