@@ -11,14 +11,9 @@ let restartMode = false;
 
 
 export const start = () => {
-  console.log("Hello from start 2")
   if (!commandProcess) {
 
-    console.log("Hello from start")
-
     commandProcess = spawn(config["command"], {shell: true, cwd: path.join(process.cwd(), "server")});
-
-    
 
 
     commandProcess.stdout.on("data", (data) => {
@@ -53,15 +48,4 @@ export const restart = () => {
   }else {
     start()
   }
-}
-
-export const getSeed = (): string => {
-  if (commandProcess) {
-    commandProcess.stdin.write("seed\n");
-    if (stdoutLastLine) {
-      return stdoutLastLine;
-    }
-  }
-
-  return "";
 }
