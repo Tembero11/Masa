@@ -1,7 +1,7 @@
 import Discord from "discord.js";
 import fs from "fs";
 import path from "path";
-import { start, stop, restart, getSeed } from "./serverHandler";
+import { start, stop, restart } from "./serverHandler";
 
 export const config = JSON.parse(fs.readFileSync(path.join(__dirname, "config.json"), {encoding: "utf-8"}));
 
