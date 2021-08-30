@@ -1,0 +1,11 @@
+version: '3'
+
+services: 
+  bot:
+    image: retard
+    container_name: retard
+    restart: always
+    build:
+      context: ./
+    volumes: 
+      - ./server:/bot/server

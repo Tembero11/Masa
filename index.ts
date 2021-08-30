@@ -1,6 +1,7 @@
 import Discord from "discord.js";
 import fs from "fs";
 import path from "path";
+import { isAllowedChannel, usesPrefix, withoutPrefix } from "./helpers";
 import { start, stop, restart } from "./serverHandler";
 
 export const config = JSON.parse(fs.readFileSync(path.join(__dirname, "config.json"), {encoding: "utf-8"}));
@@ -14,8 +15,8 @@ client.on("ready", () => {
 });
 
 client.on("message", msg => {
-  if (msg.content.startsWith(config["prefix"])) {
-    switch (msg.content.substr(config["prefix"].length)) {
+  if (usesPrefix(msg.content) && isAllowedChannel(msg.channel.id)) {
+    switch (withoutPrefix(msg.content)) {
       case "start":
         msg.reply("Server starting now... :slight_smile:");
 
