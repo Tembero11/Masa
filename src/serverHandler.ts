@@ -1,7 +1,7 @@
 import { spawn, ChildProcessWithoutNullStreams } from "child_process";
 import path from "path";
 import { client, config } from "../index";
-import { Presence, setPresence } from "./helpers";
+import { Presence, serverDir, setPresence } from "./helpers";
 
 let commandProcess: ChildProcessWithoutNullStreams | undefined;
 
@@ -16,7 +16,7 @@ export let serverStatus: Presence = Presence.SERVER_OFFLINE;
 export const start = () => {
   if (!commandProcess) {
 
-    commandProcess = spawn(config["command"], {shell: true, cwd: path.join(process.cwd(), "server")});
+    commandProcess = spawn(config["command"], {shell: true, cwd: serverDir});
 
     serverStatus = Presence.SERVER_STARTING;
     setPresence(serverStatus);

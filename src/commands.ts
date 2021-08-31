@@ -72,4 +72,8 @@ Commands.addCommand("restart", (msg) => {
 });
 Commands.addCommand("easteregg", (msg) => {
   msg.reply(config["easteregg"][Math.floor(Math.random() * config["easteregg"].length)]);
-})
+});
+
+Commands.addCommand("backup", (msg) => {
+  
+});

@@ -1,7 +1,8 @@
 import { Message, MessageEmbed } from "discord.js";
 import { client, config } from "../index";
+import path from "path";
 
-
+export const serverDir = path.join(process.cwd(), "server");
 
 export const withoutPrefix = (content: string) => content.substr(config["prefix"].length);
 
