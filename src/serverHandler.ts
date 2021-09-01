@@ -36,7 +36,7 @@ export const start = () => {
       setPresence(serverStatus);
 
 
-      commandProcess.stdout.on("data", (d) => {
+      commandProcess.stdout.on("data", (d: any) => {
         let data: string = d.toString();
 
         // Check for the done message
@@ -45,10 +45,10 @@ export const start = () => {
           if (result) {
             isServerJoinable = true;
 
-            res(new ServerResult(ServerStatus.SERVER_STARTED));
-
             serverStatus = Presence.SERVER_ONLINE;
             setPresence(serverStatus);
+
+            res(new ServerResult(ServerStatus.SERVER_STARTED));
           }
         }
 
@@ -62,8 +62,6 @@ export const start = () => {
       commandProcess.on("close", (code) => {
         commandProcess = undefined;
 
-        isServerJoinable = false;
-
         serverStatus = Presence.SERVER_OFFLINE;
         setPresence(serverStatus);
 
@@ -71,6 +69,12 @@ export const start = () => {
           start();
           restartMode = false;
         }
+
+        if (isServerJoinable) {
+          rej(new ServerResult(ServerStatus.SERVER_CRASHED));
+        }
+
+        isServerJoinable = false;
 
 
 
