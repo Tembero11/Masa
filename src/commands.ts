@@ -11,10 +11,11 @@ export type CommandHandler = (msg: Discord.Message) => void
 export default interface Command {
   commandName: string 
   handler: CommandHandler
+  desc: string
 }
 
 export class Commands {
-  private static commands: { [key: string]: Command } = {};
+  static commands: { [key: string]: Command } = {};
 
   static getCommand = (content: string) => {
     let noPrefix = withoutPrefix(content);
@@ -26,10 +27,11 @@ export class Commands {
 
     return Commands.commands[commandName];
   }
-  static addCommand = (commandName: string, handler: CommandHandler) => {
+  static addCommand = (commandName: string, desc: string, handler: CommandHandler) => {
     Commands.commands[commandName] = {
       commandName,
-      handler
+      handler,
+      desc
     }
   }
 
@@ -49,7 +51,7 @@ export class Commands {
 }
 
 // Add Commands
-Commands.addCommand("start", (msg) => {
+Commands.addCommand("start", "Start the server", (msg) => {
   let embed = getDefaultCommandEmbed(msg)
   .setDescription("Server is starting...")
 
@@ -63,21 +65,21 @@ Commands.addCommand("start", (msg) => {
     });
   });
 });
-Commands.addCommand("stop", (msg) => {
+Commands.addCommand("stop", "Stop the server", (msg) => {
   msg.reply("Stopping server... :cry:");
   
   ServerHandler.stop();
 });
-Commands.addCommand("restart", (msg) => {
+Commands.addCommand("restart", "Restart the server", (msg) => {
   msg.reply("Retarding Server...");
   
   ServerHandler.restart();
 });
-Commands.addCommand("easteregg", (msg) => {
+Commands.addCommand("easteregg", "An easter egg :egg:", (msg) => {
   msg.reply(config["easteregg"][Math.floor(Math.random() * config["easteregg"].length)]);
 });
 
-Commands.addCommand("backup", (msg) => {
+Commands.addCommand("backup", "Create a backup", (msg) => {
   createNewBackup().then(() => {
     let embed = getDefaultCommandEmbed(msg).setDescription("Backup succesfully created!");
 
@@ -87,4 +89,23 @@ Commands.addCommand("backup", (msg) => {
 
     msg.channel.send(embed);
   });
+});
+
+Commands.addCommand("help", "List of helpful commands", (msg) => {
+  let embed = getDefaultCommandEmbed(msg);
+
+  embed.setTitle("List of commands");
+  embed.setDescription("A list of helpful commands for noobs");
+  
+  let fields = Object.values(Commands.commands).map((command) => {
+    return {
+      name: command.commandName,
+      value: command.desc,
+      inline: false,
+    }
+  });
+
+  embed.addFields(fields);
+
+  msg.channel.send(embed);
 });
