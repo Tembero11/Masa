@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import { config } from "../index";
 import * as fse from "fs-extra";
-import { serverDir } from "./helpers";
+import { createDateTimeString, DateString, parseDateTimeString, serverDir } from "./helpers";
 
 const backupDirectory = path.join(process.cwd(), "backups");
 
@@ -28,7 +28,13 @@ export const createNewBackup = async() => {
     let limit: number = config["backup"]["backupLimit"];
     let quantity: number = previousBackups.length;
 
-    const backupName = new Date().toDateString();
+    
+
+    let backups = previousBackups.map((value) => parseDateTimeString(value as DateString));
+
+    backups.forEach((value) => console.log(value.getTime()))
+
+    const backupName = createDateTimeString();
 
     // TODO
     if (quantity >= limit) {

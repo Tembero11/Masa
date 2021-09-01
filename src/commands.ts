@@ -1,5 +1,6 @@
 import Discord from "discord.js";
 import { config } from "../index";
+import { createNewBackup } from "./backup";
 
 import { getDefaultCommandEmbed, withoutPrefix } from "./helpers";
 import * as ServerHandler from "./serverHandler";
@@ -52,13 +53,15 @@ Commands.addCommand("start", (msg) => {
   let embed = getDefaultCommandEmbed(msg)
   .setDescription("Server is starting...")
 
-  // embed.addField("Status", ServerHandler.serverStatus, true)
-
-  // msg.channel.send(embed).then((msg) => {
-  //    msg.edit(embed.addField("Status", ServerHandler.serverStatus, true));
-  // });
-
-  ServerHandler.start();
+  msg.channel.send(embed).then((msg) => {
+    ServerHandler.start().then((result) => {
+      embed.setDescription(result.status);
+      msg.edit(embed);
+    }).catch((result) => {
+      embed.setDescription(result.status);
+      msg.edit(embed);
+    });
+  });
 });
 Commands.addCommand("stop", (msg) => {
   msg.reply("Stopping server... :cry:");
@@ -75,5 +78,7 @@ Commands.addCommand("easteregg", (msg) => {
 });
 
 Commands.addCommand("backup", (msg) => {
-  
+  createNewBackup()
+
+  msg.reply("Hello")
 });
