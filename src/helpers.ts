@@ -80,13 +80,20 @@ export const getDefaultCommandEmbed = (msg: Message) => {
       .setAuthor(msg.author.username, msg.author.avatarURL() || undefined);
 }
 
-export type DateString = `${number}.${number}-${number}.${number}`;
 
-export const createDateTimeString = (): DateString => {
-  let date = new Date();
-  return `${date.getDate()}.${date.getMonth() + 1}-${date.getHours()}.${date.getMinutes()}`;
+
+export type DateString = `${number}.${number}-${number}.${number | string}`;
+
+export const createDateTimeString = (date?: Date): DateString => {
+  if (!date) {
+    date = new Date();
+  }
+
+  let minutes = date.getMinutes();
+  let minutesString = minutes < 10 ? `0${minutes}` : minutes.toString();
+
+  return `${date.getDate()}.${date.getMonth() + 1}-${date.getHours()}.${minutesString}`;
 }
-
 
 
 export const parseDateTimeString = (timeString: DateString): Date => {
@@ -95,7 +102,7 @@ export const parseDateTimeString = (timeString: DateString): Date => {
   let array = timeString.split(/\.|\-/);
 
   date.setDate(parseInt(array[0]));
-  date.setMonth(parseInt(array[1]));
+  date.setMonth(parseInt(array[1]) - 1);
   date.setHours(parseInt(array[2]));
   date.setMinutes(parseInt(array[3]));
 

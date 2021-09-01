@@ -9,7 +9,7 @@ const backupDirectory = path.join(process.cwd(), "backups");
 /**
  * Creates backup folder if needed
  */
-export const createBackupsFolder = async() => {
+export const createBackupsFolder = async () => {
     let exists = await fs.existsSync(backupDirectory);
 
 
@@ -17,30 +17,26 @@ export const createBackupsFolder = async() => {
         console.log("Backup folder not found. Creating...");
 
         await fs.promises.mkdir(backupDirectory);
-    }else {
+    } else {
         console.log("Backup folder exists already. Appending new backups!");
     }
 }
 
-export const createNewBackup = async() => {
-    let previousBackups = await fs.promises.readdir(backupDirectory)
+export const createNewBackup = async () => {
+    let previousBackups: string[] = await fs.promises.readdir(backupDirectory)
+    let previousBackupDates: Date[] = previousBackups.map((date) => parseDateTimeString(date as DateString)).sort();
 
     let limit: number = config["backup"]["backupLimit"];
     let quantity: number = previousBackups.length;
 
-    
-
-    let backups = previousBackups.map((value) => parseDateTimeString(value as DateString));
-
-    backups.forEach((value) => console.log(value.getTime()))
 
     const backupName = createDateTimeString();
 
     // TODO
     if (quantity >= limit) {
-        fs.promises.rmdir(path.join())
-    }else {
-
+        await fs.promises.rm(path.join(backupDirectory, createDateTimeString(previousBackupDates[0])), { 
+            recursive: true, force: true 
+        });
     }
 
     await fse.copy(serverDir, path.join(backupDirectory, backupName));

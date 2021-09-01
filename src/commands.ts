@@ -78,7 +78,13 @@ Commands.addCommand("easteregg", (msg) => {
 });
 
 Commands.addCommand("backup", (msg) => {
-  createNewBackup()
+  createNewBackup().then(() => {
+    let embed = getDefaultCommandEmbed(msg).setDescription("Backup succesfully created!");
 
-  msg.reply("Hello")
+    msg.channel.send(embed);
+  }).catch(() => {
+    let embed = getDefaultCommandEmbed(msg).setDescription("Backup creation failed!");
+
+    msg.channel.send(embed);
+  });
 });
