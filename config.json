@@ -1,7 +1,7 @@
 {
   "token": "ODY3OTQwOTkyMzc0OTMxNTI3.YPobCg.Ovf2Ih7TuYeU1SgllHokDNsmwmY",
   "command": "java -Xmx1024M -Xms1024M -jar server.jar nogui",
-  "prefix": "/retard ",
+  "prefix": "/masa ",
   "allowedChannels": ["868036579384524811", "880098108665634859"],
   "serverName": "HomoCraft",
   "embedColor": "#5800fc",

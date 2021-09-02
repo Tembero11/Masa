@@ -23,7 +23,7 @@ class ServerResult {
 /**
  * Is true if the server is joinable
  */
-let isServerJoinable = false;
+export let isServerJoinable = false;
 export let serverStatus: Presence = Presence.SERVER_OFFLINE;
 
 export const start = () => {

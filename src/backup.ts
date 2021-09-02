@@ -3,6 +3,7 @@ import path from "path";
 import { config } from "../index";
 import * as fse from "fs-extra";
 import { ConsoleColor, createDateTimeString, DateString, parseDateTimeString, serverDir } from "./helpers";
+import { isServerJoinable } from "./serverHandler";
 
 export const BACKUP_TYPE = {
     UserBackup: path.join(process.cwd(), "user_backups"),
@@ -26,24 +27,28 @@ export const createBackupsFolder = async (dir: string) => {
 }
 
 export const createNewBackup = async (dir: string, isAutomatic = false, backupLimit: number = config["backup"]["backupLimit"]) => {
-    let previousBackups: string[] = await fs.promises.readdir(dir)
-    let previousBackupDates: Date[] = previousBackups.map((date) => parseDateTimeString(date as DateString)).sort();
+    if (isServerJoinable) {
+        let previousBackups: string[] = await fs.promises.readdir(dir)
+        let previousBackupDates: Date[] = previousBackups.map((date) => parseDateTimeString(date as DateString)).sort();
 
-    let quantity: number = previousBackups.length;
+        let quantity: number = previousBackups.length;
 
 
-    const backupName = createDateTimeString();
+        const backupName = createDateTimeString();
 
-    if (quantity >= backupLimit) {
-        await fs.promises.rm(path.join(dir, createDateTimeString(previousBackupDates[0])), { 
-            recursive: true, force: true 
-        });
+        if (quantity >= backupLimit) {
+            await fs.promises.rm(path.join(dir, createDateTimeString(previousBackupDates[0])), { 
+                recursive: true, force: true 
+            });
+        }
+
+        await fse.copy(serverDir, path.join(dir, backupName));
+
+
+        return backupName;
+    }else {
+        throw "Server is not joinable.";
     }
-
-    await fse.copy(serverDir, path.join(dir, backupName));
-
-
-    return backupName;
 }
 
 export const listBackups = async(dir: string) => fs.promises.readdir(dir);
