@@ -1,6 +1,6 @@
 import Discord from "discord.js";
 import { config } from "../index";
-import { createNewBackup } from "./backup";
+import { createNewBackup, listBackups } from "./backup";
 
 import { getDefaultCommandEmbed, withoutPrefix } from "./helpers";
 import * as ServerHandler from "./serverHandler";
@@ -89,6 +89,21 @@ Commands.addCommand("backup", "Create a backup", (msg) => {
 
     msg.channel.send(embed);
   });
+});
+
+Commands.addCommand("backups", "List all automatic backups", (msg) => {
+  listBackups().then((backups) => {
+    let embed = getDefaultCommandEmbed(msg).setTitle("Backups listed");
+
+    embed.setDescription(backups.map((backup) => {
+      return `- **${backup}**`
+    }).join("\n"));
+
+    msg.channel.send(embed);
+
+  }).catch(() => {
+
+  })
 });
 
 Commands.addCommand("help", "List of helpful commands", (msg) => {

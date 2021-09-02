@@ -41,3 +41,5 @@ export const createNewBackup = async () => {
 
     await fse.copy(serverDir, path.join(backupDirectory, backupName));
 }
+
+export const listBackups = async() => fs.promises.readdir(backupDirectory);

@@ -84,7 +84,7 @@ export const getDefaultCommandEmbed = (msg: Message) => {
 
 export type DateString = `${number}.${number}-${number}.${number | string}`;
 
-export const createDateTimeString = (date?: Date): DateString => {
+export const createDateTimeString = (date?: Date): string => {
   if (!date) {
     date = new Date();
   }
