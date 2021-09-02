@@ -96,11 +96,19 @@ Commands.addCommand("backups", "List all backups", (msg) => {
   listBackups(BACKUP_TYPE.AutomaticBackup).then((autoBackups) => {
     listBackups(BACKUP_TYPE.UserBackup).then((userBackups) => {
       const mapper = (backup: string) => {
-        return `- **${backup}**`
+        return `- ${backup}`
       }
-      let backups = ["**User backups**", ...userBackups.map(mapper), "\n**Automatic Backups**", ...autoBackups.map(mapper)];
+      let backups = [
+        "**User backups**",
+        ...userBackups.map(mapper),
+        userBackups.length < 1 ? "No user backups" : "",
 
-      let embed = getDefaultCommandEmbed(msg).setTitle("Backups listed");
+        "\n**Automatic Backups**",
+        ...autoBackups.map(mapper),
+        autoBackups.length < 1 ? "No automatic backups" : "",
+      ];
+
+      let embed = getDefaultCommandEmbed(msg).setTitle("Backups listed").setTimestamp();
   
       embed.setDescription(backups.join("\n"));
   
