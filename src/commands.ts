@@ -66,14 +66,29 @@ Commands.addCommand("start", "Start the server", (msg) => {
   });
 });
 Commands.addCommand("stop", "Stop the server", (msg) => {
-  msg.reply("Stopping server... :cry:");
-  
-  ServerHandler.stop();
+  let embed = getDefaultCommandEmbed(msg)
+  .setDescription("Server is stopping...");
+
+  msg.channel.send(embed).then((msg) => {
+    ServerHandler.stop().then((result) => {
+      embed.setDescription(result.status);
+      msg.edit(embed);
+    });
+  });
 });
 Commands.addCommand("restart", "Restart the server", (msg) => {
-  msg.reply("Retarding Server...");
-  
-  ServerHandler.restart();
+  let embed = getDefaultCommandEmbed(msg)
+  .setDescription("Server is restarting...");
+
+  msg.channel.send(embed).then((msg) => {
+    ServerHandler.restart().then((result) => {
+      embed.setDescription(result.status);
+      msg.edit(embed);
+    }).catch((result) => {
+      embed.setDescription(result.status);
+      msg.edit(embed);
+    });
+  })
 });
 Commands.addCommand("easteregg", "An easter egg :egg:", (msg) => {
   msg.reply(config["easteregg"][Math.floor(Math.random() * config["easteregg"].length)]);

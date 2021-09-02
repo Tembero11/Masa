@@ -5,12 +5,12 @@ import { Presence, serverDir, setPresence } from "./helpers";
 
 let commandProcess: ChildProcessWithoutNullStreams | undefined;
 
-let restartMode = false;
 
 export enum ServerStatus {
   SERVER_CRASHED = "Server crashed!",
   SERVER_STARTED = "Server started succesfully!",
-  SERVER_STOPPED = "Server stopped!"
+  SERVER_STOPPED = "Server stopped!",
+  SERVER_ALREADY_OFFLINE = "Server is already offline!"
 }
 
 class ServerResult {
@@ -56,6 +56,7 @@ export const start = () => {
       });
 
       commandProcess.on("error", (err) => {
+        console.error(err);
         rej(new ServerResult(ServerStatus.SERVER_CRASHED));
       });
 
@@ -65,12 +66,7 @@ export const start = () => {
         serverStatus = Presence.SERVER_OFFLINE;
         setPresence(serverStatus);
 
-        if (restartMode) {
-          start();
-          restartMode = false;
-        }
-
-        if (isServerJoinable) {
+        if (code != 0) {
           rej(new ServerResult(ServerStatus.SERVER_CRASHED));
         }
 
@@ -84,21 +80,29 @@ export const start = () => {
   })
 }
 
-export const stop = () => {
-  if (commandProcess) {
-    serverStatus = Presence.SERVER_STOPPING;
-    setPresence(serverStatus);
-
-    commandProcess.stdin.write("stop\n");
-  }
+export const stop = async(): Promise<ServerResult> => {
+  return new Promise<ServerResult>((res, rej) => {
+    if (commandProcess) {
+      serverStatus = Presence.SERVER_STOPPING;
+      setPresence(serverStatus);
+  
+      commandProcess.on("close", () => {
+        res(new ServerResult(ServerStatus.SERVER_STOPPED));
+      });
+  
+      commandProcess.stdin.write("stop\n");
+    }else {
+      res(new ServerResult(ServerStatus.SERVER_ALREADY_OFFLINE));
+    }
+  });
 }
 
-export const restart = () => {
+export const restart = async(): Promise<ServerResult> => {
   if (commandProcess) {
-    restartMode = true;
-    stop();
-  } else {
-    start()
+    await stop();
+    return await start();
+  }else {
+    return await start();
   }
 }
 
