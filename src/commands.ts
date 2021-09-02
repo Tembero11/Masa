@@ -1,6 +1,6 @@
 import Discord from "discord.js";
 import { config } from "../index";
-import { createNewBackup, listBackups } from "./backup";
+import { BACKUP_TYPE, createNewBackup, getLatestBackup, listBackups } from "./backup";
 
 import { getDefaultCommandEmbed, withoutPrefix } from "./helpers";
 import * as ServerHandler from "./serverHandler";
@@ -80,7 +80,7 @@ Commands.addCommand("easteregg", "An easter egg :egg:", (msg) => {
 });
 
 Commands.addCommand("backup", "Create a backup", (msg) => {
-  createNewBackup().then(() => {
+  createNewBackup(BACKUP_TYPE.UserBackup).then(() => {
     let embed = getDefaultCommandEmbed(msg).setDescription("Backup succesfully created!");
 
     msg.channel.send(embed);
@@ -91,20 +91,26 @@ Commands.addCommand("backup", "Create a backup", (msg) => {
   });
 });
 
-Commands.addCommand("backups", "List all automatic backups", (msg) => {
-  listBackups().then((backups) => {
-    let embed = getDefaultCommandEmbed(msg).setTitle("Backups listed");
+Commands.addCommand("backups", "List all backups", (msg) => {
+  listBackups(BACKUP_TYPE.AutomaticBackup).then((autoBackups) => {
+    listBackups(BACKUP_TYPE.UserBackup).then((userBackups) => {
+      const mapper = (backup: string) => {
+        return `- **${backup}**`
+      }
+      let backups = ["**User backups**", ...userBackups.map(mapper), "\n**Automatic Backups**", ...autoBackups.map(mapper)];
 
-    embed.setDescription(backups.map((backup) => {
-      return `- **${backup}**`
-    }).join("\n"));
-
-    msg.channel.send(embed);
-
-  }).catch(() => {
-
-  })
+      let embed = getDefaultCommandEmbed(msg).setTitle("Backups listed");
+  
+      embed.setDescription(backups.join("\n"));
+  
+      msg.channel.send(embed);
+    });
+  });
 });
+
+// Commands.addCommand("latest backup", "Get the latest backup", (msg) => {
+  
+// });
 
 Commands.addCommand("help", "List of helpful commands", (msg) => {
   let embed = getDefaultCommandEmbed(msg);

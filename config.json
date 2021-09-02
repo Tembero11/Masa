@@ -8,7 +8,9 @@
 
   "backup": {
     "useBackups": true,
-    "backupLimit": 5
+    "userBackups": true,
+    "backupLimit": 5,
+    "automaticBackups": 1
   },
   "easteregg": [
     "please don't call be retard :cry:",
