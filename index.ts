@@ -5,8 +5,28 @@ import { Commands } from "./src/commands";
 import { isAllowedChannel, Presence, setPresence, usesPrefix, withoutPrefix } from "./src/helpers";
 import { start, stop, restart } from "./src/serverHandler";
 import setup from "./src/setup";
+import yaml from "js-yaml";
+import { defaultConfig } from "./src/config";
 
-export const config = JSON.parse(fs.readFileSync(path.join(__dirname, "config.json"), {encoding: "utf-8"}));
+export let config: {[key: string]: any};
+try {
+  const configPath = path.join(__dirname, "config.yml");
+
+  if (fs.existsSync(configPath)) {
+    config = yaml.load(fs.readFileSync(configPath, {encoding: "utf-8"})) as Object;
+
+    console.log("Config was successfully loaded!");
+
+  }else {
+    fs.writeFileSync(configPath, defaultConfig, {encoding: "utf-8"});
+
+    console.log("Please edit the config.yml file in the bot directory.");
+
+    process.exit();
+  }
+}catch(err) {
+  throw err;
+}
 
 export const client = new Discord.Client();
 
@@ -16,7 +36,6 @@ client.on("ready", () => {
 
     setPresence(Presence.SERVER_OFFLINE);
 
-    // debug
     setup();
   }
 });
