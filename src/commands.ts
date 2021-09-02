@@ -109,7 +109,7 @@ Commands.addCommand("backups", "List all backups", (msg) => {
   });
 });
 
-Commands.addCommand("latest backup", "Get the latest backup", (msg) => {
+Commands.addCommand("latest_backup", "Get the latest backup", (msg) => {
   getLatestBackup(true).then((latest) => {
     let embed = getDefaultCommandEmbed(msg).setTitle("The latest backup is...").setDescription(latest);
     msg.channel.send(embed);
