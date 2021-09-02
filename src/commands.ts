@@ -1,6 +1,6 @@
 import Discord from "discord.js";
 import { config } from "../index";
-import { BACKUP_TYPE, createNewBackup, getLatestBackup, listBackups } from "./backup";
+import { BACKUP_TYPE, createNewBackup, listBackups } from "./backup";
 
 import { getDefaultCommandEmbed, withoutPrefix } from "./helpers";
 import * as ServerHandler from "./serverHandler";
