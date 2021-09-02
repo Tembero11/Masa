@@ -1,6 +1,6 @@
 import Discord from "discord.js";
 import { config } from "../index";
-import { BACKUP_TYPE, createNewBackup, listBackups } from "./backup";
+import { BACKUP_TYPE, createNewBackup, getLatestBackup, listBackups } from "./backup";
 
 import { getDefaultCommandEmbed, withoutPrefix } from "./helpers";
 import * as ServerHandler from "./serverHandler";
@@ -79,6 +79,7 @@ Commands.addCommand("easteregg", "An easter egg :egg:", (msg) => {
   msg.reply(config["easteregg"][Math.floor(Math.random() * config["easteregg"].length)]);
 });
 
+
 Commands.addCommand("backup", "Create a backup", (msg) => {
   createNewBackup(BACKUP_TYPE.UserBackup).then(() => {
     let embed = getDefaultCommandEmbed(msg).setDescription("Backup succesfully created!");
@@ -108,9 +109,12 @@ Commands.addCommand("backups", "List all backups", (msg) => {
   });
 });
 
-// Commands.addCommand("latest backup", "Get the latest backup", (msg) => {
-  
-// });
+Commands.addCommand("latest backup", "Get the latest backup", (msg) => {
+  getLatestBackup(true).then((latest) => {
+    let embed = getDefaultCommandEmbed(msg).setTitle("The latest backup is...").setDescription(latest);
+    msg.channel.send(embed);
+  });
+});
 
 Commands.addCommand("help", "List of helpful commands", (msg) => {
   let embed = getDefaultCommandEmbed(msg);

@@ -48,8 +48,20 @@ export const createNewBackup = async (dir: string, isAutomatic = false, backupLi
 
 export const listBackups = async(dir: string) => fs.promises.readdir(dir);
 
-// export const getLatestBackup = async(checkAll: boolean = true, dir?: string) => {
-//     let backups: Date[] = (await fs.promises.readdir(dir)).map((date) => parseDateTimeString(date as DateString)).sort();
+export const getLatestBackup = async(checkAll: boolean = true, dir?: string) => {
+    let backups;
+    if (checkAll) {
+        let autoBackups: Date[] = (await fs.promises.readdir(BACKUP_TYPE.AutomaticBackup)).map((date) => parseDateTimeString(date as DateString));
+        let userBackup: Date[] = (await fs.promises.readdir(BACKUP_TYPE.UserBackup)).map((date) => parseDateTimeString(date as DateString));
+
+        backups = [...autoBackups, ...userBackup].sort();
+    }else if (dir) {
+        backups = (await fs.promises.readdir(dir)).map((date) => parseDateTimeString(date as DateString));
+    }else {
+        throw "Check all was false but dir was not provided!";
+    }
+
     
-//     return backups[backups.length - 1];
-// }
+    
+    return createDateTimeString(backups[backups.length - 1]);
+}
