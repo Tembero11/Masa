@@ -157,3 +157,35 @@ Commands.addCommand("help", "List of helpful commands", (msg) => {
 
   msg.channel.send(embed);
 });
+
+Commands.addCommand("online", "List of players currently online on the server", (msg) => {
+  let embed = getDefaultCommandEmbed(msg);
+
+  embed.setTitle("Server Status");
+
+  if (ServerHandler.isServerJoinable) {
+    embed.setDescription("All systems operational :green_circle:");
+  }else if (!ServerHandler.commandProcess) {
+    embed.setDescription(`${config["serverName"] || "Server"} is currenly offline :red_circle:`);
+  }else if (ServerHandler.serverStatus === ServerHandler.Presence.SERVER_STARTING) {
+    embed.setDescription(`${config["serverName"] || "Server"} is currenly starting :yellow_circle:`);
+  }else if (ServerHandler.serverStatus === ServerHandler.Presence.SERVER_STOPPING) {
+    embed.setDescription(`${config["serverName"] || "Server"} is currenly stopping :yellow_circle:`);
+  }
+
+  if (config["showPlayers"]) {
+    let playerList = Array.from(ServerHandler.players.keys()).join("\n");
+
+    if (!playerList) {
+      playerList = "No players online";
+    }
+
+    embed.addField(`${ServerHandler.players.size} online`, playerList);
+  }
+
+  
+
+  embed.setTimestamp();
+
+  msg.channel.send(embed);
+});

@@ -24,6 +24,9 @@ backup:
   # Create automatic backups every x minutes. If less than 1 automatic backups will get disabled.
   automaticBackups: 1
 
+# Whether to show online data about the players
+showPlayers: true
+
 # a list of messages sent when running the easteregg command.
 easteregg:
   - "please don't call be retard :cry:"

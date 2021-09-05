@@ -1,6 +1,7 @@
 import { Message, MessageEmbed } from "discord.js";
 import { client, config } from "../index";
 import path from "path";
+import { players, Presence } from "./serverHandler";
 
 export const serverDir = path.join(process.cwd(), "server");
 
@@ -18,22 +19,28 @@ export const isAllowedChannel = (channelID: string) => {
   return false;
 }
 
-export enum Presence {
-  SERVER_ONLINE = "Server is joinable!",
-  SERVER_STARTING = "Server is starting...",
-  SERVER_STOPPING = "Server is stopping...",
-  SERVER_OFFLINE = "Server is offline."
-}
+
 
 export const setPresence = (presence: Presence) => {
   if (client && client.user) {
     switch (presence) {
       case Presence.SERVER_ONLINE:
+        let gameName = config["serverName"] || "Minecraft"
+        let presenceName: string = gameName;
+
+        if (config["showPlayers"]) {
+          if (players.size === 1) {
+            presenceName = `${gameName} with ${Array.from(players.values())[0].username}`
+          }else if (players.size > 1) {
+            presenceName = `${gameName} with ${players.size} others`
+          }
+        }
+
         client.user.setPresence({
           status: "online",
           activity: {
             type: "PLAYING",
-            name: config["serverName"] || "Minecraft"
+            name: presenceName
           },
         });
         break;
@@ -71,7 +78,7 @@ export const setPresence = (presence: Presence) => {
         break;
     }
   }
-} 
+}
 
 
 export const getDefaultCommandEmbed = (msg: Message) => {
