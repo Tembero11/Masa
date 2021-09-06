@@ -97,11 +97,9 @@ export default class ConsoleReader {
             let matches = this.message.match(/([a-zA-Z0-9]|_){3,16} left/);
             if (matches && matches[0]) {
                 let match = matches[0];
-                let usernameMatches = match.match(/\]: ([a-zA-Z0-9]|_){3,16}/);
+                let username = match.substring(0, match.length - " left".length)
 
-                if (usernameMatches && usernameMatches[0]) {
-                    let username = usernameMatches[0].substr(3, usernameMatches[0].length - 3);
-
+                if (username) {
                     // Create a new player instance
                     let player = new Player(username);
 
@@ -129,12 +127,13 @@ export default class ConsoleReader {
 
         if (this.isInfo) {
             let matches = this.message.match(/([a-zA-Z0-9]|_){3,16}\[.{1,}\] logged/);
+
             if (matches && matches[0]) {
                 let match = matches[0];
-                let usernameMatches = match.match(/\]: ([a-zA-Z0-9]|_){3,16}\[/);
+                let usernameMatches = match.match(/^([a-zA-Z0-9]|_){3,16}\[/);
 
                 if (usernameMatches && usernameMatches[0]) {
-                    let username = usernameMatches[0].substr(3, usernameMatches[0].length - 4);
+                    let username = usernameMatches[0].substr(0, usernameMatches[0].length - 1);
 
                     // Create a new player instance
                     let player = new Player(username);

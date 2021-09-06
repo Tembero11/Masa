@@ -67,17 +67,6 @@ export const start = () => {
 
             res(new ServerResult(ServerStatus.SERVER_STARTED));
           }
-        } else if (players.size > 0) {
-          // Check if the message was someone leaving
-          if (reader.isLeaveEvent) {
-
-            // Remove a player from the players list if they left
-            let player = reader.player as Player;
-            players.delete(player.username);
-
-            // Update the presence
-            setPresence(serverStatus);
-          }
         } else {
           // check if the message was someone joining
           if (reader.isJoinEvent) {
@@ -85,10 +74,27 @@ export const start = () => {
             let player = reader.player as Player;
             players.set(player.username, player);
 
+            console.log(players);
+
             // Update the presence
             setPresence(serverStatus);
+          }else if(reader.isLeaveEvent) {
+            // Check if the message was someone leaving
+            if (reader.isLeaveEvent) {
+  
+              // Remove a player from the players list if they left
+              let player = reader.player as Player;
+              players.delete(player.username);
+
+              console.log(players);
+  
+              // Update the presence
+              setPresence(serverStatus);
+            }
           }
         }
+
+        
 
         process.stdout.write(`[${commandProcess?.pid || ""}]${data}`);
       });
