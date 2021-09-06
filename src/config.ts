@@ -14,6 +14,9 @@ serverName: server
 # A hex color value for the Discord embeds
 embedColor: "#5800fc"
 
+# whether to show world seed
+showWorldSeeds: true
+
 backup:
   # true if backups are enabled
   useBackups: true

@@ -4,6 +4,7 @@ import { client, config } from "../index";
 import { serverDir, setPresence } from "./helpers";
 import axios from "axios";
 import {ConsoleReader, Player, Event} from "./classes/ConsoleAPI";
+import { read } from "fs";
 
 export let commandProcess: ChildProcessWithoutNullStreams | undefined;
 
@@ -146,3 +147,30 @@ export const restart = async (): Promise<ServerResult> => {
   }
 }
 
+export const getSeed = () => {
+  return new Promise<number[]>((res, rej) => {
+    if (commandProcess && isServerJoinable) {
+      const listener = (d: any) => {
+        let reader = new ConsoleReader(d.toString());
+  
+        if (reader.isInfo) {
+          let isSeed = reader.message.search(/Seed: \[[a-zA-Z0-9\-]{1,}\]/) > -1;
+  
+          if (isSeed) {
+            let seeds = reader.message.substring("Seed:".length).replaceAll(/\[|\]/g, "").split(",").map((seed) => parseInt(seed));
+  
+            commandProcess?.removeListener("data", listener);
+
+            res(seeds);
+          }
+        }
+      }
+  
+      commandProcess.stdout.on("data", listener);
+  
+      commandProcess.stdin.write("seed\n");
+    }else {
+      rej("Server is offline!");
+    }
+  });
+}

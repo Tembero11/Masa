@@ -3,8 +3,11 @@ import { ConsoleColor, createDateTimeString, parseDateTimeString, serverDir } fr
 import fs from "fs";
 import { config } from "..";
 import { isServerJoinable } from "./serverHandler";
+import { addCommands } from "./commands";
 
 const setup = () => {
+    addCommands();
+
     createBackupsFolder(BACKUP_TYPE.AutomaticBackup);
     createBackupsFolder(BACKUP_TYPE.UserBackup);
     createServerFolder();
