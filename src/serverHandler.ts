@@ -74,8 +74,6 @@ export const start = () => {
             let player = reader.player as Player;
             players.set(player.username, player);
 
-            console.log(players);
-
             // Update the presence
             setPresence(serverStatus);
           }else if(reader.isLeaveEvent) {
@@ -85,8 +83,6 @@ export const start = () => {
               // Remove a player from the players list if they left
               let player = reader.player as Player;
               players.delete(player.username);
-
-              console.log(players);
   
               // Update the presence
               setPresence(serverStatus);

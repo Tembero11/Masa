@@ -60,8 +60,6 @@ export default class ConsoleReader {
         }
         this._isInfo = this.data.startsWith("[Server thread/INFO]: ");
 
-        console.log("Is info ", this._isInfo);
-
         return this._isInfo;
     }
 
