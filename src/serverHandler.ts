@@ -3,6 +3,7 @@ import path from "path";
 import { client, config } from "../index";
 import { serverDir, setPresence } from "./helpers";
 import axios from "axios";
+import {ConsoleReader, Player, Event} from "./classes/ConsoleAPI";
 
 export let commandProcess: ChildProcessWithoutNullStreams | undefined;
 
@@ -28,32 +29,7 @@ class ServerResult {
   }
 }
 
-export class Player {
-  readonly username: string;
 
-  private _uuid: string | undefined;
-
-  get uuid(): Promise<string> {
-    return new Promise<string>((res, rej) => {
-      if (!this._uuid) {
-        axios.get(`https://api.mojang.com/users/profiles/minecraft/${this.username}`).then((response) => {
-          if (typeof response.data["id"] == "string") {
-            res(response.data["id"]);
-          } else {
-            rej("UUID was invalid.");
-          }
-        }).catch(reason => rej(reason));
-      } else {
-        res(this._uuid);
-      }
-    });
-  }
-
-  constructor(username: string, uuid?: string) {
-    this.username = username;
-    this._uuid = uuid;
-  }
-}
 
 // new Player("Tembero").uuid.then(uuid => console.log(uuid)).catch((err) => console.error("Error"));
 
@@ -78,9 +54,11 @@ export const start = () => {
       commandProcess.stdout.on("data", (d: any) => {
         let data: string = d.toString();
 
+        let reader = new ConsoleReader(data);
+
         // Check for the done message
         if (!isServerJoinable) {
-          let result = isDoneMessage(data);
+          let result = reader.isDoneMessage;
           if (result) {
             isServerJoinable = true;
 
@@ -91,10 +69,10 @@ export const start = () => {
           }
         } else if (players.size > 0) {
           // Check if the message was someone leaving
-          let player = readFromLeftMessage(data);
-          console.log(player);
-          if (player) {
+          if (reader.isLeaveEvent) {
+
             // Remove a player from the players list if they left
+            let player = reader.player as Player;
             players.delete(player.username);
 
             // Update the presence
@@ -102,10 +80,9 @@ export const start = () => {
           }
         } else {
           // check if the message was someone joining
-          let player = readFromJoinMessage(data);
-          console.log(player);
-          if (player) {
+          if (reader.isJoinEvent) {
             // Add a player to the players list if they joined
+            let player = reader.player as Player;
             players.set(player.username, player);
 
             // Update the presence
@@ -167,37 +144,3 @@ export const restart = async (): Promise<ServerResult> => {
   }
 }
 
-
-const readFromLeftMessage = (msg: string): Player | undefined => {
-  let matches = msg.match(/\[Server thread\/INFO\]: ([a-zA-Z0-9]|_){3,16} left/);
-  if (matches && matches[0]) {
-    let match = matches[0];
-    let usernameMatches = match.match(/\]: ([a-zA-Z0-9]|_){3,16}/);
-
-    if (usernameMatches && usernameMatches[0]) {
-      let username = usernameMatches[0].substr(3, usernameMatches[0].length - 3);
-
-      return new Player(username);
-    }
-  }
-
-  return undefined;
-}
-const readFromJoinMessage = (msg: string): Player | undefined => {
-  let matches = msg.match(/\[Server thread\/INFO\]: ([a-zA-Z0-9]|_){3,16}\[.{1,}\] logged/);
-  if (matches && matches[0]) {
-    let match = matches[0];
-    let usernameMatches = match.match(/\]: ([a-zA-Z0-9]|_){3,16}\[/);
-
-    if (usernameMatches && usernameMatches[0]) {
-      let username = usernameMatches[0].substr(3, usernameMatches[0].length - 4);
-
-      return new Player(username);
-    }
-
-  }
-
-  return undefined;
-}
-
-const isDoneMessage = (msg: string) => msg.search(/Done \(.{1,}\)\!/) > -1;
