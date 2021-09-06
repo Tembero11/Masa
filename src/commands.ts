@@ -1,4 +1,4 @@
-import Discord from "discord.js";
+import Discord, { EmbedFieldData } from "discord.js";
 import { config } from "../index";
 import { BACKUP_TYPE, createNewBackup, getLatestBackup, listBackups } from "./backup";
 
@@ -10,8 +10,10 @@ export type CommandHandler = (msg: Discord.Message) => void
 
 export default interface Command {
   commandName: string 
+  aliases: string[],
   handler: CommandHandler
-  desc: string
+  desc: string,
+  isAlias: boolean
 }
 
 export class Commands {
@@ -27,12 +29,22 @@ export class Commands {
 
     return Commands.commands[commandName];
   }
-  static addCommand = (commandName: string, desc: string, handler: CommandHandler) => {
-    Commands.commands[commandName] = {
+  static addCommand = (commandNameOrNames: string | string[], desc: string, handler: CommandHandler) => {
+    let commands: string[];
+
+    if (!Array.isArray(commandNameOrNames)) {
+      commands = [commandNameOrNames];
+    }else {
+      commands = commandNameOrNames;
+    }
+
+    commands.forEach((commandName, index) => Commands.commands[commandName] = {
+      isAlias: index > 0,
+      aliases: commands.length > 1 ? commands.slice(1) : [],
       commandName,
       handler,
       desc
-    }
+    });
   }
 
   static runCommand(command: string, msg: Discord.Message) {
@@ -133,33 +145,36 @@ export const addCommands = () => {
     });
   });
   
-  Commands.addCommand("latest_backup", "Get the latest backup", (msg) => {
+  Commands.addCommand(["latest_backup", "newest_backup"], "Get the latest backup", (msg) => {
     getLatestBackup(true).then((latest) => {
       let embed = getDefaultCommandEmbed(msg).setTitle("The latest backup is...").setDescription(latest);
       msg.channel.send(embed);
     });
   });
   
-  Commands.addCommand("help", "List of helpful commands", (msg) => {
+  Commands.addCommand(["help", "commands", "what"], "List of helpful commands", (msg) => {
     let embed = getDefaultCommandEmbed(msg);
   
     embed.setTitle("List of commands");
     embed.setDescription("A list of helpful commands for noobs");
     
     let fields = Object.values(Commands.commands).map((command) => {
-      return {
-        name: command.commandName,
-        value: command.desc,
-        inline: false,
+      if (!command.isAlias) {
+        return {
+          name: [command.commandName, ...command.aliases].join(", "),
+          value: command.desc,
+          inline: false,
+        }
       }
-    });
+      return null;
+    }).filter((value) => value != null) as EmbedFieldData[];
   
     embed.addFields(fields);
   
     msg.channel.send(embed);
   });
   
-  Commands.addCommand("online", "List of players currently online on the server", (msg) => {
+  Commands.addCommand(["online", "status", "players"], "List of players currently online on the server", (msg) => {
     let embed = getDefaultCommandEmbed(msg);
   
     embed.setTitle("Server Status");
@@ -193,7 +208,7 @@ export const addCommands = () => {
   
   // Only add the seeds command if seed are enabled
   if (config["showWorldSeeds"]) {
-    Commands.addCommand("seeds", "Gets the seed(s) for the world(s)", msg => {
+    Commands.addCommand(["seed", "seeds"], "Gets the seed(s) for the world(s)", msg => {
       ServerHandler.getSeed().then((seeds) => {
         let embed = getDefaultCommandEmbed(msg);
     
