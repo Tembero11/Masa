@@ -5,8 +5,9 @@ import { Commands } from "./src/commands";
 import { isAllowedChannel, setPresence, usesPrefix, withoutPrefix } from "./src/helpers";
 import { start, stop, restart, Presence } from "./src/serverHandler";
 import setup from "./src/setup";
-import yaml from "js-yaml";
 import { defaultConfig } from "./src/config";
+import inquirer from "inquirer";
+import yaml from "js-yaml";
 
 export let config: {[key: string]: any};
 try {
@@ -18,11 +19,59 @@ try {
     console.log("Config was successfully loaded!");
 
   }else {
-    fs.writeFileSync(configPath, defaultConfig, {encoding: "utf-8"});
+    inquirer.prompt([
+      {
+        type: "confirm",
+        message: '"config.yml" not found. Do you want to run a setup?',
+        name: "runSetup",
+      }
+    ]).then((result) => {
+      console.log(result);
 
-    console.log("Please edit the config.yml file in the bot directory.");
+      if (result.runSetup) {
+        inquirer.prompt([
+          {
+            type: "input",
+            message: "What's the server called?",
+            name: "serverName",
+          },
+          {
+            type: "input",
+            message: "Enter the bot token here",
+            name: "token",
+          },
+          {
+            type: "confirm",
+            message: "Do you want the bot to be able to show players that are online?",
+            name: "showPlayers",
+          },
+          {
+            type: "confirm",
+            message: "Do you want to make the seed public?",
+            name: "showWorldSeed",
+          },
+          {
+            type: "confirm",
+            message: "Do you want to enable backups?",
+            name: "useBackups",
+          },
+        ]).then((result) => {
+          console.log(result);
 
-    process.exit();
+
+        }).catch((err) => console.log("An unknown error occured. Setup failed!"));
+      }else {
+        fs.writeFileSync(configPath, defaultConfig, {encoding: "utf-8"});
+        console.log("Please edit the config.yml file in the bot directory.");
+        process.exit();
+      }
+    }).catch((err) => {
+      if (err) {
+        fs.writeFileSync(configPath, defaultConfig, {encoding: "utf-8"});
+        console.log("Please edit the config.yml file in the bot directory.");
+        process.exit();
+      }
+    })
   }
 }catch(err) {
   throw err;
@@ -46,7 +95,7 @@ client.on("message", msg => {
   }
 });
 
-client.login(config["token"]);
+// client.login(config["token"]);
 
 // process.on("uncaughtException", (err) => {
 //   const logs = path.join(__dirname, "logs");
