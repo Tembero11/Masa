@@ -42,7 +42,21 @@ export const createNewBackup = async (dir: string, isAutomatic = false, backupLi
             });
         }
 
-        await fse.copy(serverDir, path.join(dir, backupName));
+        let maxTries = config["retryFailedBackups"];
+        let timesTried = 0;
+
+        const copyFiles = async() => {
+            try {
+                await fse.copy(serverDir, path.join(dir, backupName));
+            }catch(err) {
+                timesTried++;
+                if (timesTried < maxTries) {
+                    copyFiles();
+                }
+            }
+        };
+
+        copyFiles();
 
 
         return backupName;
