@@ -5,12 +5,12 @@ import { config } from "..";
 import { isServerJoinable } from "./serverHandler";
 import { addCommands } from "./commands";
 
-const setup = () => {
+const setup = async() => {
     addCommands();
 
-    createBackupsFolder(BACKUP_TYPE.AutomaticBackup);
-    createBackupsFolder(BACKUP_TYPE.UserBackup);
-    createServerFolder();
+    await createBackupsFolder(BACKUP_TYPE.AutomaticBackup);
+    await createBackupsFolder(BACKUP_TYPE.UserBackup);
+    await createServerFolder();
 
     let automaticBackups = config["backup"]["automaticBackups"];
 
@@ -28,6 +28,8 @@ const setup = () => {
     }else {
         console.log('Automatic backups are disabled, you can change this by changing the "automaticBackups" to a value greater than 1.');
     }
+
+    return true;
 }
 
 const createServerFolder = async() => {

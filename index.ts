@@ -8,10 +8,15 @@ import setup from "./src/setup";
 import { defaultConfig } from "./src/config";
 import inquirer from "inquirer";
 import yaml from "js-yaml";
+import YAWN from "yawn-yaml";
 
 export let config: {[key: string]: any};
 try {
+  let yawn = new YAWN(defaultConfig);
+
   const configPath = path.join(__dirname, "config.yml");
+
+  
 
   if (fs.existsSync(configPath)) {
     config = yaml.load(fs.readFileSync(configPath, {encoding: "utf-8"})) as Object;
@@ -85,7 +90,11 @@ client.on("ready", () => {
 
     setPresence(Presence.SERVER_OFFLINE);
 
-    setup();
+    setup().then((success) => {
+      if (success) {
+        console.log("Successfully started!");
+      }
+    });
   }
 });
 
