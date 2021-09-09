@@ -20,8 +20,8 @@ const setup = async() => {
             if (isServerJoinable) {
                 createNewBackup(BACKUP_TYPE.AutomaticBackup, true).then((backupName) => {
                     console.log("An automatic backup was succesfully created! %s", backupName);
-                }).catch(() => {
-                    console.warn(ConsoleColor.FgYellow, "An automatic backup has failed!", ConsoleColor.Reset);
+                }).catch((err) => {
+                    console.warn(ConsoleColor.FgYellow, err, ConsoleColor.Reset);
                 });
             }
         }, automaticBackups * 1000 * 60);
