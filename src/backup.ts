@@ -51,9 +51,10 @@ export const createNewBackup = async (dir: string, isAutomatic = false, backupLi
             }catch(err) {
                 timesTried++;
                 if (timesTried < maxTries) {
+                    console.warn(ConsoleColor.FgYellow, `Backup creation failed ${timesTried} times!`, ConsoleColor.Reset);
                     copyFiles();
                 }else {
-                    throw "Automatic backup creation failed!";
+                    throw "Backup creation failed!";
                 }
             }
         };
