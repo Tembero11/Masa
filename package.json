@@ -5,7 +5,26 @@
   "main": "index.js",
   "scripts": {
     "dev": "nodemon index.ts",
-    "start": "ts-node index.ts"
+    "start": "ts-node index.ts",
+    "test": "node build",
+    "build": "npm run build:js_version && mkdirp dist && pkg ./temp/index.js -t node12-win-x64 -o ./dist/masa.exe && npm run build:clean_temp",
+    "build:clean": "npm run build:clean_temp && rimraf ./dist && mkdirp dist && mkdirp temp",
+    "build:clean_temp": "rimraf ./temp",
+    "build:js_version": "npm run build:clean && npm run build:copy && npm run build:ts",
+    "build:copy": "copyfiles ./** -e \"./**/**/**.ts\" temp",
+    "build:ts": "tsc -p ."
+  },
+  "pkg": {
+    "scripts": "*.js",
+    "assets": [
+      "temp/config.yml",
+      "temp/server",
+      "temp/backups",
+      "temp/user_backups"
+    ],
+    "targets": [
+      "node10"
+    ]
   },
   "author": "Tembero",
   "license": "MIT",
@@ -22,6 +41,13 @@
     "@types/js-yaml": "^4.0.3",
     "@types/node": "^16.7.8",
     "@types/yawn-yaml": "^1.4.0",
+    "copyfiles": "^2.4.1",
+    "make-dir-cli": "^3.0.0",
+    "mkdirp": "^1.0.4",
+    "ncp": "^2.0.0",
+    "nexe": "^4.0.0-beta.18",
+    "recursive-copy": "^2.0.13",
+    "rimraf": "^3.0.2",
     "ts-node": "^10.1.0",
     "typescript": "^4.3.5"
   }
