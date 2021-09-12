@@ -7,3 +7,4 @@ user_backups
 package-lock.json
 config.yml
 dist
+temp
