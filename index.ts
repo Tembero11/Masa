@@ -12,7 +12,7 @@ export let config: {[key: string]: any};
 
 export const client = new Discord.Client();
 
-client.once("ready", () => {
+client.on("ready", () => {
   if (client.user) {
     console.log(`Logged in as ${client.user.tag}!`);
 
@@ -23,6 +23,8 @@ client.once("ready", () => {
         console.log("Successfully started!");
       }
     });
+  }else {
+    throw "Failed to login";
   }
 });
 
@@ -34,7 +36,7 @@ client.on("message", msg => {
 
 
 try {
-  const configPath = path.join(__dirname, "config.yml");
+  const configPath = path.join(process.cwd(), "config.yml");
 
   if (fs.existsSync(configPath)) {
     config = yaml.load(fs.readFileSync(configPath, {encoding: "utf-8"})) as Object;
@@ -109,19 +111,19 @@ try {
 }
 
 
-process.on("uncaughtException", (err) => {
-  const logs = path.join(__dirname, "logs");
+// process.on("uncaughtException", (err) => {
+//   const logs = path.join(process.cwd(), "logs");
   
-  if (!fs.existsSync(logs)) {
-    fs.mkdirSync(logs);
-  }
+//   if (!fs.existsSync(logs)) {
+//     fs.mkdirSync(logs);
+//   }
 
-  let date = new Date();
-  let logName = `${date.getDate()}.${date.getMonth() + 1}-${date.getHours()}.${date.getMinutes()}.log`;
+//   let date = new Date();
+//   let logName = `${date.getDate()}.${date.getMonth() + 1}-${date.getHours()}.${date.getMinutes()}.log`;
 
-  const errorMessage = `${err.name}:\n${err.message}\n${err.stack}`;
+//   const errorMessage = `${err.name}:\n${err.message}\n${err.stack}`;
 
-  fs.writeFileSync(path.join(logs, logName), errorMessage);
+//   fs.writeFileSync(path.join(logs, logName), errorMessage);
 
-  throw err;
-});
+//   throw err;
+// });
