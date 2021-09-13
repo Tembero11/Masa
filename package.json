@@ -12,7 +12,8 @@
     "build:clean_temp": "rimraf ./temp",
     "build:js_version": "npm run build:clean && npm run build:copy && npm run build:ts",
     "build:copy": "copyfiles ./** -e \"./**/**/**.ts\" temp",
-    "build:ts": "tsc -p ."
+    "build:ts": "tsc -p .",
+    "build:web": "cd app && flutter build web && cd .."
   },
   "pkg": {
     "scripts": "*.js",
@@ -42,10 +43,8 @@
     "@types/node": "^16.7.8",
     "@types/yawn-yaml": "^1.4.0",
     "copyfiles": "^2.4.1",
-    "make-dir-cli": "^3.0.0",
     "mkdirp": "^1.0.4",
-    "ncp": "^2.0.0",
-    "nexe": "^4.0.0-beta.18",
+    "pkg": "^5.3.2",
     "recursive-copy": "^2.0.13",
     "rimraf": "^3.0.2",
     "ts-node": "^10.1.0",
