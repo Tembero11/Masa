@@ -113,6 +113,8 @@ export const start = () => {
 
         isServerJoinable = false;
 
+        players.clear();
+
 
 
         console.log(`Server closed with code ${code}`);
