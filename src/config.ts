@@ -1,3 +1,7 @@
+import path from "path";
+import fs from "fs";
+import yaml from "js-yaml";
+
 export const defaultConfig = `
 # the token for the bot
 token: ''
@@ -42,6 +46,45 @@ easteregg:
   - 'RETARD DETECTED!'
   - 'Valisemaanne numeroon ei juuri nyt saada yhteyttä jätä viesti äänimerkin jälkeen!'
 `;
-export default class Config {
 
+const configDir = path.join(process.cwd(), "config");
+
+export const CONFIG_TYPE: { [key: string]: { default: string, path: string } } = {
+  General: {
+    path: path.join(configDir, "config.yml"),
+    default: defaultConfig,
+  },
+  Developer: {
+    path: path.join(configDir, "developer.yml"),
+    default: ""
+  }
+}
+
+/**
+ * Creates all config files if doesn't exist
+ * @returns true if a file was created
+ */
+export const createConfig = async () => {
+  if (!fs.existsSync(configDir)) {
+    await fs.promises.mkdir(configDir);
+  }
+
+  let result = false;
+
+  for (const key in CONFIG_TYPE) {
+    if (Object.prototype.hasOwnProperty.call(CONFIG_TYPE, key)) {
+      const config = CONFIG_TYPE[key];
+      if (!fs.existsSync(config.path)) {
+        await fs.promises.writeFile(config.path, config.default, { encoding: "utf-8" });
+        result = true;
+      }
+    }
+  }
+
+  return result;
+}
+
+
+export const loadConfig = (dir: string) => {
+  return yaml.load(fs.readFileSync(dir, { encoding: "utf-8" })) as Object;
 }
