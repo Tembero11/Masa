@@ -6,7 +6,7 @@ import { isAllowedChannel, setPresence, usesPrefix, } from "./src/helpers";
 import { Presence } from "./src/serverHandler";
 import setup from "./src/setup";
 import yaml from "js-yaml";
-import { defaultConfig } from "./src/config";
+import { CONFIG_TYPE, createConfig, defaultConfig, loadConfig } from "./src/config";
 
 export let config: {[key: string]: any};
 
@@ -34,19 +34,18 @@ client.on("message", msg => {
 
 
 try {
-  const configPath = path.join(__dirname, "config.yml");
+  createConfig().then((created) => {
+    if (created) {
+      console.log("Please edit the config/config.yml file in the bot directory.");
+      process.exit();
+    }else {
+      loadConfig(CONFIG_TYPE.General.path);
 
-  if (fs.existsSync(configPath)) {
-    config = yaml.load(fs.readFileSync(configPath, {encoding: "utf-8"})) as Object;
+      console.log("Config was successfully loaded!");
 
-    console.log("Config was successfully loaded!");
-
-    client.login(config["token"]);
-  }else {
-    fs.writeFileSync(configPath, defaultConfig, {encoding: "utf-8"});
-    console.log("Please edit the config.yml file in the bot directory.");
-    process.exit();
-  }
+      client.login(config["token"]);
+    }
+  });
   
 
   // if (fs.existsSync(configPath)) {
