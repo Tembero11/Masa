@@ -36,15 +36,7 @@ showPlayers: true
 
 # a list of messages sent when running the easteregg command.
 easteregg:
-  - "please don't call be retard :cry:"
-  - 'no u :cry:'
-  - 'why are you spamming me?!'
-  - 'shut up :cry:'
-  - 'stop calling me retard, seriously!'
-  - 'what is your problem?'
-  - "i'm busy!"
-  - 'RETARD DETECTED!'
-  - 'Valisemaanne numeroon ei juuri nyt saada yhteyttä jätä viesti äänimerkin jälkeen!'
+  - ":egg:"
 `;
 
 const configDir = path.join(process.cwd(), "config");
