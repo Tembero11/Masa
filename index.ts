@@ -39,7 +39,7 @@ try {
       console.log("Please edit the config/config.yml file in the bot directory.");
       process.exit();
     }else {
-      loadConfig(CONFIG_TYPE.General.path);
+      config = loadConfig(CONFIG_TYPE.General.path);
 
       console.log("Config was successfully loaded!");
 
