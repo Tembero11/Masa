@@ -38,7 +38,7 @@ Now to run the setup for the bot run
 
   `$ npm start`
 
-This will create a `config.yml` file in your bot's directory. This is where you need to paste your token from the Discord bot menu.
+This will create a `config/config.yml` file in your bot's directory. This is where you need to paste your token from the Discord bot menu.
 Now you can also configure other settings in the bot like how often to make backups. Also remember to set the allowedChannels to have at least one channel ID, otherwise the bot won't work.
 
 When you have edited & saved the new config, run
