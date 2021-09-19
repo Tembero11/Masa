@@ -4,6 +4,7 @@ import fs from "fs";
 import { config } from "..";
 import { isServerJoinable } from "./serverHandler";
 import { addCommands } from "./commands";
+import { socketConnect } from "./socket/connect";
 
 const setup = async() => {
     addCommands();
@@ -28,6 +29,8 @@ const setup = async() => {
     }else {
         console.log('Automatic backups are disabled, you can change this by changing the "automaticBackups" to a value greater than 1.');
     }
+
+    await socketConnect();
 
     return true;
 }
