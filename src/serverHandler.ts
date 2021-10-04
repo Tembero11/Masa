@@ -40,6 +40,10 @@ class ServerResult {
 export let isServerJoinable = false;
 // Contains all the currently online players
 export let players = new Map<string, Player>();
+
+export const cachedConsoleLines = 50;
+// Last lines printed to the server console
+export let lastLines: Array<string> = [];
 export let serverStatus: Presence = Presence.SERVER_OFFLINE;
 
 export const start = () => {
@@ -54,6 +58,13 @@ export const start = () => {
 
       commandProcess.stdout.on("data", (d: any) => {
         let data: string = d.toString();
+
+        // Add the line to the lastLine array
+        if (lastLines.length >= cachedConsoleLines) {
+          lastLines.shift();
+        }
+        
+        lastLines.push(data);
 
         let reader = new ConsoleReader(data);
 

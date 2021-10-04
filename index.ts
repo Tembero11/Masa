@@ -6,7 +6,7 @@ import { isAllowedChannel, setPresence, usesPrefix, } from "./src/helpers";
 import { Presence } from "./src/serverHandler";
 import setup from "./src/setup";
 import yaml from "js-yaml";
-import { CONFIG_TYPE, createConfig, defaultConfig, loadConfig } from "./src/config";
+import { CONFIG_TYPE, createConfig, loadConfig } from "./src/config";
 
 export let config: {[key: string]: any};
 
