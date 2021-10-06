@@ -23,14 +23,6 @@ export enum Presence {
   SERVER_OFFLINE = "Server is offline."
 }
 
-class ServerResult {
-  status: ServerStatus;
-  constructor(status: ServerStatus) {
-    this.status = status;
-  }
-}
-
-
 
 // new Player("Tembero").uuid.then(uuid => console.log(uuid)).catch((err) => console.error("Error"));
 
@@ -47,7 +39,7 @@ export let lastLines: Array<string> = [];
 export let serverStatus: Presence = Presence.SERVER_OFFLINE;
 
 export const start = () => {
-  return new Promise<ServerResult>((res, rej) => {
+  return new Promise<ServerStatus>((res, rej) => {
     if (!commandProcess) {
 
       commandProcess = spawn(config["command"], { shell: true, cwd: serverDir });
@@ -77,7 +69,7 @@ export const start = () => {
             serverStatus = Presence.SERVER_ONLINE;
             setPresence(serverStatus);
 
-            res(new ServerResult(ServerStatus.SERVER_STARTED));
+            res(ServerStatus.SERVER_STARTED);
           }
         } else {
           // check if the message was someone joining
@@ -109,7 +101,7 @@ export const start = () => {
 
       commandProcess.on("error", (err) => {
         console.error(err);
-        rej(new ServerResult(ServerStatus.SERVER_CRASHED));
+        rej(ServerStatus.SERVER_CRASHED);
       });
 
       commandProcess.on("close", (code) => {
@@ -119,7 +111,7 @@ export const start = () => {
         setPresence(serverStatus);
 
         if (code != 0) {
-          rej(new ServerResult(ServerStatus.SERVER_CRASHED));
+          rej(ServerStatus.SERVER_CRASHED);
         }
 
         isServerJoinable = false;
@@ -134,24 +126,24 @@ export const start = () => {
   })
 }
 
-export const stop = async (): Promise<ServerResult> => {
-  return new Promise<ServerResult>((res, rej) => {
+export const stop = async (): Promise<ServerStatus> => {
+  return new Promise<ServerStatus>((res, rej) => {
     if (commandProcess) {
       serverStatus = Presence.SERVER_STOPPING;
       setPresence(serverStatus);
 
       commandProcess.on("close", () => {
-        res(new ServerResult(ServerStatus.SERVER_STOPPED));
+        res(ServerStatus.SERVER_STOPPED);
       });
 
       commandProcess.stdin.write("stop\n");
     } else {
-      res(new ServerResult(ServerStatus.SERVER_ALREADY_OFFLINE));
+      res(ServerStatus.SERVER_ALREADY_OFFLINE);
     }
   });
 }
 
-export const restart = async (): Promise<ServerResult> => {
+export const restart = async (): Promise<ServerStatus> => {
   if (commandProcess) {
     await stop();
     return await start();

@@ -1,5 +1,9 @@
 {
   "exclude": [
-    "test"
+    "test",
+    "server",
+    "logs",
+    "backups",
+    "user_backups"
   ]
 }

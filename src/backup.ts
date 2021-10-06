@@ -3,7 +3,7 @@ import path from "path";
 import { config } from "../index";
 import * as fse from "fs-extra";
 import { ConsoleColor, createDateTimeString, DateString, parseDateTimeString, serverDir } from "./helpers";
-import { isServerJoinable } from "./serverHandler";
+import { commandProcess, isServerJoinable } from "./serverHandler";
 
 export const BACKUP_TYPE = {
     UserBackup: path.join(process.cwd(), "user_backups"),
@@ -42,27 +42,32 @@ export const createNewBackup = async (dir: string, isAutomatic = false, backupLi
             });
         }
 
-        let maxTries = config["retryFailedBackups"];
-        let timesTried = 0;
+        // TODO: Remove timeout & add event to ConsoleReader
+        // Also create a better way to expect an event to occur
+        // Make backups zip or tar.gz files
+        // Only copy files that have been edited
 
-        const copyFiles = async() => {
-            try {
-                await fse.copy(serverDir, path.join(dir, backupName));
-            }catch(err) {
-                timesTried++;
-                if (timesTried < maxTries) {
-                    console.warn(ConsoleColor.FgYellow, `Backup creation failed ${timesTried} times!`, ConsoleColor.Reset);
-                    copyFiles();
+        return new Promise<string>((res, rej) => {
+            // Save everything & Stop the locking of the files
+            commandProcess?.stdin.write("save-all\nsave-off\n", (err) => {
+                if (!err) {
+                    setTimeout(() => {
+                        fse.copy(serverDir, path.join(dir, backupName)).then(() => {
+                            // Turn on saving again
+                            commandProcess?.stdin.write("save-on\n", (err) => {
+                                if (!err) {
+                                    res(backupName);
+                                }else {
+                                    rej(err);
+                                }
+                            });
+                        }); 
+                    }, 9999);
                 }else {
-                    throw "Backup creation failed!";
+                    rej(err);
                 }
-            }
-        };
-
-        copyFiles();
-
-
-        return backupName;
+            });
+        });
     }else {
         throw "Server is not joinable.";
     }

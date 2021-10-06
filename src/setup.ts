@@ -3,12 +3,9 @@ import { ConsoleColor, createDateTimeString, parseDateTimeString, serverDir } fr
 import fs from "fs";
 import { config } from "..";
 import { isServerJoinable } from "./serverHandler";
-import { addCommands } from "./commands";
 import { socketConnect } from "./socket/connect";
 
 const setup = async() => {
-    addCommands();
-
     await createBackupsFolder(BACKUP_TYPE.AutomaticBackup);
     await createBackupsFolder(BACKUP_TYPE.UserBackup);
     await createServerFolder();
@@ -30,7 +27,6 @@ const setup = async() => {
         console.log('Automatic backups are disabled, you can change this by changing the "automaticBackups" to a value greater than 1.');
     }
 
-    await socketConnect();
 
     return true;
 }
