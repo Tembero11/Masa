@@ -5,6 +5,7 @@ import { serverDir, setPresence } from "./helpers";
 import axios from "axios";
 import {ConsoleReader, Player, Event} from "./classes/ConsoleAPI";
 import { read } from "fs";
+import ServerCommunicator from "./classes/ServerCommunicator";
 
 export let commandProcess: ChildProcessWithoutNullStreams | undefined;
 
@@ -47,6 +48,9 @@ export const start = () => {
     if (!commandProcess) {
 
       commandProcess = spawn(config["command"], { shell: true, cwd: serverDir });
+
+      let server = new ServerCommunicator(commandProcess);
+      server.events.saveGame().then(when => console.log(when));
 
       serverStatus = Presence.SERVER_STARTING;
       setPresence(serverStatus);

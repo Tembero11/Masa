@@ -74,6 +74,13 @@ export default class ConsoleReader {
 
     get isDoneMessage() { return this.data.search(/Done \(.{1,}\)\!/) > -1; }
 
+    /**
+     * Only for manual saves
+     */
+    get isGameSaveEvent() {
+        return this.message.startsWith("Automatic saving is now disabled");
+    }
+
     constructor(data: string) {
         this.data = data.replace(/\[[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}\] /, "");
     }
