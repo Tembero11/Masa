@@ -36,44 +36,44 @@ export const setPresence = (presence: Presence) => {
           }
         }
 
-        client.user.setPresence({
-          status: "online",
-          activity: {
-            type: "PLAYING",
-            name: presenceName
-          },
-        });
+        // client.user.setPresence({
+        //   status: "online",
+        //   activity: {
+        //     type: "PLAYING",
+        //     name: presenceName
+        //   },
+        // });
         break;
       
       case Presence.SERVER_STARTING:
-        client.user.setPresence({
-          status: "dnd",
-          activity: {
-            type: "WATCHING",
-            name: `${config["serverName"] || "Server"} is starting...`
-          },
-        });
+        // client.user.setPresence({
+        //   status: "dnd",
+        //   activity: {
+        //     type: "WATCHING",
+        //     name: `${config["serverName"] || "Server"} is starting...`
+        //   },
+        // });
         break;
       
       case Presence.SERVER_STOPPING:
-        client.user.setPresence({
-          status: "dnd",
-          activity: {
-            type: "WATCHING",
-            name: `${config["serverName"] || "Server"} is stopping...`
-          },
-        });
+        // client.user.setPresence({
+        //   status: "dnd",
+        //   activity: {
+        //     type: "WATCHING",
+        //     name: `${config["serverName"] || "Server"} is stopping...`
+        //   },
+        // });
         break;
     
       default:
 
-        client.user.setPresence({
-          status: "idle",
-          activity: {
-            type: "LISTENING",
-            name: `${config["serverName"] || "Server"} is offline!`
-          },
-        });
+        // client.user.setPresence({
+        //   status: "idle",
+        //   activity: {
+        //     type: "LISTENING",
+        //     name: `${config["serverName"] || "Server"} is offline!`
+        //   },
+        // });
 
         break;
     }
@@ -81,10 +81,10 @@ export const setPresence = (presence: Presence) => {
 }
 
 
-export const getDefaultCommandEmbed = (msg: Message) => {
+export const getDefaultCommandEmbed = (authorName: string, avatarURL?: string | null) => {
   return new MessageEmbed()
       .setColor(config["embedColor"] || "#5800fc")
-      .setAuthor(msg.author.username, msg.author.avatarURL() || undefined);
+      .setAuthor(authorName, avatarURL || undefined);
 }
 
 

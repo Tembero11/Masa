@@ -5,6 +5,12 @@ import yaml from "js-yaml";
 export const defaultConfig = `
 # the token for the bot
 token: ''
+
+# The apps clientID
+clientID: ''
+# The Discord server's id
+guildID: ''
+
 # the command that starts the server. This runs inside the server folder
 command: 'java -Xmx1024M -Xms1024M -jar server.jar nogui'
 # The bot prefix, eg. /server start
@@ -38,6 +44,9 @@ showPlayers: true
 easteregg:
   - ":egg:"
 `;
+
+
+export const developerConfig = `# This file currently has no point`;
 
 const configDir = path.join(process.cwd(), "config");
 
