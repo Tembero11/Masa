@@ -1,4 +1,4 @@
-import { EventType } from "./Event";
+import Event, { AutosaveOffEvent, AutosaveOnEvent, DoneEvent, EventType, GameSaveEvent, PlayerJoinEvent, PlayerLeaveEvent, UnknownEvent } from "./Event";
 import Player from "./Player";
 
 export default class ConsoleReader {
@@ -14,6 +14,41 @@ export default class ConsoleReader {
     // These are true if their getters have been called
     private _joinedPlayerCalled: boolean = false;
     private _leftPlayerCalled: boolean = false;
+
+    /**
+     * The Date when the instance was made
+     */
+    private date: Date;
+
+    private isServerJoinable = false;
+
+    generateEvent(): Event {
+        if (this.isServerJoinable) {
+            if (this.isLeaveEvent && this.player) {
+                return new PlayerLeaveEvent(this.date, this.player);
+            }
+            if (this.isJoinEvent && this.player) {
+                return new PlayerJoinEvent(this.date, this.player);
+            }
+        }else if (this.isDoneMessage) {
+            return new DoneEvent(this.date);
+        }
+        
+        
+        if (this.isGameSaveEvent) {
+            return new GameSaveEvent(this.date);
+        }
+        if (this.isAutosaveOffEvent) {
+            return new AutosaveOffEvent(this.date);
+        }
+        if (this.isAutosaveOnEvent) {
+            return new AutosaveOnEvent(this.date);
+        }
+        
+
+
+        return new UnknownEvent(this.date);
+    }
 
     get eventType (): EventType {
         if (this._eventType) {
@@ -65,6 +100,10 @@ export default class ConsoleReader {
 
     private _message: string | undefined;
     
+
+    /**
+     * Returns data with only the message
+     */
     get message(): string {
         if (!this._message) {
             this._message = this.data.replace(/\[([A-Za-z0-9]|-|\/| ){1,}\]: /, "")
@@ -78,11 +117,21 @@ export default class ConsoleReader {
      * Only for manual saves
      */
     get isGameSaveEvent() {
-        return this.message.startsWith("Automatic saving is now disabled");
+        return this.message.startsWith("Saved the game");
+    }
+    
+    get isAutosaveOffEvent() {
+        return this.message.startsWith("Automatic saving is now disabled") || this.message.startsWith("Saving is already turned off");
     }
 
-    constructor(data: string) {
+    get isAutosaveOnEvent() {
+        return this.message.startsWith("Automatic saving is now enabled") || this.message.startsWith("Saving is already turned on");
+    }
+
+    constructor(data: string, isJoinable: boolean) {
+        this.isServerJoinable = isJoinable;
         this.data = data.replace(/\[[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}\] /, "");
+        this.date = new Date();
     }
 
 
