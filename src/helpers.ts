@@ -1,7 +1,7 @@
 import { Message, MessageEmbed } from "discord.js";
 import { client, config } from "../index";
 import path from "path";
-import { players, Presence } from "./serverHandler";
+import { server, Presence } from "./serverHandler";
 
 export const serverDir = path.join(process.cwd(), "server");
 
@@ -19,7 +19,7 @@ export const isAllowedChannel = (channelID: string) => {
   return false;
 }
 
-
+// TODO: Update server status
 
 export const setPresence = (presence: Presence) => {
   if (client && client.user) {
@@ -28,11 +28,11 @@ export const setPresence = (presence: Presence) => {
         let gameName = config["serverName"] || "Minecraft"
         let presenceName: string = gameName;
 
-        if (config["showPlayers"]) {
-          if (players.size === 1) {
-            presenceName = `${gameName} with ${Array.from(players.values())[0].username}`
-          }else if (players.size > 1) {
-            presenceName = `${gameName} with ${players.size} others`
+        if (config["showPlayers"] && server) {
+          if (server.playerCount === 1) {
+            presenceName = `${gameName} with ${gameName}`;
+          }else if (server.playerCount > 1) {
+            presenceName = `${gameName} with ${server.playerCount} others`;
           }
         }
 

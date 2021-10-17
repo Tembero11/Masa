@@ -20,7 +20,12 @@ export default class ServerCommunicator {
 
     private listeners: {[key: string]: ServerListener<any>[]} = {};
 
-    serverProcess;
+
+    stdout: internal.Readable;
+    stderr: internal.Readable;
+    stdin: internal.Writable;
+
+    hasProcess: boolean = false;
 
     events;
 
@@ -42,16 +47,22 @@ export default class ServerCommunicator {
         return this._isServerJoinable;
     }
 
-    constructor(serverProcess: ChildProcessWithoutNullStreams) {
-        this.serverProcess = serverProcess;
+    constructor(stdin: internal.Writable, stdout: internal.Readable, stderr: internal.Readable) {
+        this.stdin = stdin;
+        this.stdout = stdout;
+        this.stderr = stderr;
 
-        this.events = new ServerEventEmitter(serverProcess, this);
+        this.events = new ServerEventEmitter(this);
 
-        serverProcess.stdout.on("data", this.onMessage.bind(this));
+        this.addListeners();
 
         this.on("join", this.onJoin.bind(this));
         this.on("leave", this.onLeave.bind(this));
         this.on("done", this.onDone.bind(this));
+    }
+
+    private addListeners() {
+        this.stdout.on("data", this.onMessage.bind(this));
     }
 
     private onMessage(data: any) {
@@ -120,16 +131,14 @@ export default class ServerCommunicator {
      * Deletes all resources created by this instance
      */
     dispose() {
-        this.serverProcess.stdout.removeListener("data", this.onMessage)
+        this.stdout.removeListener("data", this.onMessage)
     }
 }
 
 // This contains all event emit functions
 class ServerEventEmitter {
-    private serverProcess;
     private communicator;
-    constructor(serverProcess: ChildProcessWithoutNullStreams, communicator: ServerCommunicator) {
-        this.serverProcess = serverProcess;
+    constructor(communicator: ServerCommunicator) {
         this.communicator = communicator;
     }
 
@@ -137,21 +146,21 @@ class ServerEventEmitter {
      * Manually save the game
      */
     async saveGame(): Promise<GameSaveEvent> {
-        this.serverProcess.stdin.write("save-all\n");
+        this.communicator.stdin.write("save-all\n");
 
         let event = await this.communicator.waitfor("save");
 
         return event;
     }
     async disableAutosave(): Promise<AutosaveOffEvent> {
-        this.serverProcess.stdin.write("save-off\n");
+        this.communicator.stdin.write("save-off\n");
 
         let event = await this.communicator.waitfor("autosaveOff");
 
         return event;
     }
     async enableAutosave(): Promise<AutosaveOnEvent> {
-        this.serverProcess.stdin.write("save-on\n");
+        this.communicator.stdin.write("save-on\n");
 
         let event = await this.communicator.waitfor("autosaveOn");
 

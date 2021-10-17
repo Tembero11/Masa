@@ -1,11 +1,10 @@
 import { spawn, ChildProcessWithoutNullStreams } from "child_process";
-import path from "path";
-import { client, config } from "../index";
+import { config } from "../index";
 import { serverDir, setPresence } from "./helpers";
-import axios from "axios";
 import {ConsoleReader, Player, Event} from "./classes/ConsoleAPI";
-import { read } from "fs";
 import ServerCommunicator from "./classes/ServerCommunicator";
+import GameServer from "./classes/GameServer";
+import GameServerArgumentBuilder from "./classes/GameServerArgumentBuilder";
 
 export let commandProcess: ChildProcessWithoutNullStreams | undefined;
 
@@ -24,20 +23,17 @@ export enum Presence {
   SERVER_OFFLINE = "Server is offline."
 }
 
+export let isServerJoinable = false;
+export let players = new Map();
 
 // new Player("Tembero").uuid.then(uuid => console.log(uuid)).catch((err) => console.error("Error"));
-
-/**
- * Is true if the server is joinable
- */
-export let isServerJoinable = false;
-// Contains all the currently online players
-export let players = new Map<string, Player>();
 
 export const cachedConsoleLines = 50;
 // Last lines printed to the server console
 export let lastLines: Array<string> = [];
 export let serverStatus: Presence = Presence.SERVER_OFFLINE;
+
+export let server: GameServer | undefined;
 
 export const start = () => {
   return new Promise<ServerStatus>((res, rej) => {
@@ -45,11 +41,32 @@ export const start = () => {
 
       commandProcess = spawn(config["command"], { shell: true, cwd: serverDir });
 
-      let server = new ServerCommunicator(commandProcess);
-      server.events.saveGame().then(when => console.log(when));
+      let command = new GameServerArgumentBuilder("server.jar", {
+        maxMem: "1024M",
+        minMem: "1024M",
+        noGUI: true
+      });
+      // GameServerArgumentBuilder.from("java -jar server.jar");
+      server = new GameServer(command, serverDir);
 
       serverStatus = Presence.SERVER_STARTING;
       setPresence(serverStatus);
+
+      server.waitfor("done").then((e) => {
+        serverStatus = Presence.SERVER_ONLINE;
+
+        res(ServerStatus.SERVER_STARTED);
+      });
+
+      server.on("join", (e) => {
+        // Update the presence
+        setPresence(serverStatus);
+      });
+
+      server.on("leave", (e) => {
+        // Update the presence
+        setPresence(serverStatus);
+      });
 
 
       commandProcess.stdout.on("data", (d: any) => {
@@ -62,44 +79,8 @@ export const start = () => {
         
         lastLines.push(data);
 
-        let reader = new ConsoleReader(data);
 
-        // Check for the done message
-        if (!isServerJoinable) {
-          let result = reader.isDoneMessage;
-          if (result) {
-            isServerJoinable = true;
-
-            serverStatus = Presence.SERVER_ONLINE;
-            setPresence(serverStatus);
-
-            res(ServerStatus.SERVER_STARTED);
-          }
-        } else {
-          // check if the message was someone joining
-          if (reader.isJoinEvent) {
-            // Add a player to the players list if they joined
-            let player = reader.player as Player;
-            players.set(player.username, player);
-
-            // Update the presence
-            setPresence(serverStatus);
-          }else if(reader.isLeaveEvent) {
-            // Check if the message was someone leaving
-            if (reader.isLeaveEvent) {
-  
-              // Remove a player from the players list if they left
-              let player = reader.player as Player;
-              players.delete(player.username);
-  
-              // Update the presence
-              setPresence(serverStatus);
-            }
-          }
-        }
-
-        
-
+        // Forward the stdout to the console
         process.stdout.write(`[${commandProcess?.pid || ""}]${data}`);
       });
 
@@ -118,10 +99,6 @@ export const start = () => {
           rej(ServerStatus.SERVER_CRASHED);
         }
 
-        isServerJoinable = false;
-
-        players.clear();
-
 
 
         console.log(`Server closed with code ${code}`);
@@ -131,6 +108,12 @@ export const start = () => {
 }
 
 export const stop = async (): Promise<ServerStatus> => {
+  if (server) {
+    await server.stop();
+    return ServerStatus.SERVER_STOPPED;
+  }else {
+    return ServerStatus.SERVER_ALREADY_OFFLINE;
+  }
   return new Promise<ServerStatus>((res, rej) => {
     if (commandProcess) {
       serverStatus = Presence.SERVER_STOPPING;
@@ -158,9 +141,9 @@ export const restart = async (): Promise<ServerStatus> => {
 
 export const getSeed = () => {
   return new Promise<number[]>((res, rej) => {
-    if (commandProcess && isServerJoinable) {
+    if (commandProcess && server && server.isJoinable) {
       const listener = (d: any) => {
-        let reader = new ConsoleReader(d.toString());
+        let reader = new ConsoleReader(d.toString(), true);
   
         if (reader.isInfo) {
           let isSeed = reader.message.search(/Seed: \[[a-zA-Z0-9\-]{1,}\]/) > -1;

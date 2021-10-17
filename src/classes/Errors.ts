@@ -4,3 +4,9 @@ export class NoListenersError extends Error {
     this.name = "NoListenersError";
   }
 }
+export class InvalidGameServerCommandError extends Error {
+  constructor() {
+    super("The command provided was invalid");
+    this.name = "InvalidGameServerCommandError";
+  }
+}
