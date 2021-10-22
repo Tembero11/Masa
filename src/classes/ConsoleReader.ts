@@ -3,7 +3,7 @@ import Player from "./Player";
 
 export default class ConsoleReader {
     // The original data without the time in the beginning
-    private readonly data: string;
+    readonly data: string;
 
     private _isInfo: boolean | undefined;
 
@@ -22,32 +22,31 @@ export default class ConsoleReader {
 
     private isServerJoinable = false;
 
-    generateEvent(): Event {
+    generateEvent(): Event[] {
+        let events: Event[] = [];
+
         if (this.isServerJoinable) {
             if (this.isLeaveEvent && this.player) {
-                return new PlayerLeaveEvent(this.date, this.player);
-            }
-            if (this.isJoinEvent && this.player) {
-                return new PlayerJoinEvent(this.date, this.player);
+                events.push(new PlayerLeaveEvent(this.date, this.player));
+            }else if (this.isJoinEvent && this.player) {
+                events.push(new PlayerJoinEvent(this.date, this.player));
             }
         }else if (this.isDoneMessage) {
-            return new DoneEvent(this.date);
+            events.push(new DoneEvent(this.date));
         }
         
         
         if (this.isGameSaveEvent) {
-            return new GameSaveEvent(this.date);
+            events.push(new GameSaveEvent(this.date));
         }
         if (this.isAutosaveOffEvent) {
-            return new AutosaveOffEvent(this.date);
+            events.push(new AutosaveOffEvent(this.date));
         }
         if (this.isAutosaveOnEvent) {
-            return new AutosaveOnEvent(this.date);
+            events.push(new AutosaveOnEvent(this.date));
         }
-        
 
-
-        return new UnknownEvent(this.date);
+        return [...(events.length === 0 ? [new UnknownEvent(this.date)] : events)];
     }
 
     get eventType (): EventType {

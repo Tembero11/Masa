@@ -1,9 +1,11 @@
 import { ChildProcessWithoutNullStreams } from "child_process";
-import internal from "stream";
+import assert from "assert";
+import internal, { EventEmitter, Readable, Writable } from "stream";
 import {ConsoleReader} from "./ConsoleAPI";
-import { NoListenersError } from "./Errors";
+import { NoListenersError, NoStandardStreamsError } from "./Errors";
 import Event, { AutosaveOffEvent, AutosaveOnEvent, DoneEvent, GameSaveEvent, PlayerJoinEvent, PlayerLeaveEvent, ServerEvent, UnknownEvent } from "./Event";
 import Player from "./Player";
+import { StandardEmitter } from "./StandardEmitter";
 
 type ServerEventListener<T extends Event> = (event: T) => void;
 
@@ -21,11 +23,13 @@ export default class ServerCommunicator {
     private listeners: {[key: string]: ServerListener<any>[]} = {};
 
 
-    stdout: internal.Readable;
-    stderr: internal.Readable;
-    stdin: internal.Writable;
-
-    hasProcess: boolean = false;
+    protected _stdout: Readable | null;
+    protected _stderr: Readable | null;
+    protected _stdin: Writable | null;
+    /**
+     * @description contains all the standard streams
+     */
+    std: StandardEmitter;
 
     events;
 
@@ -42,31 +46,56 @@ export default class ServerCommunicator {
         return this._players.size;
     }
 
-    private _isServerJoinable: boolean = false;
+    protected _isServerJoinable: boolean = false;
     get isJoinable() {
         return this._isServerJoinable;
     }
+    get hasStreams(): boolean {
+        return this._stdin == null && this._stdout == null && this._stderr == null;
+    }
 
-    constructor(stdin: internal.Writable, stdout: internal.Readable, stderr: internal.Readable) {
-        this.stdin = stdin;
-        this.stdout = stdout;
-        this.stderr = stderr;
+    constructor(stdin: Writable | null, stdout: Readable | null, stderr: Readable | null) {
+        this._stdin = stdin;
+        this._stdout = stdout;
+        this._stderr = stderr;
+
+        this.std = new StandardEmitter();
+        // Redirect std.emit("in") to _stdin.write
+        this.std.on("in", e => this._stdin?.write(e));
+        
+
+        if (this._stdin && this._stdout && this._stderr) {
+            this.reload();
+        }
 
         this.events = new ServerEventEmitter(this);
-
-        this.addListeners();
 
         this.on("join", this.onJoin.bind(this));
         this.on("leave", this.onLeave.bind(this));
         this.on("done", this.onDone.bind(this));
     }
 
-    private addListeners() {
-        this.stdout.on("data", this.onMessage.bind(this));
+    /**
+     * This should get called when the any of the server standard streams have been reassigned
+     */
+    protected reload() {
+        assert(this._stdout && this._stderr, new NoStandardStreamsError(["stdout", "stderr"]));
+        this._isServerJoinable = false;
+        this._stdout.on("data", this.onMessage.bind(this));
+        this._stderr.on("data", this.onError.bind(this));
+    }
+
+    private onError(data: any) {
+        this.std.emit("err", data.toString());
     }
 
     private onMessage(data: any) {
-        this.notifyListeners(new ConsoleReader(data.toString(), this._isServerJoinable).generateEvent()); 
+        let reader = new ConsoleReader(data.toString(), this._isServerJoinable);
+        // Notify the stdout EventEmitter
+        this.std.emit("out", reader);
+        reader.generateEvent().forEach((event) => {
+            this.notifyListeners(event);
+        });
     }
     private onJoin(e: PlayerJoinEvent) {
         this._players.set(e.player.username, e.player);
@@ -83,6 +112,8 @@ export default class ServerCommunicator {
         if (!(event.type in this.listeners)) this.listeners[event.type] = [];
 
         this.listeners[event.type].forEach(e => e.listener(event));
+
+        this.listeners["data"].forEach(e => e.listener(event));
     }
 
 
@@ -117,6 +148,17 @@ export default class ServerCommunicator {
     }
 
     /**
+     * The event listener gets removed after the first occurrence of this event
+     * @param event The type of the event
+     * @param listener The listener called once the event occurs
+     */
+    once<T extends keyof ServerEvent>(event: T, listener: ServerEventListener<ServerEvent[T]>) {
+        if (!(event in this.listeners)) this.listeners[event] = [];
+
+        this.waitfor(event).then(listener);
+    }
+
+    /**
      * 
      * @param event The type of the event
      * @param listener The listener called everytime the event occurs
@@ -131,7 +173,9 @@ export default class ServerCommunicator {
      * Deletes all resources created by this instance
      */
     dispose() {
-        this.stdout.removeListener("data", this.onMessage)
+        if (this._stdout) {
+            this._stdout.removeListener("data", this.onMessage);
+        }
     }
 }
 
@@ -146,21 +190,24 @@ class ServerEventEmitter {
      * Manually save the game
      */
     async saveGame(): Promise<GameSaveEvent> {
-        this.communicator.stdin.write("save-all\n");
+        assert(this.communicator.hasStreams, new NoStandardStreamsError());
+        this.communicator.std.emit("in", "save-all\n");
 
         let event = await this.communicator.waitfor("save");
 
         return event;
     }
     async disableAutosave(): Promise<AutosaveOffEvent> {
-        this.communicator.stdin.write("save-off\n");
+        assert(this.communicator.hasStreams, new NoStandardStreamsError());
+        this.communicator.std.emit("in", "save-off\n");
 
         let event = await this.communicator.waitfor("autosaveOff");
 
         return event;
     }
     async enableAutosave(): Promise<AutosaveOnEvent> {
-        this.communicator.stdin.write("save-on\n");
+        assert(this.communicator.hasStreams, new NoStandardStreamsError());
+        this.communicator.std.emit("in", "save-on\n");
 
         let event = await this.communicator.waitfor("autosaveOn");
 

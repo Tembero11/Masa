@@ -16,6 +16,8 @@ export enum EventType {
      * The event was not detected
      */
     UnknownEvent = "event",
+
+    DataEvent = "data",
     /**
      * The event when a player joins the server
      */
@@ -56,6 +58,7 @@ export class UnknownEvent extends Event {
         this.date = date;
     }
 }
+
 
 export class PlayerJoinEvent extends Event {
     readonly date: Date;
