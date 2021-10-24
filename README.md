@@ -50,7 +50,9 @@ to start the bot.
 To add your own server please create (if doesn't exist) a folder called "server". Here you need to add your own server file.
 **Note**: MASA cannot run the server if the eula is not accepeted.
 
-## Planned Features
+## Planned Features before 1.0
+- [ ] Add a server installer
+- [ ] Add chat streaming to Discord & log to discord also make commands internal server command runnable from discord
 - [ ] Add a build script
 - [ ] Add a better way to see and interact with the server console
 - [ ] Make the bot easier to install
