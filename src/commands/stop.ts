@@ -1,6 +1,6 @@
 import  { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { getDefaultCommandEmbed } from "../helpers";
+import { generateButtonRow, getDefaultCommandEmbed } from "../helpers";
 import Command from "./general";
 import * as ServerHandler from "../serverHandler";
 import assert from "assert";
@@ -32,7 +32,7 @@ export class StopCommand extends Command {
         await ServerHandler.stop(serverName);
 
         embed.setDescription(`**${serverName}** stopped succesfully!`);
-        await interaction.editReply({embeds: [embed]});
+        await interaction.editReply({embeds: [embed], components: [generateButtonRow(serverName, server)]});
       }else {
         embed.setDescription(`**${serverName}** is already offline!\n\n *Did you mean /start?*`);
         await interaction.reply({ embeds: [embed] });

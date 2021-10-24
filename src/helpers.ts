@@ -1,4 +1,4 @@
-import {  MessageEmbed } from "discord.js";
+import {  MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import { client, config } from "../index";
 import path from "path";
 import { Presence } from "./serverHandler";
@@ -18,6 +18,24 @@ export const isAllowedChannel = (channelID: string) => {
   return false;
 }
 
+export const generateButtonRow = (serverName: string, server: GameServer) => {
+  return new MessageActionRow().addComponents([
+    new MessageButton()
+    .setCustomId(`server_start:${serverName}`)
+    .setLabel("Start")
+    .setStyle("PRIMARY")
+    .setDisabled(server.hasStreams),
+    new MessageButton()
+    .setCustomId(`server_stop:${serverName}`)
+    .setLabel("Stop")
+    .setStyle("DANGER")
+    .setDisabled(!server.hasStreams),
+    new MessageButton()
+    .setCustomId(`server_restart:${serverName}`)
+    .setLabel("Restart")
+    .setStyle("DANGER")
+  ]);
+}
 
 
 // TODO: add support for channel names

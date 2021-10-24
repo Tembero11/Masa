@@ -1,10 +1,10 @@
-import Discord, { CommandInteraction, Intents } from "discord.js";
+import Discord, { CommandInteraction, Intents, MessageEmbed } from "discord.js";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
 import fs from "fs";
 import path from "path";
-import { isAllowedChannel, setPresence } from "./src/helpers";
-import { Presence } from "./src/serverHandler";
+import { getDefaultCommandEmbed, isAllowedChannel, setPresence } from "./src/helpers";
+import { Presence, start, stop, restart, servers } from "./src/serverHandler";
 import setup from "./src/setup";
 import { CONFIG_TYPE, createConfig, DefaultConfig, loadConfig } from "./src/config";
 import commands from "./src/commands/commands";
@@ -51,6 +51,7 @@ client.once("ready", () => {
   }
 });
 
+// For messages
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
 
@@ -59,6 +60,45 @@ client.on("interactionCreate", async (interaction) => {
   let command = commands.get(interaction.commandName);
   if (command) {
     command.handler(interaction);
+  }
+});
+// For buttons
+client.on("interactionCreate", async (interaction) => {
+  if (!interaction.isButton()) return;
+
+  let id = interaction.customId;
+
+  let action = id.split(":")[0];
+  let serverName = id.split(":")[1];
+
+  let embed = new MessageEmbed();
+
+  if (action && serverName) {
+    let server = servers.get(serverName);
+    if (server) {
+      switch (action) {
+        case "server_start":
+          await interaction.deferReply({ephemeral: true});
+          await start(serverName);
+          embed.setDescription(`**${serverName}** started succesfully!`);
+          await interaction.editReply({embeds: [embed]});
+          break;
+        case "server_stop":
+          await interaction.deferReply({ephemeral: true});
+          await stop(serverName);
+          embed.setDescription(`**${serverName}** stopped succesfully!`);
+          await interaction.editReply({embeds: [embed]});
+          break;
+        case "server_restart":
+          await interaction.deferReply({ephemeral: true});
+          await restart(serverName);
+          embed.setDescription(`**${serverName}** restarted succesfully!`);
+          await interaction.editReply({embeds: [embed]});
+          break;
+        default:
+          break;
+      }
+    }
   }
 });
 

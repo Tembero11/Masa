@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction, MessageEmbed } from "discord.js";
-import { getDefaultCommandEmbed } from "../helpers";
+import { generateButtonRow, getDefaultCommandEmbed } from "../helpers";
 import Command from "./general";
 import * as ServerHandler from "../serverHandler";
 import assert from "assert";
@@ -33,7 +33,7 @@ export class StartCommand extends Command {
 
         await ServerHandler.start(serverName);
         embed.setDescription(`**${serverName}** started succesfully!`);
-        await interaction.editReply({ embeds: [embed] });
+        await interaction.editReply({ embeds: [embed], components: [generateButtonRow(serverName, server)] });
       }
     } catch (err) {
       console.error(err);
