@@ -3,7 +3,7 @@ import path from "path";
 import { config } from "../index";
 import * as fse from "fs-extra";
 import { ConsoleColor, createDateTimeString, DateString, parseDateTimeString, serverDir } from "./helpers";
-import { commandProcess, isServerJoinable } from "./serverHandler";
+import {  isServerJoinable } from "./serverHandler";
 
 export const BACKUP_TYPE = {
     UserBackup: path.join(process.cwd(), "user_backups"),
@@ -47,27 +47,27 @@ export const createNewBackup = async (dir: string, isAutomatic = false, backupLi
         // Make backups zip or tar.gz files
         // Only copy files that have been edited
 
-        return new Promise<string>((res, rej) => {
-            // Save everything & Stop the locking of the files
-            commandProcess?.stdin.write("save-all\nsave-off\n", (err) => {
-                if (!err) {
-                    setTimeout(() => {
-                        fse.copy(serverDir, path.join(dir, backupName)).then(() => {
-                            // Turn on saving again
-                            commandProcess?.stdin.write("save-on\n", (err) => {
-                                if (!err) {
-                                    res(backupName);
-                                }else {
-                                    rej(err);
-                                }
-                            });
-                        }); 
-                    }, 9999);
-                }else {
-                    rej(err);
-                }
-            });
-        });
+        // return new Promise<string>((res, rej) => {
+        //     // Save everything & Stop the locking of the files
+        //     commandProcess?.stdin.write("save-all\nsave-off\n", (err) => {
+        //         if (!err) {
+        //             setTimeout(() => {
+        //                 fse.copy(serverDir, path.join(dir, backupName)).then(() => {
+        //                     // Turn on saving again
+        //                     commandProcess?.stdin.write("save-on\n", (err) => {
+        //                         if (!err) {
+        //                             res(backupName);
+        //                         }else {
+        //                             rej(err);
+        //                         }
+        //                     });
+        //                 }); 
+        //             }, 9999);
+        //         }else {
+        //             rej(err);
+        //         }
+        //     });
+        // });
     }else {
         throw "Server is not joinable.";
     }
