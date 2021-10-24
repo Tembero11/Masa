@@ -11,16 +11,20 @@ clientID: ''
 # The Discord server's id
 guildID: ''
 
-# the command that starts the server. This runs inside the server folder
-command: 'java -Xmx1024M -Xms1024M -jar server.jar nogui'
-# The bot prefix, eg. /server start
-prefix: '/server '
+servers:
+    # The name of the minecraft server
+  - name: 'example server'
+    description: 'an awesome server'
+    # The command that starts the server. This runs inside the server folder
+    command: 'java -Xmx1024M -Xms1024M -jar server.jar nogui'
+    # The directory where the server files are
+    directory: '~/server'
 
 # A list of allowed channels that the bot can respond to
 allowedChannels:
-- '868036579384524811'
-# The name of the minecraft server
-serverName: server
+- '868036689384524811'
+
+
 # A hex color value for the Discord embeds
 embedColor: "#5800fc"
 
@@ -39,18 +43,80 @@ backup:
 
 # Whether to show online data about the players
 showPlayers: true
-
-# a list of messages sent when running the easteregg command.
-easteregg:
-  - ":egg:"
 `;
 
+export interface ServerMetadata {
+  /**
+   * The name of the minecraft server
+   */
+  name: string
+  description: string
+  /**
+   * the command that starts the server. This runs inside the server folder
+   */
+  command: string
+  /**
+   * The directory where the server files are
+   */
+  directory: string
+}
+
+export interface DefaultConfig {
+  /**
+   * the token for the bot
+   */
+  token: string
+  /**
+   * The apps clientID
+   */
+  clientID: string
+  /**
+   * The Discord server's id
+   */
+  guildID: string
+
+  servers: ServerMetadata[]
+  /**
+   * A list of allowed channels that the bot can respond to
+   */
+  allowedChannels: string[]
+  /**
+   * A hex color value for the Discord embeds
+   */
+  embedColor: string
+  /**
+   * whether to show world seed
+   */
+  showWorldSeeds: boolean
+  backup: {
+    /**
+     * true if backups are enabled
+     */
+    useBackups: boolean
+    /**
+     * true if users can create backups
+     */
+    userBackups: boolean
+    /**
+     * The maximum amount of backups at once
+     */
+    backupLimit: number
+    /**
+     * Create automatic backups every x minutes. If less than 1 automatic backups will get disabled.
+     */
+    automaticBackups: number
+  }
+  /**
+   * Whether to show online data about the players
+   */
+  showPlayers: boolean
+}
 
 export const developerConfig = `# This file currently has no point`;
 
 const configDir = path.join(process.cwd(), "config");
 
-export const CONFIG_TYPE: { [key: string]: { default: string, path: string } } = {
+export const CONFIG_TYPE = {
   General: {
     path: path.join(configDir, "config.yml"),
     default: defaultConfig,
@@ -74,7 +140,7 @@ export const createConfig = async () => {
 
   for (const key in CONFIG_TYPE) {
     if (Object.prototype.hasOwnProperty.call(CONFIG_TYPE, key)) {
-      const config = CONFIG_TYPE[key];
+      const config = CONFIG_TYPE[key as "General" | "Developer"];
       if (!fs.existsSync(config.path)) {
         await fs.promises.writeFile(config.path, config.default, { encoding: "utf-8" });
         result = true;
@@ -86,6 +152,6 @@ export const createConfig = async () => {
 }
 
 
-export const loadConfig = (dir: string) => {
-  return yaml.load(fs.readFileSync(dir, { encoding: "utf-8" })) as Object;
+export const loadConfig = <T extends "General" | "Developer">(type: T): T extends "General" ? DefaultConfig : any => {
+  return yaml.load(fs.readFileSync(CONFIG_TYPE[type].path, { encoding: "utf-8" })) as any;
 }
