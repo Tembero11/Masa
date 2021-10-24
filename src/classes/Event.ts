@@ -1,7 +1,7 @@
 import ConsoleReader from "./ConsoleReader";
 import Player from "./Player";
 
-export interface ServerEvent {
+export interface CommunicatorEvent {
     event: UnknownEvent,
     join: PlayerJoinEvent,
     leave: PlayerLeaveEvent,
@@ -9,6 +9,7 @@ export interface ServerEvent {
     save: GameSaveEvent
     autosaveOff: AutosaveOffEvent,
     autosaveOn: AutosaveOnEvent,
+    close: CloseEvent
 }
 
 export enum EventType {
@@ -30,6 +31,7 @@ export enum EventType {
      * When the server fully loads and is joinable.
      */
     DoneEvent = "done",
+    CloseEvent = "close",
     /**
      * When the server fully loads and is joinable.
      */
@@ -117,13 +119,11 @@ export class AutosaveOffEvent extends Event {
     }
 }
 
-// export class DataEvent extends Event {
-//     readonly date: Date;
-//     readonly type = EventType.DataEvent;
-//     readonly reader;
-//     constructor(reader: ConsoleReader, date: Date) {
-//         super();
-//         this.date = date;
-//         this.reader = reader;
-//     }
-// }
+export class CloseEvent extends Event {
+    readonly date: Date;
+    readonly type = EventType.CloseEvent;
+    constructor(date: Date) {
+        super();
+        this.date = date;
+    }
+}

@@ -19,7 +19,7 @@ export default class GameServer extends ServerCommunicator {
    * @param command 
    * @param directory The directory in which the command is run
    */
-  constructor(command: GameServerArgumentBuilder, directory: string) {
+  constructor(command: string, directory: string) {
     super(null, null, null);
 
 
@@ -39,11 +39,14 @@ export default class GameServer extends ServerCommunicator {
     // Add listeners for handling server closing
     this.serverProcess.on("close", (code) => {
       this._isServerJoinable = false;
+      this._stdin = null;
+      this._stdout = null;
+      this._stdin = null;
     });
   }
 
-  static spawn(command: GameServerArgumentBuilder, dir: string) {
-    return spawn(command.toString(), { shell: true, cwd: dir })
+  static spawn(command: string, dir: string) {
+    return spawn(command, { shell: true, cwd: dir })
   }
 
   /**
@@ -55,6 +58,7 @@ export default class GameServer extends ServerCommunicator {
     return new Promise((res, rej) => {
       assert(this._stdin && this.serverProcess, new NoStandardStreamsError("stdin"));
       this.serverProcess.once("close", (code) => {
+        this.serverProcess = null;
         res(code);
       });
       this._stdin.write("stop\n");
@@ -70,6 +74,7 @@ export default class GameServer extends ServerCommunicator {
     return new Promise((res, rej) => {
       assert(this.serverProcess, new NoStandardStreamsError());
       this.serverProcess.once("close", (code) => {
+        this.serverProcess = null;
         res(code);
       });
       this.serverProcess.kill(signal || "SIGQUIT"); 

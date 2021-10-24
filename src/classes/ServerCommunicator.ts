@@ -3,11 +3,11 @@ import assert from "assert";
 import internal, { EventEmitter, Readable, Writable } from "stream";
 import {ConsoleReader} from "./ConsoleAPI";
 import { NoListenersError, NoStandardStreamsError } from "./Errors";
-import Event, { AutosaveOffEvent, AutosaveOnEvent, DoneEvent, GameSaveEvent, PlayerJoinEvent, PlayerLeaveEvent, ServerEvent, UnknownEvent } from "./Event";
+import Event, { AutosaveOffEvent, AutosaveOnEvent, DoneEvent, GameSaveEvent, PlayerJoinEvent, PlayerLeaveEvent, CommunicatorEvent, UnknownEvent, CloseEvent } from "./Event";
 import Player from "./Player";
 import { StandardEmitter } from "./StandardEmitter";
 
-type ServerEventListener<T extends Event> = (event: T) => void;
+type CommunicatorEventListener<T extends Event> = (event: T) => void;
 
 /**
  * Player name alias for readability
@@ -51,7 +51,7 @@ export default class ServerCommunicator {
         return this._isServerJoinable;
     }
     get hasStreams(): boolean {
-        return this._stdin == null && this._stdout == null && this._stderr == null;
+        return this._stdin != null && this._stdout != null && this._stderr != null;
     }
 
     constructor(stdin: Writable | null, stdout: Readable | null, stderr: Readable | null) {
@@ -68,7 +68,7 @@ export default class ServerCommunicator {
             this.reload();
         }
 
-        this.events = new ServerEventEmitter(this);
+        this.events = new CommunicatorEventEmitter(this);
 
         this.on("join", this.onJoin.bind(this));
         this.on("leave", this.onLeave.bind(this));
@@ -76,13 +76,14 @@ export default class ServerCommunicator {
     }
 
     /**
-     * This should get called when the any of the server standard streams have been reassigned
+     * @description This should get called when the any of the server standard streams have been reassigned
      */
     protected reload() {
         assert(this._stdout && this._stderr, new NoStandardStreamsError(["stdout", "stderr"]));
         this._isServerJoinable = false;
         this._stdout.on("data", this.onMessage.bind(this));
         this._stderr.on("data", this.onError.bind(this));
+        this._stdout.on("end", () => this.notifyListeners(new CloseEvent(new Date())));
     }
 
     private onError(data: any) {
@@ -112,8 +113,6 @@ export default class ServerCommunicator {
         if (!(event.type in this.listeners)) this.listeners[event.type] = [];
 
         this.listeners[event.type].forEach(e => e.listener(event));
-
-        this.listeners["data"].forEach(e => e.listener(event));
     }
 
 
@@ -122,23 +121,23 @@ export default class ServerCommunicator {
      * @param event The type of the event
      * @param listener The listener called everytime the event occurs
      */
-    on<T extends keyof ServerEvent>(event: T, listener: ServerEventListener<ServerEvent[T]>) {
+    on<T extends keyof CommunicatorEvent>(event: T, listener: CommunicatorEventListener<CommunicatorEvent[T]>) {
         if (!(event in this.listeners)) this.listeners[event] = [];
         this.listeners[event].push(new ServerListener(event, listener));
     }
 
-    // waitfor<T extends keyof ServerEvent>(event: T): Promise<ServerEvent[T]>;
-    // waitfor<T extends keyof ServerEvent>(event: T, callback: ServerEventListener<ServerEvent[T]>): void;
+    // waitfor<T extends keyof CommunicatorEvent>(event: T): Promise<CommunicatorEvent[T]>;
+    // waitfor<T extends keyof CommunicatorEvent>(event: T, callback: CommunicatorEventListener<CommunicatorEvent[T]>): void;
 
     /**
      * Only listens for the first instance of the event provided
      * @param event The event to listen for
      */
-    waitfor<T extends keyof ServerEvent>(event: T): Promise<ServerEvent[T]> {
+    waitfor<T extends keyof CommunicatorEvent>(event: T): Promise<CommunicatorEvent[T]> {
         if (!(event in this.listeners)) this.listeners[event] = [];
 
-        return new Promise<ServerEvent[T]>((res) => {
-            const listener = (e: ServerEvent[T]) => {
+        return new Promise<CommunicatorEvent[T]>((res) => {
+            const listener = (e: CommunicatorEvent[T]) => {
                 this.listeners[event].splice(index);
                 res(e)
             }
@@ -152,7 +151,7 @@ export default class ServerCommunicator {
      * @param event The type of the event
      * @param listener The listener called once the event occurs
      */
-    once<T extends keyof ServerEvent>(event: T, listener: ServerEventListener<ServerEvent[T]>) {
+    once<T extends keyof CommunicatorEvent>(event: T, listener: CommunicatorEventListener<CommunicatorEvent[T]>) {
         if (!(event in this.listeners)) this.listeners[event] = [];
 
         this.waitfor(event).then(listener);
@@ -164,7 +163,7 @@ export default class ServerCommunicator {
      * @param listener The listener called everytime the event occurs
      * @throws {NoListenersError} if called when no listeners where created earlier 
      */
-    removeListener<T extends keyof ServerEvent>(event: T, listener: ServerListener<T>) {
+    removeListener<T extends keyof CommunicatorEvent>(event: T, listener: ServerListener<T>) {
         if (!(event in this.listeners)) throw new NoListenersError();
         this.listeners[event] = this.listeners[event].filter(e => e !== listener);
     }
@@ -180,7 +179,7 @@ export default class ServerCommunicator {
 }
 
 // This contains all event emit functions
-class ServerEventEmitter {
+class CommunicatorEventEmitter {
     private communicator;
     constructor(communicator: ServerCommunicator) {
         this.communicator = communicator;
@@ -215,10 +214,10 @@ class ServerEventEmitter {
     }
 }
 
-class ServerListener<T extends keyof ServerEvent> {
+class ServerListener<T extends keyof CommunicatorEvent> {
     listener;
     event: T;
-    constructor(event: T, listener: ServerEventListener<ServerEvent[T]>) {
+    constructor(event: T, listener: CommunicatorEventListener<CommunicatorEvent[T]>) {
         this.listener = listener;
         this.event = event;
     }

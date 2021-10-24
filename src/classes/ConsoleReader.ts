@@ -110,7 +110,9 @@ export default class ConsoleReader {
         return this._message;
     }
 
-    get isDoneMessage() { return this.data.search(/Done \(.{1,}\)\!/) > -1; }
+    get isDoneMessage() { 
+        return this.data.search(/Done \(.{1,}\)\!/) > -1;
+    }
 
     /**
      * Only for manual saves
@@ -183,7 +185,7 @@ export default class ConsoleReader {
 
             if (matches && matches[0]) {
                 let match = matches[0];
-                let usernameMatches = match.match(/^([a-zA-Z0-9]|_){3,16}\[/);
+                let usernameMatches = match.match(/([a-zA-Z0-9]|_){3,16}\[/);
 
                 if (usernameMatches && usernameMatches[0]) {
                     let username = usernameMatches[0].substr(0, usernameMatches[0].length - 1);
