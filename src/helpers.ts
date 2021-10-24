@@ -1,13 +1,12 @@
-import { Message, MessageEmbed } from "discord.js";
+import {  MessageEmbed } from "discord.js";
 import { client, config } from "../index";
 import path from "path";
-import { server, Presence } from "./serverHandler";
+import { Presence } from "./serverHandler";
+import GameServer from "./classes/GameServer";
+import assert from "assert";
 
 export const serverDir = path.join(process.cwd(), "server");
 
-export const withoutPrefix = (content: string) => content.substr(config["prefix"].length);
-
-export const usesPrefix = (content: string) => content.startsWith(config["prefix"]);
 
 export const isAllowedChannel = (channelID: string) => {
   for (const allowedChannel of config["allowedChannels"]) {
@@ -19,71 +18,91 @@ export const isAllowedChannel = (channelID: string) => {
   return false;
 }
 
-// TODO: Update server status
+
+
+// TODO: add support for channel names
+export const setServerStatus = (serverName: string, server: GameServer, status: Presence, usePresence: boolean = true) => {
+  assert(client.user);
+  // let channel = client.channels.cache.find((channel) => channel.id == channelID);
+
+  switch (status) {
+    case Presence.SERVER_ONLINE:
+      let presenceName: string = serverName;
+
+      if (config["showPlayers"]) {
+        if (server.playerCount === 1) {
+          presenceName = `${serverName} with ${server.playersArray[0].username}`;
+        }else if (server.playerCount > 1) {
+          presenceName = `${serverName} with ${server.playerCount} others`;
+        }
+      }
+
+      if (usePresence) {
+        client.user.setPresence({
+          status: "online",
+          activities: [
+            {
+              type: "PLAYING",
+              name: presenceName
+            },
+          ]
+        });
+      }
+      // TODO Add status as channel names
+      break;
+    
+    case Presence.SERVER_STARTING:
+      
+      client.user.setPresence({
+        status: "dnd",
+        activities: [
+          {
+            type: "WATCHING",
+            name: `${serverName} is starting...`
+          },
+        ]
+      });
+      // TODO Add status as channel names
+      break;
+    
+    case Presence.SERVER_STOPPING:
+      client.user.setPresence({
+        status: "dnd",
+        activities: [
+          {
+            type: "WATCHING",
+            name: `${serverName} is stopping...`
+          },
+        ]
+      });
+      // TODO Add status as channel names
+      break;
+  
+    default:
+
+      client.user.setPresence({
+        status: "idle",
+        activities: [
+          {
+            type: "LISTENING",
+            name: `${serverName} is offline!`
+          },
+        ]
+      });
+
+      break;
+  }
+}
 
 export const setPresence = (presence: Presence) => {
   if (client && client.user) {
-    switch (presence) {
-      case Presence.SERVER_ONLINE:
-        let gameName = config["serverName"] || "Minecraft"
-        let presenceName: string = gameName;
-
-        if (config["showPlayers"] && server) {
-          if (server.playerCount === 1) {
-            presenceName = `${gameName} with ${gameName}`;
-          }else if (server.playerCount > 1) {
-            presenceName = `${gameName} with ${server.playerCount} others`;
-          }
-        }
-
-        // client.user.setPresence({
-        //   status: "online",
-        //   activity: {
-        //     type: "PLAYING",
-        //     name: presenceName
-        //   },
-        // });
-        break;
-      
-      case Presence.SERVER_STARTING:
-        // client.user.setPresence({
-        //   status: "dnd",
-        //   activity: {
-        //     type: "WATCHING",
-        //     name: `${config["serverName"] || "Server"} is starting...`
-        //   },
-        // });
-        break;
-      
-      case Presence.SERVER_STOPPING:
-        // client.user.setPresence({
-        //   status: "dnd",
-        //   activity: {
-        //     type: "WATCHING",
-        //     name: `${config["serverName"] || "Server"} is stopping...`
-        //   },
-        // });
-        break;
     
-      default:
-
-        // client.user.setPresence({
-        //   status: "idle",
-        //   activity: {
-        //     type: "LISTENING",
-        //     name: `${config["serverName"] || "Server"} is offline!`
-        //   },
-        // });
-
-        break;
-    }
   }
 }
 
 
 export const getDefaultCommandEmbed = (authorName: string, avatarURL?: string | null) => {
   return new MessageEmbed()
-      .setColor(config["embedColor"] || "#5800fc")
       .setAuthor(authorName, avatarURL || undefined);
 }
 
