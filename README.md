@@ -51,6 +51,7 @@ To add your own server please create (if doesn't exist) a folder called "server"
 **Note**: MASA cannot run the server if the eula is not accepeted.
 
 ## Planned Features before 1.0
+- [ ] Add buttons to the command results
 - [ ] Add a server installer
 - [ ] Add chat streaming to Discord & log to discord also make commands internal server command runnable from discord
 - [ ] Add a build script
