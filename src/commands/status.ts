@@ -18,27 +18,27 @@ export class StatusCommand extends Command {
 
     embed.setTitle("Server Status");
 
-    if (ServerHandler.isServerJoinable) {
-      embed.setDescription("All systems operational :green_circle:");
-    } else if (!ServerHandler.commandProcess) {
-      embed.setDescription(`${config["serverName"] || "Server"} is currenly offline :red_circle:`);
-    } else if (ServerHandler.serverStatus === ServerHandler.Presence.SERVER_STARTING) {
-      embed.setDescription(`${config["serverName"] || "Server"} is currenly starting :yellow_circle:`);
-    } else if (ServerHandler.serverStatus === ServerHandler.Presence.SERVER_STOPPING) {
-      embed.setDescription(`${config["serverName"] || "Server"} is currenly stopping :yellow_circle:`);
-    }
+    // if (ServerHandler.isServerJoinable) {
+    //   embed.setDescription("All systems operational :green_circle:");
+    // } else if (!ServerHandler.commandProcess) {
+    //   embed.setDescription(`${config["serverName"] || "Server"} is currenly offline :red_circle:`);
+    // } else if (ServerHandler.serverStatus === ServerHandler.Presence.SERVER_STARTING) {
+    //   embed.setDescription(`${config["serverName"] || "Server"} is currenly starting :yellow_circle:`);
+    // } else if (ServerHandler.serverStatus === ServerHandler.Presence.SERVER_STOPPING) {
+    //   embed.setDescription(`${config["serverName"] || "Server"} is currenly stopping :yellow_circle:`);
+    // }
 
-    if (config["showPlayers"]) {
-      let playerList = Array.from(ServerHandler.players.keys()).join("\n");
+    // if (config["showPlayers"]) {
+    //   let playerList = Array.from(ServerHandler.players.keys()).join("\n");
 
-      if (!playerList) {
-        playerList = "No players online";
-      }
+    //   if (!playerList) {
+    //     playerList = "No players online";
+    //   }
 
-      embed.addField(`${ServerHandler.players.size} online`, playerList);
-    }
+    //   embed.addField(`${ServerHandler.players.size} online`, playerList);
+    // }
 
-    await interaction.reply({embeds: [embed]});
+    // await interaction.reply({embeds: [embed]});
   };
 
   constructor() {

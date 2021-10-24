@@ -3,7 +3,7 @@ import { CommandInteraction } from "discord.js";
 import { getDefaultCommandEmbed } from "../helpers";
 import Command from "./general";
 import * as ServerHandler from "../serverHandler";
-import { Server } from "https";
+import assert from "assert";
 
 export class StopCommand extends Command {
   name = "stop";
@@ -11,25 +11,41 @@ export class StopCommand extends Command {
   aliases = [];
   builder = new SlashCommandBuilder()
 	.setName(this.name)
-	.setDescription(this.desc);
+	.setDescription(this.desc)
+  .addStringOption(option => option.setName("server").setDescription("Enter the name of the server you want to stop").setRequired(true));
 
   handler = async(interaction: CommandInteraction): Promise<void> => {
-      let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL())
-    .setDescription("Server is stopping...");
+      let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
   
-    await interaction.reply({embeds: [embed]});
 
     try {
-      let result = await ServerHandler.stop();
-      embed.setDescription(result);
-    }catch(err) {
-      if ((err as any) in ServerHandler.ServerStatus) {
-        embed.setDescription(err as string);
+      let serverName = interaction.options.getString("server");
+      assert(serverName);
+
+      let server = ServerHandler.servers.get(serverName);
+      assert(server);
+
+      if (server.hasStreams) {
+        embed.setDescription(`Attempting to stop **${serverName}**...`);
+        await interaction.reply({ embeds: [embed] });
+
+        await ServerHandler.stop(serverName);
+
+        embed.setDescription(`**${serverName}** stopped succesfully!`);
+        await interaction.editReply({embeds: [embed]});
       }else {
-        embed.setDescription("Something went wrong");
+        embed.setDescription(`**${serverName}** is already offline!\n\n *Did you mean /start?*`);
+        await interaction.reply({ embeds: [embed] });
+      }
+    } catch (err) {
+      console.error(err);
+      embed.setDescription("Something went wrong :slight_frown:");
+      if (interaction.replied) {
+        await interaction.editReply({embeds: [embed]});
+      }else {
+        await interaction.reply({embeds: [embed]});
       }
     }
-    await interaction.editReply({embeds: [embed]});
   };
   
   constructor() {
