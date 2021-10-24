@@ -1,7 +1,7 @@
 import { spawn, ChildProcessWithoutNullStreams } from "child_process";
 import { config } from "../index";
 import { serverDir, setPresence, setServerStatus } from "./helpers";
-import {ConsoleReader, Player, Event} from "./classes/ConsoleAPI";
+import {ConsoleReader, Player, Event} from "./classes/MasaAPI";
 import ServerCommunicator from "./classes/ServerCommunicator";
 import GameServer from "./classes/GameServer";
 import GameServerArgumentBuilder from "./classes/GameServerArgumentBuilder";
@@ -42,11 +42,11 @@ export const serverInitializer = (serverMeta: ServerMetadata[]) => {
     server.on("join", (e) => {
       setServerStatus(meta.name, server, Presence.SERVER_ONLINE, true);
     });
-    server.on("leave", (e) => {
+    server.on("quit", (e) => {
       setServerStatus(meta.name, server, Presence.SERVER_ONLINE, true);
     });
 
-    server.on("done", () => {
+    server.on("ready", () => {
       setServerStatus(meta.name, server, Presence.SERVER_ONLINE, true);
     });
 
@@ -68,7 +68,7 @@ export const start = async(serverName: string) => {
   assert(server);
   server.start();
 
-  return await server.waitfor("done");
+  return await server.waitfor("ready");
 }
 
 export const stop = async(serverName: string) => {
@@ -86,7 +86,7 @@ export const restart = async(serverName: string) => {
   }
   await server.start();
 
-  return await server.waitfor("done");
+  return await server.waitfor("ready");
 }
 
 // export const start = () => {

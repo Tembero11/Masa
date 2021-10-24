@@ -1,5 +1,5 @@
 import { NoPlayerError } from "./Errors";
-import Event, { AutosaveOffEvent, AutosaveOnEvent, ChatEvent, DoneEvent, EventType, GameSaveEvent, PlayerJoinEvent, PlayerLeaveEvent, UnknownEvent } from "./Event";
+import Event, { AutosaveOffEvent, AutosaveOnEvent, PlayerChatEvent, GameReadyEvent, EventType, GameSaveEvent, PlayerJoinEvent, PlayerQuitEvent, UnknownEvent } from "./Event";
 import Player from "./Player";
 
 export default class ConsoleReader {
@@ -32,15 +32,15 @@ export default class ConsoleReader {
             if (this.isChatMessage) {
                 let player = this.getChatSender();
                 let msg = this.getChatMessage();
-                return new ChatEvent(this.date, player, msg);
+                return new PlayerChatEvent(this.date, player, msg);
             }
             if (this.isLeaveEvent && this.player) {
-                return new PlayerLeaveEvent(this.date, this.player);
+                return new PlayerQuitEvent(this.date, this.player);
             }else if (this.isJoinEvent && this.player) {
                 return new PlayerJoinEvent(this.date, this.player);
             }
         }else if (this.isDoneMessage) {
-            return new DoneEvent(this.date);
+            return new GameReadyEvent(this.date);
         }
         
         
@@ -69,10 +69,10 @@ export default class ConsoleReader {
     get isLeaveEvent(): boolean {
         // Calculate the event type if it has not been calculated yet
         if (!this._eventType && !this._leftPlayerCalled) {
-            this._eventType = this.getLeftPlayer() != undefined ? EventType.PlayerLeaveEvent : undefined;
+            this._eventType = this.getLeftPlayer() != undefined ? EventType.PlayerQuitEvent : undefined;
         }
 
-        return this._eventType === EventType.PlayerLeaveEvent;
+        return this._eventType === EventType.PlayerQuitEvent;
     }
 
     get isJoinEvent(): boolean {
@@ -120,12 +120,12 @@ export default class ConsoleReader {
     }
 
     get isChatMessage() {
-        if (this._eventType == EventType.ChatEvent) return true;
+        if (this._eventType == EventType.PlayerChatEvent) return true;
 
         let is = this.message.search(this.chatMessageRegex) > -1;
 
         if (is) {
-            this._eventType = EventType.ChatEvent;
+            this._eventType = EventType.PlayerChatEvent;
         }
 
         return is;
@@ -194,7 +194,7 @@ export default class ConsoleReader {
         this._leftPlayerCalled = true;
 
         // Don't even check if the event has been checked already
-        if (this._eventType === EventType.PlayerLeaveEvent && this.player) {
+        if (this._eventType === EventType.PlayerQuitEvent && this.player) {
             return this.player;
         }
 
@@ -209,7 +209,7 @@ export default class ConsoleReader {
                     let player = new Player(username);
 
                     this.player = player;
-                    this._eventType = EventType.PlayerLeaveEvent;
+                    this._eventType = EventType.PlayerQuitEvent;
 
                     return player;
                 }

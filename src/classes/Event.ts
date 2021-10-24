@@ -1,16 +1,15 @@
-import ConsoleReader from "./ConsoleReader";
 import Player from "./Player";
 
 export interface CommunicatorEvent {
     event: UnknownEvent,
     join: PlayerJoinEvent,
-    leave: PlayerLeaveEvent,
-    done: DoneEvent
+    quit: PlayerQuitEvent,
+    ready: GameReadyEvent
     save: GameSaveEvent
     autosaveOff: AutosaveOffEvent,
     autosaveOn: AutosaveOnEvent,
-    close: CloseEvent,
-    chat: ChatEvent
+    close: GameCloseEvent,
+    chat: PlayerChatEvent
 }
 
 export enum EventType {
@@ -19,28 +18,40 @@ export enum EventType {
      */
     UnknownEvent = "event",
 
-    DataEvent = "data",
     /**
-     * The event when a player joins the server
+     * Called when the player has joined the game
      */
     PlayerJoinEvent = "join",
     /**
-     * The event when a player leaves the server
+     * Called when a player has quit the game
      */
-    PlayerLeaveEvent = "leave",
+    PlayerQuitEvent = "quit",
     /**
-     * When the server fully loads and is joinable.
+     * Called when the game fully loads and is joinable.
      */
-    DoneEvent = "done",
-    CloseEvent = "close",
+    GameReadyEvent = "ready",
     /**
-     * When the server fully loads and is joinable.
+     * Called when the game closes
+     */
+    GameCloseEvent = "close",
+    
+    /**
+     * Called when the game saves
      */
     GameSaveEvent = "save",
 
+    /**
+     * Called when autosave is turned off
+     */
     AutosaveOffEvent = "autosaveOff",
+    /**
+     * Called when autosave is turned on
+     */
     AutosaveOnEvent = "autosaveOn",
-    ChatEvent = "chat"
+    /**
+     * Called when a player types in chat
+     */
+    PlayerChatEvent = "chat"
 }
 
 export default abstract class Event {
@@ -75,9 +86,9 @@ export class PlayerJoinEvent extends Event {
     }
 }
 
-export class PlayerLeaveEvent extends Event {
+export class PlayerQuitEvent extends Event {
     readonly date: Date;
-    readonly type = EventType.PlayerLeaveEvent;
+    readonly type = EventType.PlayerQuitEvent;
     readonly player: Player;
     constructor(date: Date, player: Player) {
         super();
@@ -86,9 +97,9 @@ export class PlayerLeaveEvent extends Event {
     }
 }
 
-export class DoneEvent extends Event {
+export class GameReadyEvent extends Event {
     readonly date: Date;
-    readonly type = EventType.DoneEvent;
+    readonly type = EventType.GameReadyEvent;
     constructor(date: Date) {
         super();
         this.date = date;
@@ -121,18 +132,18 @@ export class AutosaveOffEvent extends Event {
     }
 }
 
-export class CloseEvent extends Event {
+export class GameCloseEvent extends Event {
     readonly date: Date;
-    readonly type = EventType.CloseEvent;
+    readonly type = EventType.GameCloseEvent;
     constructor(date: Date) {
         super();
         this.date = date;
     }
 }
 // TODO ADD PLAYER & CHAT MESSAGE
-export class ChatEvent extends Event {
+export class PlayerChatEvent extends Event {
     readonly date: Date;
-    readonly type = EventType.ChatEvent;
+    readonly type = EventType.PlayerChatEvent;
     readonly player;
     readonly message;
     constructor(date: Date, player: Player, message: string) {

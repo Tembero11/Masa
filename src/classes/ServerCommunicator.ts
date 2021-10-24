@@ -1,9 +1,9 @@
 import { ChildProcessWithoutNullStreams } from "child_process";
 import assert from "assert";
 import internal, { EventEmitter, Readable, Writable } from "stream";
-import {ConsoleReader} from "./ConsoleAPI";
+import {ConsoleReader} from "./MasaAPI";
 import { NoListenersError, NoStandardStreamsError } from "./Errors";
-import Event, { AutosaveOffEvent, AutosaveOnEvent, DoneEvent, GameSaveEvent, PlayerJoinEvent, PlayerLeaveEvent, CommunicatorEvent, UnknownEvent, CloseEvent } from "./Event";
+import Event, { AutosaveOffEvent, AutosaveOnEvent, GameReadyEvent, GameSaveEvent, PlayerJoinEvent, CommunicatorEvent, UnknownEvent, GameCloseEvent, PlayerQuitEvent } from "./Event";
 import Player from "./Player";
 import { StandardEmitter } from "./StandardEmitter";
 
@@ -71,8 +71,8 @@ export default class ServerCommunicator {
         this.events = new CommunicatorEventEmitter(this);
 
         this.on("join", this.onJoin.bind(this));
-        this.on("leave", this.onLeave.bind(this));
-        this.on("done", this.onDone.bind(this));
+        this.on("quit", this.onLeave.bind(this));
+        this.on("ready", this.onReady.bind(this));
     }
 
     /**
@@ -82,7 +82,7 @@ export default class ServerCommunicator {
         assert(this._stdout && this._stderr, new NoStandardStreamsError(["stdout", "stderr"]));
         this._stdout.on("data", this.onMessage.bind(this));
         this._stderr.on("data", this.onError.bind(this));
-        this._stdout.on("end", () => this.notifyListeners(new CloseEvent(new Date())));
+        this._stdout.on("end", () => this.notifyListeners(new GameCloseEvent(new Date())));
     }
     /**
      * @description Resets all values to default
@@ -109,10 +109,10 @@ export default class ServerCommunicator {
     private onJoin(e: PlayerJoinEvent) {
         this._players.set(e.player.username, e.player);
     }
-    private onLeave(e: PlayerLeaveEvent) {
+    private onLeave(e: PlayerQuitEvent) {
         this._players.delete(e.player.username);
     }
-    private onDone(e: DoneEvent) {
+    private onReady(e: GameReadyEvent) {
         this._isServerJoinable = true;
     }
  
