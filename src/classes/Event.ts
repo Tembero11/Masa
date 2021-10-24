@@ -9,7 +9,8 @@ export interface CommunicatorEvent {
     save: GameSaveEvent
     autosaveOff: AutosaveOffEvent,
     autosaveOn: AutosaveOnEvent,
-    close: CloseEvent
+    close: CloseEvent,
+    chat: ChatEvent
 }
 
 export enum EventType {
@@ -39,6 +40,7 @@ export enum EventType {
 
     AutosaveOffEvent = "autosaveOff",
     AutosaveOnEvent = "autosaveOn",
+    ChatEvent = "chat"
 }
 
 export default abstract class Event {
@@ -125,5 +127,18 @@ export class CloseEvent extends Event {
     constructor(date: Date) {
         super();
         this.date = date;
+    }
+}
+// TODO ADD PLAYER & CHAT MESSAGE
+export class ChatEvent extends Event {
+    readonly date: Date;
+    readonly type = EventType.ChatEvent;
+    readonly player;
+    readonly message;
+    constructor(date: Date, player: Player, message: string) {
+        super();
+        this.date = date;
+        this.player = player;
+        this.message = message;
     }
 }

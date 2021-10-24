@@ -33,7 +33,7 @@ export default class ServerCommunicator {
 
     events;
 
-    private _players: Map<PlayerName, Player> = new Map();
+    protected _players: Map<PlayerName, Player> = new Map();
 
     get players() {
         return Object.freeze(this._players);
@@ -80,10 +80,20 @@ export default class ServerCommunicator {
      */
     protected reload() {
         assert(this._stdout && this._stderr, new NoStandardStreamsError(["stdout", "stderr"]));
-        this._isServerJoinable = false;
         this._stdout.on("data", this.onMessage.bind(this));
         this._stderr.on("data", this.onError.bind(this));
         this._stdout.on("end", () => this.notifyListeners(new CloseEvent(new Date())));
+    }
+    /**
+     * @description Resets all values to default
+     */
+    protected resetState() {
+        this.dispose();
+        this._isServerJoinable = false;
+        this._players.clear();
+        this._stdin = null;
+        this._stdout = null;
+        this._stdin = null;
     }
 
     private onError(data: any) {
@@ -94,9 +104,7 @@ export default class ServerCommunicator {
         let reader = new ConsoleReader(data.toString(), this._isServerJoinable);
         // Notify the stdout EventEmitter
         this.std.emit("out", reader);
-        reader.generateEvent().forEach((event) => {
-            this.notifyListeners(event);
-        });
+        this.notifyListeners(reader.generateEvent());
     }
     private onJoin(e: PlayerJoinEvent) {
         this._players.set(e.player.username, e.player);

@@ -37,12 +37,11 @@ export default class GameServer extends ServerCommunicator {
     super.reload();
 
     // Add listeners for handling server closing
-    this.serverProcess.on("close", (code) => {
-      this._isServerJoinable = false;
-      this._stdin = null;
-      this._stdout = null;
-      this._stdin = null;
-    });
+    this.serverProcess.on("close", (code) => this.resetState());
+  }
+  protected resetState() {
+    super.resetState();
+    this.serverProcess = null;
   }
 
   static spawn(command: string, dir: string) {

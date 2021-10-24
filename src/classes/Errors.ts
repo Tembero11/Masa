@@ -29,3 +29,10 @@ export class NoStandardStreamsError extends Error {
     this.name = "NoStandardStreamsError";
   }
 }
+
+export class NoPlayerError extends Error {
+  constructor() {
+    super("The event was not player related, yet was still expected to be");
+    this.name = "NoPlayerError";
+  }
+}

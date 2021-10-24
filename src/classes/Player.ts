@@ -5,7 +5,7 @@ export default class Player {
   
     private _uuid: string | undefined;
   
-    get uuid(): Promise<string> {
+    uuid(): Promise<string> {
       return new Promise<string>((res, rej) => {
         if (!this._uuid) {
           axios.get(`https://api.mojang.com/users/profiles/minecraft/${this.username}`).then((response) => {
