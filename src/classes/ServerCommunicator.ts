@@ -101,7 +101,7 @@ export default class ServerCommunicator {
     }
 
     private onMessage(data: any) {
-        let reader = new ConsoleReader(data.toString(), this._isServerJoinable);
+        let reader = new ConsoleReader(data.toString(), this, this._isServerJoinable, this.players);
         // Notify the stdout EventEmitter
         this.std.emit("out", reader);
         this.notifyListeners(reader.generateEvent());
@@ -217,6 +217,19 @@ class CommunicatorEventEmitter {
         this.communicator.std.emit("in", "save-on\n");
 
         let event = await this.communicator.waitfor("autosaveOn");
+
+        return event;
+    }
+
+    async kickPlayer(player: Player, message?: string): Promise<PlayerQuitEvent> {
+        assert(this.communicator.hasStreams, new NoStandardStreamsError());
+        this.communicator.std.emit("in", `kick ${player.username} ${message || ""}\n`);
+
+        let event;
+
+        do {
+            event = await this.communicator.waitfor("quit");
+        } while (event.player.username == player.username);
 
         return event;
     }

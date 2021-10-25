@@ -1,8 +1,11 @@
+import assert from "assert";
 import { NoPlayerError } from "./Errors";
 import Event, { AutosaveOffEvent, AutosaveOnEvent, PlayerChatEvent, GameReadyEvent, EventType, GameSaveEvent, PlayerJoinEvent, PlayerQuitEvent, UnknownEvent } from "./Event";
 import Player from "./Player";
+import ServerCommunicator from "./ServerCommunicator";
 
 export default class ConsoleReader {
+    
     // The original data without the time in the beginning
     readonly data: string;
 
@@ -22,10 +25,15 @@ export default class ConsoleReader {
     private date: Date;
 
     private isServerJoinable = false;
+    readonly players;
+    readonly server: ServerCommunicator;
 
     
     protected usernameRegex = /[A-Za-z0-9_]{3,16}/;
     protected chatMessageRegex = /^<[A-Za-z0-9_]{3,16}> .*/;
+    protected loggedInRegex = /[A-Za-z0-9_]{3,16}\[.*\] logged in/;
+    protected quitRegex = /[A-Za-z0-9_]{3,16} lost connection/;
+    
 
     generateEvent(): Event {
         if (this.isServerJoinable) {
@@ -34,10 +42,10 @@ export default class ConsoleReader {
                 let msg = this.getChatMessage();
                 return new PlayerChatEvent(this.date, player, msg);
             }
-            if (this.isLeaveEvent && this.player) {
-                return new PlayerQuitEvent(this.date, this.player);
-            }else if (this.isJoinEvent && this.player) {
-                return new PlayerJoinEvent(this.date, this.player);
+            if (this.isQuitEvent) {
+                return new PlayerQuitEvent(this.date, this.getQuitPlayer(), this.getQuitReason());
+            }else if (this.isJoinEvent) {
+                return new PlayerJoinEvent(this.date, this.getJoinedPlayer());
             }
         }else if (this.isDoneMessage) {
             return new GameReadyEvent(this.date);
@@ -66,32 +74,65 @@ export default class ConsoleReader {
         }
     }
 
-    get isLeaveEvent(): boolean {
-        // Calculate the event type if it has not been calculated yet
-        if (!this._eventType && !this._leftPlayerCalled) {
-            this._eventType = this.getLeftPlayer() != undefined ? EventType.PlayerQuitEvent : undefined;
+    get isQuitEvent(): boolean {
+        if (this._eventType === EventType.PlayerQuitEvent) {
+            return true;
+        }
+        if (!this.isChatMessage && this.message.search(this.quitRegex) > -1) {
+            this._eventType = EventType.PlayerQuitEvent;
+            return true; 
         }
 
-        return this._eventType === EventType.PlayerQuitEvent;
-    }
-
-    get isJoinEvent(): boolean {
-        // Calculate the event type if it has not been calculated yet
-        if (!this._eventType && !this._joinedPlayerCalled) {
-            this._eventType = this.getJoinedPlayer() != undefined ? EventType.PlayerJoinEvent : undefined;
-        }
-
-        return this._eventType === EventType.PlayerJoinEvent;
+        return false;
     }
 
     /**
-     * Checks if the event is related to a player
-     * 
-     * WARNING: this may be performance intensive depending on the situation
+     * @throws {NoPlayerError} if the event was not `EventType.PlayerQuitEvent` or the player was not found in the players map provided
+     * @returns {Player} The player instance that previously joined
      */
-    get isPlayerRelated(): boolean {
-        // Calculate all player related events
-        return this.player != undefined || this.getJoinedPlayer() != undefined || this.getLeftPlayer() != undefined || this.isChatMessage;
+    getQuitPlayer(): Player {
+        if (this.isQuitEvent) {
+            let start = 0;
+            let end = this.message.indexOf(" ");
+            let playerName = this.message.substring(start, end);
+            let player = this.players.get(playerName);
+            assert(player, new NoPlayerError());
+            return player;
+        }
+        throw new NoPlayerError();
+    }
+    getQuitReason(): string {
+        if (this.isQuitEvent) {
+            let message = this.message.split(":")[1].substring(1);
+            return message;
+        }
+        throw new NoPlayerError();
+    }
+
+    get isJoinEvent(): boolean {
+        if (this._eventType === EventType.PlayerJoinEvent) {
+            return true;
+        }
+        if (!this.isChatMessage && this.message.search(this.loggedInRegex) > -1) {
+            this._eventType = EventType.PlayerJoinEvent;
+            return true; 
+        }
+
+        return false;
+    }
+    /**
+     * @throws {NoPlayerError} if the event was not `EventType.PlayerJoinEvent`
+     * @returns {Player} A completely new instance of {Player}
+     */
+    getJoinedPlayer(): Player {
+        if (this.isJoinEvent) {
+            let start = 0;
+            let end = this.message.indexOf("[");
+            let playerName = this.message.substring(start, end);
+            let player = new Player(playerName, this.server);
+            return player;
+        }
+        throw new NoPlayerError();
     }
 
     /**
@@ -119,7 +160,7 @@ export default class ConsoleReader {
         return this._message;
     }
 
-    get isChatMessage() {
+    get isChatMessage(): boolean {
         if (this._eventType == EventType.PlayerChatEvent) return true;
 
         let is = this.message.search(this.chatMessageRegex) > -1;
@@ -140,7 +181,8 @@ export default class ConsoleReader {
             const end = this.message.indexOf(">");
             const start = 1;
             const playerName = this.message.substring(start, end);
-            const player = new Player(playerName);
+            const player = this.players.get(playerName);
+            assert(player, new NoPlayerError());
             return player;
         }
         throw new NoPlayerError();
@@ -178,80 +220,11 @@ export default class ConsoleReader {
         return !this.isChatMessage && (this.message.startsWith("Automatic saving is now enabled") || this.message.startsWith("Saving is already turned on"));
     }
 
-    constructor(data: string, isJoinable: boolean) {
+    constructor(data: string, server: ServerCommunicator, isJoinable: boolean, players: Map<string, Player>) {
         this.isServerJoinable = isJoinable;
         this.data = data.replace(/\[[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}\] /, "");
         this.date = new Date();
-    }
-
-
-    /**
-     * Returns the player that left if there is one
-     */
-    getLeftPlayer(): Player | undefined {
-        if (this.isChatMessage) return undefined;
-        // Set the mode to called
-        this._leftPlayerCalled = true;
-
-        // Don't even check if the event has been checked already
-        if (this._eventType === EventType.PlayerQuitEvent && this.player) {
-            return this.player;
-        }
-
-        if (this.isInfo) {
-            let matches = this.message.match(/([a-zA-Z0-9]|_){3,16} left/);
-            if (matches && matches[0]) {
-                let match = matches[0];
-                let username = match.substring(0, match.length - " left".length)
-
-                if (username) {
-                    // Create a new player instance
-                    let player = new Player(username);
-
-                    this.player = player;
-                    this._eventType = EventType.PlayerQuitEvent;
-
-                    return player;
-                }
-            }
-        }
-        return undefined;
-    }
-
-    /**
-     * Returns the player that joined if there is one
-     */
-    getJoinedPlayer(): Player | undefined {
-        if (this.isChatMessage) return undefined;
-        // Set the mode to called
-        this._joinedPlayerCalled = true;
-
-        // Don't even check if the event has been checked already
-        if (this._eventType === EventType.PlayerJoinEvent && this.player) {
-            return this.player;
-        }
-
-        if (this.isInfo) {
-            let matches = this.message.match(/([a-zA-Z0-9]|_){3,16}\[.{1,}\] logged/);
-
-            if (matches && matches[0]) {
-                let match = matches[0];
-                let usernameMatches = match.match(/([a-zA-Z0-9]|_){3,16}\[/);
-
-                if (usernameMatches && usernameMatches[0]) {
-                    let username = usernameMatches[0].substr(0, usernameMatches[0].length - 1);
-
-                    // Create a new player instance
-                    let player = new Player(username);
-
-                    this.player = player;
-                    this._eventType = EventType.PlayerJoinEvent;
-
-                    return player;
-                }
-
-            }
-        }
-        return undefined;
+        this.players = players;
+        this.server = server;
     }
 }

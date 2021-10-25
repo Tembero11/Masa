@@ -90,10 +90,12 @@ export class PlayerQuitEvent extends Event {
     readonly date: Date;
     readonly type = EventType.PlayerQuitEvent;
     readonly player: Player;
-    constructor(date: Date, player: Player) {
+    readonly reason: string;
+    constructor(date: Date, player: Player, reason: string) {
         super();
         this.date = date;
         this.player = player;
+        this.reason = reason;
     }
 }
 
