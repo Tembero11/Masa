@@ -36,3 +36,17 @@ export class NoPlayerError extends Error {
     this.name = "NoPlayerError";
   }
 }
+
+export class EulaNotAcceptedError extends Error {
+  constructor(serverName?: string) {
+    super(`The eula was not accepted when attempting to install ${serverName || "server"}`);
+    this.name = "EulaNotAcceptedError";
+  }
+}
+
+export class InstallDirectoryNotEmptyError extends Error {
+  constructor(serverName?: string) {
+    super(`The install directory was not empty when attempting to install ${serverName || "server"}`);
+    this.name = "InstallDirectoryNotEmptyError";
+  }
+}
