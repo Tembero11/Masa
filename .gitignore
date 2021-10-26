@@ -1,7 +1,7 @@
 node_modules
 test
 logs
-server
+/server
 backups
 user_backups
 package-lock.json
