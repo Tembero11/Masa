@@ -1,5 +1,5 @@
 import axios from "axios";
-import ServerCommunicator from "./ServerCommunicator";
+import ServerCommunicator from "./server/ServerCommunicator";
 
 export default class Player {
     readonly username: string;

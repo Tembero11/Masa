@@ -10,5 +10,5 @@ export {default as Event, EventType, CommunicatorEvent,
   GameCloseEvent,
   PlayerQuitEvent
 } from "./Event";
-export {default as ServerCommunicator} from "./ServerCommunicator";
-export {default as GameServer} from "./GameServer";
+export {default as ServerCommunicator} from "./server/ServerCommunicator";
+export {default as GameServer} from "./server/GameServer";

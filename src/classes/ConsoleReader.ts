@@ -2,7 +2,7 @@ import assert from "assert";
 import { NoPlayerError } from "./Errors";
 import Event, { AutosaveOffEvent, AutosaveOnEvent, PlayerChatEvent, GameReadyEvent, EventType, GameSaveEvent, PlayerJoinEvent, PlayerQuitEvent, UnknownEvent } from "./Event";
 import Player from "./Player";
-import ServerCommunicator from "./ServerCommunicator";
+import ServerCommunicator from "./server/ServerCommunicator";
 
 export default class ConsoleReader {
     

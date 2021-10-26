@@ -1,10 +1,5 @@
-import { spawn, ChildProcessWithoutNullStreams } from "child_process";
-import { config } from "../index";
-import { serverDir, setPresence, setServerStatus } from "./helpers";
-import {ConsoleReader, Player, Event} from "./classes/MasaAPI";
-import ServerCommunicator from "./classes/ServerCommunicator";
-import GameServer from "./classes/GameServer";
-import GameServerArgumentBuilder from "./classes/GameServerArgumentBuilder";
+import { setServerStatus } from "./helpers";
+import {GameServer} from "./classes/MasaAPI";
 import { ServerMetadata } from "./config";
 import assert from "assert";
 

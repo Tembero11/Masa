@@ -2,7 +2,7 @@ import {  MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
 import { client, config } from "../index";
 import path from "path";
 import { Presence } from "./serverHandler";
-import GameServer from "./classes/GameServer";
+import { GameServer } from "./classes/MasaAPI";
 import assert from "assert";
 
 export const serverDir = path.join(process.cwd(), "server");
