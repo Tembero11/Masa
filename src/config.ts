@@ -74,8 +74,6 @@ export interface DefaultConfig {
    * The Discord server's id
    */
   guildID: string
-
-  servers: ServerMetadata[]
   /**
    * A list of allowed channels that the bot can respond to
    */
@@ -127,6 +125,8 @@ export const CONFIG_TYPE = {
   }
 }
 
+export const serverListPath = path.join(process.cwd(), "servers.json");;
+
 /**
  * Creates all config files if doesn't exist
  * @returns true if a file was created
@@ -148,10 +148,22 @@ export const createConfig = async () => {
     }
   }
 
+  // Create server list
+  if (!fs.existsSync(serverListPath)) {
+    await fs.promises.writeFile(serverListPath, "[]", {encoding: "utf-8"});
+    result = true;
+  }
+
   return result;
 }
 
 
 export const loadConfig = <T extends "General" | "Developer">(type: T): T extends "General" ? DefaultConfig : any => {
   return yaml.load(fs.readFileSync(CONFIG_TYPE[type].path, { encoding: "utf-8" })) as any;
+}
+
+
+export const loadServerList = async(): Promise<ServerMetadata[]> => {
+  let data = await fs.promises.readFile(serverListPath, {encoding: "utf-8"});
+  return JSON.parse(data) as ServerMetadata[];
 }

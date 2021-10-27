@@ -32,7 +32,9 @@ export default class VanillaInstaller {
   useLogs;
   version;
 
-  private versionManifestURL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
+  static versionCache: VersionManifest | null = null;
+
+  static versionManifestURL = "https://launchermeta.mojang.com/mc/game/version_manifest.json";
 
   // version: GameVersion | undefined;
   constructor(version: string, log = true) {
@@ -60,7 +62,7 @@ export default class VanillaInstaller {
     fs.promises.writeFile(path.join(directory, "eula.txt"), "eula=true");
 
     this.log("Getting version manifest...");
-    var res = await axios.get(this.versionManifestURL);
+    var res = await axios.get(VanillaInstaller.versionManifestURL);
     let parsedData = res.data as VersionManifest;
 
     this.log("Finding requested version...");
@@ -99,6 +101,16 @@ export default class VanillaInstaller {
       });
     });
   }
+
+  static async getVersions() {
+    if (VanillaInstaller.versionCache) {
+      return VanillaInstaller.versionCache;
+    }
+    let data = (await axios.get(VanillaInstaller.versionManifestURL)).data as VersionManifest;
+    VanillaInstaller.versionCache = data;
+    return data;
+  }
+  static clearCache = () => VanillaInstaller.versionCache = null;
 
 
   acceptEULA() {

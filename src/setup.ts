@@ -3,9 +3,55 @@ import { ConsoleColor, createDateTimeString, parseDateTimeString, serverDir } fr
 import fs from "fs";
 import { config } from "../";
 import { serverInitializer } from "./serverHandler";
+import { loadServerList } from "./config";
+import inquirer, { ui } from "inquirer";
+import inquirerAutocompletePrompt from "inquirer-autocomplete-prompt";
+import VanillaInstaller from "./classes/server/installer/VanillaInstaller";
+
+inquirer.registerPrompt("autocomplete", inquirerAutocompletePrompt);
 
 const setup = async() => {
-    serverInitializer(config["servers"]);
+    let serverList = await loadServerList();
+
+    if (serverList.length <= 0) {
+        let result = await inquirer.prompt([
+            {
+                message: "No servers found. Would you like to install a new one?",
+                name: "install",
+                type: "confirm",
+            },
+            {
+                message: "What kind of server would you like to install?",
+                name: "server_type",
+                type: "list",
+                choices: [
+                    {name: "Vanilla"},
+                    {name: "Spigot",},
+                    {name: "Forge"},
+                    {name: "Paper"},
+                ]
+            },
+            {
+                message: "What version do you want to play?",
+                name: "version",
+                type: "autocomplete",
+                source: async function(answersSoFar: any, input: string) {
+                    input = input || "latest";
+                    let manifest = await VanillaInstaller.getVersions();
+
+                    if (input.startsWith("latest")) {
+                        input = manifest.latest.release;
+                    }
+
+                    return manifest.versions
+                    .filter((value) => value.id.startsWith(input) && (value.type == "release"))
+                    .map((e) => e.id);
+                }
+            }
+        ]);
+    }
+
+    serverInitializer(serverList);
 
     await createBackupsFolder(BACKUP_TYPE.AutomaticBackup);
     await createBackupsFolder(BACKUP_TYPE.UserBackup);
