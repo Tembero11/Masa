@@ -14,41 +14,66 @@ const setup = async() => {
     let serverList = await loadServerList();
 
     if (serverList.length <= 0) {
-        let result = await inquirer.prompt([
-            {
+        let willInstall = await inquirer.prompt(
+            [{
                 message: "No servers found. Would you like to install a new one?",
                 name: "install",
                 type: "confirm",
-            },
-            {
-                message: "What kind of server would you like to install?",
-                name: "server_type",
-                type: "list",
-                choices: [
-                    {name: "Vanilla"},
-                    {name: "Spigot",},
-                    {name: "Forge"},
-                    {name: "Paper"},
-                ]
-            },
-            {
-                message: "What version do you want to play?",
-                name: "version",
-                type: "autocomplete",
-                source: async function(answersSoFar: any, input: string) {
-                    input = input || "latest";
-                    let manifest = await VanillaInstaller.getVersions();
+            }],
+        ) as any;
 
-                    if (input.startsWith("latest")) {
-                        input = manifest.latest.release;
-                    }
+        let serverType = await inquirer.prompt([{
+            message: "What kind of server would you like to install?",
+            name: "server_type",
+            type: "list",
+            choices: [
+                {name: "Vanilla"},
+                {name: "Spigot",},
+                {name: "Forge"},
+                {name: "Paper"},
+            ]
+        }]) as any;
 
-                    return manifest.versions
-                    .filter((value) => value.id.startsWith(input) && (value.type == "release"))
-                    .map((e) => e.id);
+        let version = await inquirer.prompt([{
+            message: "What version do you want to play?",
+            name: "version",
+            type: "autocomplete",
+            source: async function(answersSoFar: any, input: string) {
+                input = input || "latest";
+                let manifest = await VanillaInstaller.getVersions();
+
+                if (input.startsWith("latest")) {
+                    input = manifest.latest.release;
                 }
+
+                return manifest.versions
+                .filter((value) => value.id.startsWith(input) && (value.type == "release"))
+                .map((e) => e.id);
             }
-        ]);
+        }]) as any;
+
+        console.log(willInstall);
+        console.log(serverType);
+        console.log(version);
+
+        if (willInstall.install) {
+            switch (serverType.server_type) {
+                case "Vanilla":
+                    let installer = new VanillaInstaller(version.version);
+                    let eula = await inquirer.prompt([{
+                        message: "Do you accept the End User License (EULA)?",
+                        name: "eula",
+                        type: "confirm",
+                    }]);
+                    if (eula) {
+                        installer.acceptEULA().install("./test");
+                    }
+                    break;
+            
+                default:
+                    break;
+            }
+        }
     }
 
     serverInitializer(serverList);
