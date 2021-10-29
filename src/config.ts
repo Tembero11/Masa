@@ -125,7 +125,7 @@ export const CONFIG_TYPE = {
   }
 }
 
-export const serverListPath = path.join(process.cwd(), "servers.json");;
+export const serverListPath = path.join(process.cwd(), "config", "servers.json");;
 
 /**
  * Creates all config files if doesn't exist
@@ -166,4 +166,7 @@ export const loadConfig = <T extends "General" | "Developer">(type: T): T extend
 export const loadServerList = async(): Promise<ServerMetadata[]> => {
   let data = await fs.promises.readFile(serverListPath, {encoding: "utf-8"});
   return JSON.parse(data) as ServerMetadata[];
+}
+export const writeServerList = async(list: ServerMetadata[]) => {
+  await fs.promises.writeFile(serverListPath, JSON.stringify(list, null, 2), {encoding: "utf-8"});
 }

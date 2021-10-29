@@ -4,6 +4,7 @@ import path from "path";
 import axios from "axios";
 import GameServer from "../GameServer";
 import { EulaNotAcceptedError, InstallDirectoryNotEmptyError } from "../../Errors";
+import { ConsoleColor } from "../../../helpers";
 
 // type GameVersion = `${number}.${number}${number}${"." | ""}${number}`;
 
@@ -62,12 +63,11 @@ export default class VanillaInstaller {
     fs.promises.writeFile(path.join(directory, "eula.txt"), "eula=true");
 
     this.log("Getting version manifest...");
-    var res = await axios.get(VanillaInstaller.versionManifestURL);
-    let parsedData = res.data as VersionManifest;
+    let manifest = await VanillaInstaller.getVersions();
 
     this.log("Finding requested version...");
-    let version = this.version == "latest" ? parsedData.latest.release : this.version;
-    let versionData = parsedData.versions.find(e => e.id == version);
+    let version = this.version == "latest" ? manifest.latest.release : this.version;
+    let versionData = manifest.versions.find(e => e.id == version);
     assert(versionData);
 
     this.log("Getting the download URL...");
@@ -86,16 +86,42 @@ export default class VanillaInstaller {
     return new Promise((resolve) => {
       res.data.on("end", async() => {
         let server = new GameServer(`java -Xmx1024M -Xms1024M -jar ${fileName} nogui`, directory);
-        server.std.on("out", e => this.log(e.data));
+
+        process.stdout.write("Installing...");
+
+
+        let loadingProgress = 0;
+        const maxProgress = 50;
+
+        server.std.on("out", e => {
+          loadingProgress++;
+          if (loadingProgress > maxProgress) {
+            loadingProgress = maxProgress;
+          }
+          if (e.isDoneMessage) {
+            loadingProgress = maxProgress;
+            this.installed = true;
+          }
+          process.stdout.clearLine(-1);
+          process.stdout.cursorTo(0);
+
+          let progressArray = new Array(loadingProgress - 1).fill(" ");
+          // progressArray.push(">");
+
+          let progressLeftArray = new Array(maxProgress - loadingProgress).fill(" ");
+
+          if (!server.isJoinable) {
+            process.stdout.write(
+              `[VanillaInstaller]: Installing... [${ConsoleColor.BgGreen}${progressArray.join("")}${ConsoleColor.Reset}${progressLeftArray.join("")}] ${e.isDoneMessage ? "Done!\n" : ""}`
+            );
+          }
+        });
+
         server.start();
         await server.waitfor("ready");
-  
-        await server.stop();
-  
         
-        this.log("Done!");
 
-        this.installed = true;
+        await server.stop();
 
         resolve(server);
       });
