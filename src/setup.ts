@@ -11,6 +11,9 @@ import inquirer from "inquirer";
 import inquirerAutocompletePrompt from "inquirer-autocomplete-prompt";
 import VanillaInstaller from "./classes/server/installer/VanillaInstaller";
 import chalk from "chalk";
+import Installer, { VersionManifest } from "./classes/server/installer/Installer";
+import PaperInstaller from "./classes/server/installer/PaperInstaller";
+import assert from "assert";
 
 inquirer.registerPrompt("autocomplete", inquirerAutocompletePrompt);
 
@@ -27,6 +30,7 @@ const setup = async () => {
     let serverList = await loadServerList();
 
     if (serverList.length <= 0) {
+        console.log("No servers were found! Running setup.");
         serverInstaller();
     }
 
@@ -122,6 +126,11 @@ export const serverInstaller = async () => {
         }],
     )).willInstall as boolean;
 
+    if (!options.willInstall) {
+        console.log("No servers to take care of. MASA will now exit :(");
+        process.exit();
+    }
+
     options.serverType = (await inquirer.prompt([{
         message: "What kind of server would you like to install?",
         name: "serverType",
@@ -140,15 +149,24 @@ export const serverInstaller = async () => {
         type: "autocomplete",
         source: async function (answersSoFar: any, input: string) {
             input = input || "latest";
-            let manifest = await VanillaInstaller.getVersions();
-
-            if (input.startsWith("latest")) {
-                input = manifest.latest.release;
+            let manifest: VersionManifest | null = null;
+            switch (options.serverType) {
+                case "Vanilla":
+                    manifest = await VanillaInstaller.getVersions();
+                case "Paper":
+                    manifest = await PaperInstaller.getVersions();
+                default:
+                    break;
             }
-
-            return manifest.versions
+            if (manifest) {
+                if (input.startsWith("latest")) {
+                    input = manifest.latest.release;
+                }
+    
+                return manifest.versions
                 .filter((value) => value.id.startsWith(input) && (value.type == "release"))
                 .map((e) => e.id);
+            }
         }
     }])).version as string;
 
@@ -173,31 +191,36 @@ export const serverInstaller = async () => {
         type: "input",
     }])).name as string;
 
+    let eula = (await inquirer.prompt([{
+        message: "Do you accept the End User License Agreement (EULA) (https://account.mojang.com/documents/minecraft_eula)?",
+        name: "eula",
+        type: "confirm",
+    }])).eula as boolean;
 
-    if (options.willInstall) {
+    if (options.willInstall && eula) {
+        let installer: null | Installer = null;
         switch (options.serverType) {
             case "Vanilla":
-                let installer = new VanillaInstaller(options.version);
-                let eula = (await inquirer.prompt([{
-                    message: "Do you accept the End User License (EULA) (https://account.mojang.com/documents/minecraft_eula)?",
-                    name: "eula",
-                    type: "confirm",
-                }])).eula as boolean;
-                console.log(eula);
-                if (eula) {
-                    await installer.acceptEULA().install(options.dir);
-                    serverList.push({
-                        name: options.name as string,
-                        command: "j",
-                        description: "",
-                        directory: options.dir as string
-                    });
-                    await writeServerList(serverList);
-                }
+                installer = new VanillaInstaller(options.version);
+                break;
+            case "Paper":
+                installer = new PaperInstaller(options.version);
                 break;
             default:
                 break;
         }
+
+        assert(installer);
+
+        await installer.acceptEULA().install(options.dir);
+        serverList.push({
+            name: options.name as string,
+            command: "j",
+            description: "",
+            directory: options.dir as string
+        });
+
+        await writeServerList(serverList);
     }
 }
 

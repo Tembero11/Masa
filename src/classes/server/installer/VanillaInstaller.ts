@@ -5,6 +5,8 @@ import axios from "axios";
 import GameServer from "../GameServer";
 import { EulaNotAcceptedError, InstallDirectoryNotEmptyError } from "../../Errors";
 import { ConsoleColor } from "../../../helpers";
+import Installer, { VersionManifest } from "./Installer";
+import ProgressBar from "./ProgressBar";
 
 // type GameVersion = `${number}.${number}${number}${"." | ""}${number}`;
 
@@ -13,21 +15,9 @@ interface GameVersion {
   type: "release" | "snapshot"
 }
 
-interface VersionManifest {
-  latest: {
-    release: string,
-    snapshot: string
-  },
-  versions: {
-    id: string,
-    type: string,
-    url: string,
-    time: string,
-    releaseTime: string
-  }[]
-}
 
-export default class VanillaInstaller {
+
+export default class VanillaInstaller extends Installer {
   installed: boolean = false;
   eula: boolean = false;
   useLogs;
@@ -39,6 +29,7 @@ export default class VanillaInstaller {
 
   // version: GameVersion | undefined;
   constructor(version: string, log = true) {
+    super(version);
     this.version = version;
     this.useLogs = log;
   }
@@ -68,7 +59,7 @@ export default class VanillaInstaller {
     this.log("Finding requested version...");
     let version = this.version == "latest" ? manifest.latest.release : this.version;
     let versionData = manifest.versions.find(e => e.id == version);
-    assert(versionData);
+    assert(versionData && versionData.url);
 
     this.log("Getting the download URL...");
     var res = await axios.get(versionData.url);
@@ -90,29 +81,19 @@ export default class VanillaInstaller {
         process.stdout.write("Installing...");
 
 
-        let loadingProgress = 0;
-        const maxProgress = 50;
+        let progress = new ProgressBar(0, 50);
 
         server.std.on("out", e => {
-          loadingProgress++;
-          if (loadingProgress > maxProgress) {
-            loadingProgress = maxProgress;
-          }
+          progress.increment();
           if (e.isDoneMessage) {
-            loadingProgress = maxProgress;
+            progress.done();
             this.installed = true;
           }
           process.stdout.clearLine(-1);
           process.stdout.cursorTo(0);
-
-          let progressArray = new Array(loadingProgress - 1).fill(" ");
-          // progressArray.push(">");
-
-          let progressLeftArray = new Array(maxProgress - loadingProgress).fill(" ");
-
           if (!server.isJoinable) {
             process.stdout.write(
-              `[VanillaInstaller]: Installing... [${ConsoleColor.BgGreen}${progressArray.join("")}${ConsoleColor.Reset}${progressLeftArray.join("")}] ${e.isDoneMessage ? "Done!\n" : ""}`
+              `[VanillaInstaller]: Installing... ${progress.toString()} ${e.isDoneMessage ? "| Done!\n" : ""}`
             );
           }
         });
@@ -128,7 +109,7 @@ export default class VanillaInstaller {
     });
   }
 
-  static async getVersions() {
+  static async getVersions(): Promise<VersionManifest> {
     if (VanillaInstaller.versionCache) {
       return VanillaInstaller.versionCache;
     }
