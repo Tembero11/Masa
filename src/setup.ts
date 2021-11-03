@@ -21,10 +21,13 @@ const setup = async () => {
     let packageJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), "package.json"), "utf-8"));
 
     console.log(`Running MASA ${chalk.green("v" + packageJson["version"])}`);
-
+    
     console.log(chalk.red(figlet.textSync("MASA", {
         font: "3D-ASCII"
     })));
+
+    await createBackupsFolder(BACKUP_TYPE.AutomaticBackup);
+    await createBackupsFolder(BACKUP_TYPE.UserBackup);
 
 
     let serverList = await loadServerList();
@@ -36,26 +39,6 @@ const setup = async () => {
 
     serverInitializer(serverList);
 
-    await createBackupsFolder(BACKUP_TYPE.AutomaticBackup);
-    await createBackupsFolder(BACKUP_TYPE.UserBackup);
-    await createServerFolder();
-
-    let automaticBackups = config["backup"]["automaticBackups"];
-
-    // if (automaticBackups >= 1) {
-    //     console.log('Automatic backups are enabled.');
-    //     setInterval(() => {
-    //         if (isServerJoinable) {
-    //             createNewBackup(BACKUP_TYPE.AutomaticBackup, true).then((backupName) => {
-    //                 console.log("An automatic backup was succesfully created! %s", backupName);
-    //             }).catch((err) => {
-    //                 console.warn(ConsoleColor.FgYellow, err, ConsoleColor.Reset);
-    //             });
-    //         }
-    //     }, automaticBackups * 1000 * 60);
-    // }else {
-    //     console.log('Automatic backups are disabled, you can change this by changing the "automaticBackups" to a value greater than 1.');
-    // }
 
     // Setup console commands
     // let rl = readline.createInterface({
@@ -102,16 +85,6 @@ const setup = async () => {
 
 
     return true;
-}
-
-const createServerFolder = async () => {
-    if (!fs.existsSync(serverDir)) {
-        console.log("Server folder not found! Creating...");
-
-        await fs.promises.mkdir(serverDir);
-    } else {
-        console.log("Server folder found! Using...");
-    }
 }
 
 export const serverInstaller = async () => {
@@ -189,6 +162,13 @@ export const serverInstaller = async () => {
         message: "What should we call the server?",
         name: "name",
         type: "input",
+        validate: async (input) => {
+            let server = serverList.find((e => e.name == input));
+            if (server) {
+                return "Server name is taken";
+            }
+            return true;
+        }
     }])).name as string;
 
     let eula = (await inquirer.prompt([{

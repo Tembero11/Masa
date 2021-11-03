@@ -2,6 +2,9 @@ import { setServerStatus } from "./helpers";
 import {GameServer} from "./classes/MasaAPI";
 import { ServerMetadata } from "./config";
 import assert from "assert";
+import { BACKUP_TYPE, createBackup } from "./backup";
+import chalk from "chalk";
+import ms from "ms";
 
 // export let commandProcess: ChildProcessWithoutNullStreams | undefined;
 
@@ -30,6 +33,8 @@ export let servers = new Map<string, GameServer>();
 
 export const serverInitializer = (serverMeta: ServerMetadata[]) => {
   serverMeta.forEach((meta) => {
+    assert(!servers.get(meta.name), "One or more servers have the same name!");
+
     let server = new GameServer(meta.command, meta.directory);
 
     setServerStatus(meta.name, server, Presence.SERVER_OFFLINE, true);
@@ -42,16 +47,42 @@ export const serverInitializer = (serverMeta: ServerMetadata[]) => {
     });
 
     server.on("ready", () => {
+      server.events.disableAutosave();
       setServerStatus(meta.name, server, Presence.SERVER_ONLINE, true);
     });
 
-    server.std.on("out", (reader) => {
-      process.stdout.write(reader.data);
-    });
+    if (meta.logs) {
+      console.log(`Logs are enabled on "${chalk.underline(meta.name)}"`)
+      server.std.on("out", (reader) => {
+        process.stdout.write(reader.data);
+      });
+    }
 
     server.on("close", e => setServerStatus(meta.name, server, Presence.SERVER_OFFLINE, true));
 
-    server.on("close", () => console.log("close was called!!"))
+
+    // Setup backups
+    if (meta.backups) {
+      const { backupTime } = meta.backups;
+      const { backupLimit } = meta.backups;
+      const { backupArchiveType } = meta.backups || "zip";
+
+      let backupTimeMs = typeof backupTime == "string" ? ms(backupTime) : backupTime;
+
+      assert(backupTime && backupLimit);
+
+      console.log(`Automatic backups are made every ${ms(backupTimeMs, {long: true})} for server "${chalk.underline(meta.name)}".`);
+
+      setInterval(() => {
+        createBackup(server, meta.name, { backupLimit, compressionType: backupArchiveType }).then((backupName) => {
+          console.log(`An automatic backup was succesfully created! ${backupName || ""}`);
+        }).catch((err) => {
+          console.warn(chalk.yellow(err));
+        });
+      }, backupTimeMs);
+    }else {
+      console.warn(chalk.yellow(`Automatic backups are ${chalk.bold("disabled")} for server "${chalk.underline(meta.name)}".`))
+    }
 
 
     servers.set(meta.name, server);

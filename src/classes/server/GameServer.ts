@@ -7,7 +7,7 @@ import { NoStandardStreamsError } from "../Errors";
 
 export default class GameServer extends ServerCommunicator {
   private command;
-  private dir;
+  readonly dir;
   private serverProcess: ChildProcessWithoutNullStreams | null = null;
 
   get pid(): number | undefined {

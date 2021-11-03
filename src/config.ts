@@ -58,7 +58,16 @@ export interface ServerMetadata {
   /**
    * The directory where the server files are
    */
-  directory: string
+  directory: string,
+
+  // Whether to show logs to the masa console
+  logs?: boolean,
+
+  backups?: {
+    backupLimit: number,
+    backupTime: string | number,
+    backupArchiveType: "zip" | "tar"
+  }
 }
 
 export interface DefaultConfig {
