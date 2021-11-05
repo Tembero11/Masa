@@ -155,7 +155,7 @@ export default class ConsoleReader {
      */
     get message(): string {
         if (!this._message) {
-            this._message = this.data.replace(/\[([A-Za-z0-9]|-|\/| ){1,}\]: /, "")
+            this._message = this.data.replace(/\[([A-Za-z0-9]|-|\/| |:){1,}\]: /, "")
         }
         return this._message;
     }
