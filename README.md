@@ -38,22 +38,38 @@ Now to run the setup for the bot run
 
   `$ npm start`
 
-This will create a `config/config.yml` file in your bot's directory. This is where you need to paste your token from the Discord bot menu.
-Now you can also configure other settings in the bot like how often to make backups. Also remember to set the allowedChannels to have at least one channel ID, otherwise the bot won't work.
+## Setting up a server
 
-When you have edited & saved the new config, run
+MASA will now ask you to enter your bot/app details to the server console. After entering the bot details MASA will prompt you to install a server software E.g. Vanilla or Paper. 
 
-  `$ npm start`
+You can cancel the automatic installation & use a custom installation or a previous server you have one. To install a server manually you need to have a basic understanding of JSON. Head on over to the MASA directory and search for the `config` folder this should have a `servers.json` file inside if there isn't, create one. Here is an easy example of a server:
 
-to start the bot.
+```json
+{
+  "name": "example",
+  "command": "java -Xmx1024M -Xms1024M -jar example_server.jar nogui",
+  "description": "This is an example server.",
+  "directory": "~/example/dir"
+}
+```
+The above JSON is called a server metadata object.
 
-To add your own server please create (if doesn't exist) a folder called "server". Here you need to add your own server file.
+
+The first field `name` should be the name you want to call the server.
+The second field `command` is the command MASA runs when it wants to start the server.
+The fourth field `directory` is the directory where the command is executed.
+
+The servers are stored inside the file in brackets `[]` or in other words a JSON array. There is no limit to how many servers MASA can handle.
+
 **Note**: MASA cannot run the server if the eula is not accepeted.
 
+**Another note**: Everytime you make a configuration change make sure to restart MASA to reload all configurations.
+
+
 ## Planned Features before 1.0
-- [ ] Add buttons to the command results
-- [ ] Add a server installer
-- [ ] Add chat streaming to Discord & log to discord also make commands internal server command runnable from discord
+- [x] Add buttons to the command results
+- [x] Add a server installer
+- [ ] Add chat streaming to Discord & make server commands runnable from Discord
 - [ ] Add a build script
 - [ ] Add a better way to see and interact with the server console
 - [ ] Make the bot easier to install
