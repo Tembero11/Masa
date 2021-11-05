@@ -1,12 +1,9 @@
 import { BACKUP_TYPE, createBackupsFolder } from "./backup";
-import { serverDir } from "./helpers";
-import readline from "readline";
 import figlet from "figlet";
 import fs from "fs";
 import path from "path";
-import { config } from "../index";
 import { serverInitializer } from "./serverHandler";
-import { loadServerList, writeServerList } from "./config";
+import {  BotConfig, ServerMetadata, createConfigs, loadConfig } from "./config";
 import inquirer from "inquirer";
 import inquirerAutocompletePrompt from "inquirer-autocomplete-prompt";
 import VanillaInstaller from "./classes/server/installer/VanillaInstaller";
@@ -14,81 +11,81 @@ import chalk from "chalk";
 import Installer, { VersionManifest } from "./classes/server/installer/Installer";
 import PaperInstaller from "./classes/server/installer/PaperInstaller";
 import assert from "assert";
+import { client } from "./client";
 
 inquirer.registerPrompt("autocomplete", inquirerAutocompletePrompt);
 
-const setup = async () => {
-    let packageJson = JSON.parse(fs.readFileSync(path.join(process.cwd(), "package.json"), "utf-8"));
+export let config: BotConfig;
 
-    console.log(`Running MASA ${chalk.green("v" + packageJson["version"])}`);
+const setup = async () => {
+    // Load the package.json file
+    const packagejson = await fs.promises.readFile(path.join(process.cwd(), "package.json"), "utf8");
+    // Parse the package.json file
+    const parsedPackageJson = JSON.parse(packagejson);
+
+    // Print the version of MASA
+    console.log(`Running MASA ${chalk.green("v" + parsedPackageJson["version"])}`);
     
+    // Print a cool 3D logo
     console.log(chalk.red(figlet.textSync("MASA", {
         font: "3D-ASCII"
     })));
 
+    // Create all config files that don't already exist
+    await createConfigs(async(filename) => {
+        switch (filename) {
+            case "bot.json":
+                return JSON.stringify(await botSetup(), null, 2);
+            case "servers.json":
+                return JSON.stringify([await serverInstaller([])], null, 2);
+            default:
+                return null;
+        }
+    });
+
     await createBackupsFolder(BACKUP_TYPE.AutomaticBackup);
     await createBackupsFolder(BACKUP_TYPE.UserBackup);
 
+    const serverList = await loadConfig<ServerMetadata[]>("servers.json");
+    config = await loadConfig<BotConfig>("bot.json");
 
-    let serverList = await loadServerList();
 
-    if (serverList.length <= 0) {
-        console.log("No servers were found! Running setup.");
-        serverInstaller();
-    }
+    // // Login to discord
+    await client.login(config["token"]);
+    console.log(serverList);
 
     serverInitializer(serverList);
-
-
-    // Setup console commands
-    // let rl = readline.createInterface({
-    //     input: process.stdin,
-    //     output: process.stdout
-    // });
-    // let recursiveQuestion = () => {
-    //     rl.question("MASA> ", (answer) => {
-    //         let index = answer.indexOf(" ");
-    //         let end = index > 0 ? index : undefined;
-    //         let command = answer.substring(0, end);
-    //         let args = answer.split(" ").splice(1) || [];
-
-    //         switch (command) {
-    //             case "players":
-    //                 if (args[0]) {
-    //                     let server = servers.get(args[0]);
-    //                     if (server) {
-    //                         if (server.isJoinable) {
-    //                             console.log(`Server has ${server.playerCount} players!`);
-    //                         } else {
-    //                             console.log(`Server is not joinable!`);
-    //                         }
-    //                     } else {
-    //                         console.log(`Server was not found!`);
-    //                     }
-    //                 }
-    //                 break;
-    //             case "install":
-    //                 serverInstaller();
-    //                 break;
-    //             case "exit":
-    //                 process.exit();
-    //             default:
-    //                 if (answer.length > 0) {
-    //                     console.log("Unknown command!");
-    //                 }
-    //                 break;
-    //         }
-    //         recursiveQuestion();
-    //     });
-    // }
-    // recursiveQuestion();
 
 
     return true;
 }
 
-export const serverInstaller = async () => {
-    let serverList = await loadServerList();
+export const botSetup = async (): Promise<BotConfig> => {
+    console.log(`Welcome to using ${chalk.red("MASA")}. To start off let's run a simple setup!`);
+
+    let options: BotConfig = await inquirer.prompt(
+        [
+            {
+                message: "Enter the bot token",
+                name: "token",
+                type: "input",
+            },
+            {
+                message: "Enter your bot application's client id",
+                name: "clientID",
+                type: "input",
+            },
+            {
+                message: "Enter the server's id",
+                name: "guildID",
+                type: "input",
+            },
+        ],
+    );
+    return options;
+}
+
+export const serverInstaller = async (serverList: ServerMetadata[]) => {
     let options: { [key: string]: any } = {};
 
     options.willInstall = (await inquirer.prompt(
@@ -193,14 +190,13 @@ export const serverInstaller = async () => {
         assert(installer);
 
         await installer.acceptEULA().install(options.dir);
-        serverList.push({
+
+        return {
             name: options.name as string,
-            command: "j",
+            command: `java -Xmx1024M -Xms1024M -jar ${installer.filename} nogui`,
             description: "",
             directory: options.dir as string
-        });
-
-        await writeServerList(serverList);
+        };
     }
 }
 

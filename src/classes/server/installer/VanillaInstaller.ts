@@ -65,9 +65,10 @@ export default class VanillaInstaller extends Installer {
     var res = await axios.get(versionData.url);
     let downloadURL = res.data["downloads"]["server"]["url"];
 
-    let fileName = `server_${version}.jar`;
+    let filename = `server_${version}.jar`;
+    this._filename = filename;
 
-    let jarFileStream = fs.createWriteStream(path.join(directory, fileName));
+    let jarFileStream = fs.createWriteStream(path.join(directory, filename));
 
     this.log("Downloading jar file...");
     var res = await axios.get(downloadURL, {responseType: "stream"});
@@ -76,7 +77,7 @@ export default class VanillaInstaller extends Installer {
 
     return new Promise((resolve) => {
       res.data.on("end", async() => {
-        let server = new GameServer(`java -Xmx1024M -Xms1024M -jar ${fileName} nogui`, directory);
+        let server = new GameServer(`java -Xmx1024M -Xms1024M -jar ${filename} nogui`, directory);
 
         process.stdout.write("Installing...");
 

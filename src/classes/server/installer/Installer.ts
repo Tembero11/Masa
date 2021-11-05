@@ -2,7 +2,6 @@ import assert from "assert";
 import fs from "fs";
 import path from "path";
 import { EulaNotAcceptedError, InstallDirectoryNotEmptyError } from "../../Errors";
-import GameServer from "../GameServer";
 
 export interface VersionManifest {
   latest: {
@@ -24,6 +23,13 @@ export default abstract class Installer {
   eula: boolean = false;
   useLogs: boolean = false;
   version: string;
+
+  protected _filename: string | undefined;
+
+  get filename(): string {
+    assert(this.installed && this._filename);
+    return this._filename;
+  }
 
   constructor(version: string, log = true) {
     this.useLogs = true;

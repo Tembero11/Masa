@@ -12,7 +12,7 @@
 
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { BACKUP_TYPE, createNewBackup } from "../backup";
+import { BACKUP_TYPE } from "../backup";
 import { getDefaultCommandEmbed } from "../helpers";
 import Command from "./general";
 
@@ -28,7 +28,7 @@ export class BackupCommand extends Command {
     let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
 
     try {
-      await createNewBackup(BACKUP_TYPE.UserBackup);
+      // await createNewBackup(BACKUP_TYPE.UserBackup);
       embed.setDescription("Backup succesfully created!");
     }catch(err) {
       embed.setDescription("Backup creation failed!");

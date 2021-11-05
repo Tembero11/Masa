@@ -56,7 +56,7 @@ const getFilesAndDirectories = async(dir: string) => {
 export const createBackup = async(server: GameServer, serverName: string, options?: CreateBackupOptions) => {
     if (!options) options = {};
     let compressionType = options.compressionType || "zip";
-    let backupLimit = options.backupLimit || config.backup.backupLimit;
+    let backupLimit = options.backupLimit || 5;
     let dir = path.join(options.backupsDir || "backups", serverName);
 
     assert(compressionType == "zip", "Unsupported archive type!");
@@ -104,53 +104,6 @@ export const createBackup = async(server: GameServer, serverName: string, option
         await server.events.enableAutosave();
 
         return backupName;
-    }
-}
-
-export const createNewBackup = async (dir: string, isAutomatic = false, backupLimit: number = config["backup"]["backupLimit"]) => {
-    if (isServerJoinable) {
-        let previousBackups: string[] = await fs.promises.readdir(dir)
-        let previousBackupDates: Date[] = previousBackups.map((date) => parseDateTimeString(date as DateString)).sort();
-
-        let quantity: number = previousBackups.length;
-
-
-        const backupName = createDateTimeString();
-
-        if (quantity >= backupLimit) {
-            await fs.promises.rm(path.join(dir, createDateTimeString(previousBackupDates[0])), { 
-                recursive: true, force: true 
-            });
-        }
-
-        // TODO: Remove timeout & add event to ConsoleReader
-        // Also create a better way to expect an event to occur
-        // Make backups zip or tar.gz files
-        // Only copy files that have been edited
-
-        // return new Promise<string>((res, rej) => {
-        //     // Save everything & Stop the locking of the files
-        //     commandProcess?.stdin.write("save-all\nsave-off\n", (err) => {
-        //         if (!err) {
-        //             setTimeout(() => {
-        //                 fse.copy(serverDir, path.join(dir, backupName)).then(() => {
-        //                     // Turn on saving again
-        //                     commandProcess?.stdin.write("save-on\n", (err) => {
-        //                         if (!err) {
-        //                             res(backupName);
-        //                         }else {
-        //                             rej(err);
-        //                         }
-        //                     });
-        //                 }); 
-        //             }, 9999);
-        //         }else {
-        //             rej(err);
-        //         }
-        //     });
-        // });
-    }else {
-        throw "Server is not joinable.";
     }
 }
 

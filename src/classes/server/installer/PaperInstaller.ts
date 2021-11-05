@@ -50,6 +50,7 @@ export default class PaperInstaller extends Installer {
     let latestBuild = builds[builds.length - 1];
 
     let filename = await PaperInstaller.getFilename(version, latestBuild);
+    this._filename = filename;
 
     let downloadURL = `${PaperInstaller.versionManifestURL}/versions/${version}/builds/${latestBuild}/downloads/${filename}`;
     let jarFileStream = fs.createWriteStream(path.join(directory, filename));

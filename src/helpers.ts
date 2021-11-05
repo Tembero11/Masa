@@ -9,7 +9,8 @@ export const serverDir = path.join(process.cwd(), "server");
 
 
 export const isAllowedChannel = (channelID: string) => {
-  for (const allowedChannel of config["allowedChannels"]) {
+  if (!config.allowedChannels) return true;
+  for (const allowedChannel of config.allowedChannels) {
     if (allowedChannel === channelID) {
       return true;
     }
@@ -47,7 +48,8 @@ export const setServerStatus = (serverName: string, server: GameServer, status: 
     case Presence.SERVER_ONLINE:
       let presenceName: string = serverName;
 
-      if (config["showPlayers"]) {
+      // TODO add show players check
+      if (true) {
         if (server.playerCount === 1) {
           presenceName = `${serverName} with ${server.playersArray[0].username}`;
         }else if (server.playerCount > 1) {
