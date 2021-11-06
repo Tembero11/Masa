@@ -1,6 +1,6 @@
 import assert from "assert";
 import { NoPlayerError } from "./Errors";
-import Event, { AutosaveOffEvent, AutosaveOnEvent, PlayerChatEvent, GameReadyEvent, EventType, GameSaveEvent, PlayerJoinEvent, PlayerQuitEvent, UnknownEvent } from "./Event";
+import Event, { AutosaveOffEvent, AutosaveOnEvent, PlayerChatEvent, GameReadyEvent, EventType, GameSaveEvent, PlayerJoinEvent, PlayerQuitEvent, UnknownEvent, PlayerLoginEvent } from "./Event";
 import Player from "./Player";
 import ServerCommunicator from "./server/ServerCommunicator";
 
@@ -32,6 +32,7 @@ export default class ConsoleReader {
     protected usernameRegex = /[A-Za-z0-9_]{3,16}/;
     protected chatMessageRegex = /^<[A-Za-z0-9_]{3,16}> .*/;
     protected loggedInRegex = /[A-Za-z0-9_]{3,16}\[.*\] logged in/;
+    protected joinedRegex = /[A-Za-z0-9_]{3,16} joined the game/;
     protected quitRegex = /[A-Za-z0-9_]{3,16} lost connection/;
     
 
@@ -44,6 +45,8 @@ export default class ConsoleReader {
             }
             if (this.isQuitEvent) {
                 return new PlayerQuitEvent(this.date, this.getQuitPlayer(), this.getQuitReason());
+            }else if (this.isLoginEvent) {
+                return new PlayerLoginEvent(this.date, this.getLoggedInPlayer());
             }else if (this.isJoinEvent) {
                 return new PlayerJoinEvent(this.date, this.getJoinedPlayer());
             }
@@ -109,11 +112,32 @@ export default class ConsoleReader {
         throw new NoPlayerError();
     }
 
-    get isJoinEvent(): boolean {
-        if (this._eventType === EventType.PlayerJoinEvent) {
+    get isLoginEvent(): boolean {
+        if (this._eventType === EventType.PlayerLoginEvent) {
             return true;
         }
         if (!this.isChatMessage && this.message.search(this.loggedInRegex) > -1) {
+            this._eventType = EventType.PlayerLoginEvent;
+            return true; 
+        }
+
+        return false;
+    }
+    getLoggedInPlayer() {
+        if (this.isLoginEvent) {
+            let start = 0;
+            let end = this.message.indexOf("[");
+            let playerName = this.message.substring(start, end);
+            let player = new Player(playerName, this.server);
+            return player;
+        }
+        throw new NoPlayerError();
+    }
+
+    get isJoinEvent(): boolean {
+        if (this._eventType === EventType.PlayerJoinEvent) return true;
+
+        if (!this.isChatMessage && this.message.search(this.joinedRegex) > -1) {
             this._eventType = EventType.PlayerJoinEvent;
             return true; 
         }
@@ -127,9 +151,10 @@ export default class ConsoleReader {
     getJoinedPlayer(): Player {
         if (this.isJoinEvent) {
             let start = 0;
-            let end = this.message.indexOf("[");
+            let end = this.message.indexOf(" ");
             let playerName = this.message.substring(start, end);
-            let player = new Player(playerName, this.server);
+            let player = this.players.get(playerName);
+            assert(player, new NoPlayerError());
             return player;
         }
         throw new NoPlayerError();

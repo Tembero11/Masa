@@ -31,6 +31,9 @@ export interface ServerMetadata {
     backupLimit: number,
     backupTime: string | number,
     backupArchiveType: "zip" | "tar"
+  },
+  advanced?: {
+    welcomeMsg?: string
   }
 }
 

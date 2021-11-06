@@ -3,7 +3,7 @@ import assert from "assert";
 import internal, { EventEmitter, Readable, Writable } from "stream";
 import {ConsoleReader} from "../MasaAPI";
 import { NoListenersError, NoStandardStreamsError } from "../Errors";
-import Event, { AutosaveOffEvent, AutosaveOnEvent, GameReadyEvent, GameSaveEvent, PlayerJoinEvent, CommunicatorEvent, UnknownEvent, GameCloseEvent, PlayerQuitEvent } from "../Event";
+import Event, { AutosaveOffEvent, AutosaveOnEvent, GameReadyEvent, GameSaveEvent, PlayerJoinEvent, CommunicatorEvent, UnknownEvent, GameCloseEvent, PlayerQuitEvent, PlayerLoginEvent } from "../Event";
 import Player from "../Player";
 import { StandardEmitter } from "./StandardEmitter";
 
@@ -70,7 +70,7 @@ export default class ServerCommunicator {
 
         this.events = new CommunicatorEventEmitter(this);
 
-        this.on("join", this.onJoin.bind(this));
+        this.on("login", this.onLogin.bind(this));
         this.on("quit", this.onLeave.bind(this));
         this.on("ready", this.onReady.bind(this));
     }
@@ -106,7 +106,7 @@ export default class ServerCommunicator {
         this.std.emit("out", reader);
         this.notifyListeners(reader.generateEvent());
     }
-    private onJoin(e: PlayerJoinEvent) {
+    private onLogin(e: PlayerLoginEvent) {
         this._players.set(e.player.username, e.player);
     }
     private onLeave(e: PlayerQuitEvent) {

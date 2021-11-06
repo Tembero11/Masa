@@ -43,6 +43,10 @@ export default class Player {
     setLevel(exp: number) {
       this.server.std.emit("in", `xp set ${this.username} ${Math.floor(exp)} levels\n`);
     }
+
+    sendMessage(message: string) {
+      this.server.std.emit("in", `tellraw ${this.username} "${message}"\n`);
+    }
   
     constructor(username: string, server: ServerCommunicator, uuid?: string) {
       this.username = username;

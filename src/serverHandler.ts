@@ -40,6 +40,12 @@ export const serverInitializer = (serverMeta: ServerMetadata[]) => {
     setServerStatus(meta.name, server, Presence.SERVER_OFFLINE, true);
 
     server.on("join", (e) => {
+      if (meta.advanced?.welcomeMsg) {
+        let msg = meta.advanced.welcomeMsg;
+        msg = msg.replaceAll("{PLAYER}", e.player.username);
+        msg = msg.replaceAll("{ONLINE}", e.player.server.playerCount.toString());
+        e.player.sendMessage(msg);
+      }
       setServerStatus(meta.name, server, Presence.SERVER_ONLINE, true);
     });
     server.on("quit", (e) => {

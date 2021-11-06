@@ -3,6 +3,7 @@ import Player from "./Player";
 export interface CommunicatorEvent {
     event: UnknownEvent,
     join: PlayerJoinEvent,
+    login: PlayerLoginEvent,
     quit: PlayerQuitEvent,
     ready: GameReadyEvent
     save: GameSaveEvent
@@ -22,6 +23,10 @@ export enum EventType {
      * Called when the player has joined the game
      */
     PlayerJoinEvent = "join",
+    /**
+     * Called when the player is joining the game
+     */
+    PlayerLoginEvent = "login",
     /**
      * Called when a player has quit the game
      */
@@ -78,6 +83,16 @@ export class UnknownEvent extends Event {
 export class PlayerJoinEvent extends Event {
     readonly date: Date;
     readonly type = EventType.PlayerJoinEvent;
+    readonly player: Player;
+    constructor(date: Date, player: Player) {
+        super();
+        this.date = date;
+        this.player = player;
+    }
+}
+export class PlayerLoginEvent extends Event {
+    readonly date: Date;
+    readonly type = EventType.PlayerLoginEvent;
     readonly player: Player;
     constructor(date: Date, player: Player) {
         super();
