@@ -1,4 +1,4 @@
-import { BACKUP_TYPE, createBackupsFolder } from "./backup";
+import { BackupType, createBackupsFolder } from "./backup";
 import figlet from "figlet";
 import fs from "fs";
 import path from "path";
@@ -43,8 +43,8 @@ const setup = async () => {
         }
     });
 
-    await createBackupsFolder(BACKUP_TYPE.AutomaticBackup);
-    await createBackupsFolder(BACKUP_TYPE.UserBackup);
+    await createBackupsFolder(BackupType.Automatic);
+    await createBackupsFolder(BackupType.User);
 
     const serverList = await loadConfig<ServerMetadata[]>("servers.json");
     config = await loadConfig<BotConfig>("bot.json");

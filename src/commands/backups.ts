@@ -1,7 +1,9 @@
 import  { SlashCommandBuilder } from "@discordjs/builders";
+import assert from "assert";
 import { CommandInteraction } from "discord.js";
-import { BACKUP_TYPE, listBackups } from "../backup";
+import { BackupMetadata, BackupType, listBackups } from "../backup";
 import { getDefaultCommandEmbed } from "../helpers";
+import * as ServerHandler from "../serverHandler";
 import Command from "./general";
 
 export class BackupsCommand extends Command {
@@ -10,17 +12,24 @@ export class BackupsCommand extends Command {
   aliases = [];
   builder = new SlashCommandBuilder()
 	.setName(this.name)
-	.setDescription(this.desc);
+	.setDescription(this.desc)
+  .addStringOption(option => option.setName("server").setDescription("Enter the name of the server you want a backups list from").setRequired(true));
 
   handler = async(interaction: CommandInteraction): Promise<void> => {
     let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL())
 
     try {
-      let autoBackups = await listBackups(BACKUP_TYPE.AutomaticBackup);
-      let userBackups = await listBackups(BACKUP_TYPE.UserBackup);
+      let serverName = interaction.options.getString("server");
+      assert(serverName);
 
-      const mapper = (backup: string) => {
-        return `- ${backup}`
+      let server = ServerHandler.servers.get(serverName);
+      assert(server);
+
+      let autoBackups = await listBackups(serverName, BackupType.Automatic);
+      let userBackups = await listBackups(serverName, BackupType.User);
+
+      const mapper = (backup: BackupMetadata) => {
+        return `- ${backup.filename}`
       }
       let backups = [
         "**User backups**",

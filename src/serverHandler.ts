@@ -2,7 +2,7 @@ import { setServerStatus } from "./helpers";
 import {GameServer} from "./classes/MasaAPI";
 import { ServerMetadata } from "./config";
 import assert from "assert";
-import { BACKUP_TYPE, createBackup } from "./backup";
+import { BackupType, createBackup } from "./backup";
 import chalk from "chalk";
 import ms from "ms";
 
@@ -69,23 +69,22 @@ export const serverInitializer = (serverMeta: ServerMetadata[]) => {
 
     // Setup backups
     if (meta.backups) {
-      const { backupTime } = meta.backups;
+      const { backupInterval } = meta.backups;
       const { backupLimit } = meta.backups;
-      const { backupArchiveType } = meta.backups || "zip";
 
-      let backupTimeMs = typeof backupTime == "string" ? ms(backupTime) : backupTime;
+      let backupIntervalMs = typeof backupInterval == "string" ? ms(backupInterval) : backupInterval;
 
-      assert(backupTime && backupLimit);
+      assert(backupInterval && backupLimit);
 
-      console.log(`Automatic backups are made every ${ms(backupTimeMs, {long: true})} for server "${chalk.underline(meta.name)}".`);
+      console.log(`Automatic backups are made every ${ms(backupIntervalMs, {long: true})} for server "${chalk.underline(meta.name)}".`);
 
       setInterval(() => {
-        createBackup(server, meta.name, { backupLimit, compressionType: backupArchiveType }).then((backupName) => {
-          console.log(`An automatic backup was succesfully created! ${backupName || ""}`);
+        createBackup(server, meta.name, BackupType.Automatic, { backupLimit }).then((backup) => {
+          console.log(`An automatic backup was succesfully created! ${backup.filename || ""}`);
         }).catch((err) => {
           console.warn(chalk.yellow(err));
         });
-      }, backupTimeMs);
+      }, backupIntervalMs);
     }else {
       console.warn(chalk.yellow(`Automatic backups are ${chalk.bold("disabled")} for server "${chalk.underline(meta.name)}".`))
     }

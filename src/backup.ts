@@ -1,24 +1,39 @@
 import fs from "fs";
 import path from "path";
 import AdmZip from "adm-zip";
-import { config } from "../index";
-import * as fse from "fs-extra";
-import glob from "glob";
-import { ConsoleColor, createDateTimeString, DateString, parseDateTimeString, serverDir } from "./helpers";
-import {  isServerJoinable } from "./serverHandler";
 import { GameServer } from "./classes/MasaAPI";
 import chalk from "chalk";
 import assert from "assert";
+import date from "date-and-time";
+import levenshtein from "fastest-levenshtein";
 
-export const BACKUP_TYPE = {
-    UserBackup: path.join(process.cwd(), "user_backups"),
-    AutomaticBackup: path.join(process.cwd(), "backups"),
+export enum BackupType {
+    User = "user",
+    Automatic = "auto"
 }
+
+const backupTypeToPath = (type: BackupType, serverName: string) => path.join(process.cwd(), "backups", serverName, type);
+
+export interface BackupMetadata {
+    name?: string,
+    fullname: string
+    filename: string,
+    created: Date,
+    ext: string
+}
+
+
+
+const datePattern = date.compile("DD.MM.YYYY-HH.mm.ss");
+const backupExt = ".zip";
+const warnFileContent = "Do not modify the files or folders here unless you know what you're doing!";
+
 
 /**
  * Creates backup folder if needed
  */
-export const createBackupsFolder = async (dir: string) => {
+export const createBackupsFolder = async (type: BackupType) => {
+    const dir = path.join(process.cwd(), "backups")
     let exists = await fs.existsSync(dir);
 
 
@@ -26,16 +41,13 @@ export const createBackupsFolder = async (dir: string) => {
         console.log(`Backup folder not found. Creating... "${chalk.bgYellowBright(dir)}"`);
 
         await fs.promises.mkdir(dir);
+
+        await fs.promises.writeFile(path.join(dir, "WARNING.txt"), warnFileContent, "ascii");
     } else {
         console.log(`Backup folder exists already. Appending new backups to "${chalk.yellowBright(dir)}"!`, );
     }
 }
 
-interface CreateBackupOptions {
-    backupLimit?: number,
-    backupsDir?: string,
-    compressionType?: "zip" | "tar"
-}
 
 const getFilesAndDirectories = async(dir: string) => {
     let result: string[] = [];
@@ -53,76 +65,145 @@ const getFilesAndDirectories = async(dir: string) => {
     return result;
 }
 
-export const createBackup = async(server: GameServer, serverName: string, options?: CreateBackupOptions) => {
-    if (!options) options = {};
-    let compressionType = options.compressionType || "zip";
-    let backupLimit = options.backupLimit || 5;
-    let dir = path.join(options.backupsDir || "backups", serverName);
+interface CreateBackupOptions {
+    backupLimit?: number,
+    name?: string
+}
 
-    assert(compressionType == "zip", "Unsupported archive type!");
+export const createBackup = async(server: GameServer, serverName: string, backupType: BackupType, options?: CreateBackupOptions) => {
+    if (!options) options = {};
+
+    let backupLimit = options.backupLimit || 5;
+    const dir = backupTypeToPath(backupType, serverName);
 
     if (!fs.existsSync(dir)) {
-        await fs.promises.mkdir(dir);
+        await fs.promises.mkdir(dir, { recursive: true });
     }
 
     if (server.isJoinable) {
         await server.events.disableAutosave();
-        // await server.events.saveGame();
+        await server.events.saveGame();
+    }
 
-        let previousBackups: string[] = await fs.promises.readdir(dir);
-        let previousBackupDates: Date[] = previousBackups.map((date) => parseDateTimeString(date.replace(".zip", "") as DateString)).sort();
+    const previousBackups = (await listBackups(serverName, backupType)).sort();
 
-        let quantity: number = previousBackups.length;
+    let quantity: number = previousBackups.length;
 
-        if (quantity >= backupLimit) {
-            await fs.promises.unlink(path.join(dir, createDateTimeString(previousBackupDates[0]) + ".zip"));
+    if (quantity >= backupLimit) {
+        await fs.promises.unlink(path.join(dir, previousBackups[0].filename));
+    }
+
+    const created = new Date();
+    let backupFullName = date.format(created, datePattern);
+    if (options.name) {
+        backupFullName = `${backupFullName}_${options.name}`;
+    }
+
+    // Create backup
+    let zip = new AdmZip();
+
+    const serverDir = path.resolve(server.dir);
+
+    let files = await getFilesAndDirectories(serverDir);
+    for (const fp of files) {
+        if (path.extname(fp) == ".jar") continue;
+        let filepath = fp.replace(serverDir, "").replaceAll("\\", "/");
+        filepath = filepath.indexOf("/") == 0 ? filepath.substring(1) : filepath;
+        try {
+            zip.addFile(filepath, await fs.promises.readFile(fp));
+        } catch (err) {
+            console.warn(chalk.yellow(`Failed to backup "${filepath}"! ${backupFullName}`));
+            continue;
         }
+    }
+    if (!zip.getEntry("masa.txt")) {
+        // Add a masa.txt file if it doesn't exist
+        zip.addFile("masa.txt", Buffer.from(`# This backup was created with MASA\n${new Date().getTime()}`, "utf8"));
+    }
 
-        let backupName = createDateTimeString();
-
-        // Create backup
-        if (compressionType == "zip") {
-            let zip = new AdmZip();
-
-            let files = await getFilesAndDirectories(server.dir);
-            for (const filepath of files) {
-                try {
-                    zip.addFile(filepath, await fs.promises.readFile(filepath));
-                }catch(err) {
-                    console.warn(chalk.yellow(`Failed to backup "${filepath}"! ${backupName}`));
-                    continue;
-                }
-            }
-
-
-            // files.forEach((filename) => zip.addLocalFile(path.join(server.dir, filename)));
-            zip.addFile("masa.txt", Buffer.from(`This backup was created with MASA`, "utf8"));
-
-            zip.writeZip(path.join(dir, `${backupName}.zip`))
-        }
-
+    if (server.isJoinable) {
         await server.events.enableAutosave();
+    }
+    
+    return new Promise<BackupMetadata>((res, rej) => {
+        zip.writeZip(path.join(dir, backupFullName + backupExt), (err) => {
+            if (!err) {
+                res({
+                    name: options?.name,
+                    fullname: backupFullName,
+                    filename: backupFullName + backupExt,
+                    created,
+                    ext: backupExt
+                });
+            }else {
+                rej(err);
+            }
+        });
+    });
+}
+export const parseBackupName = (filename: string): BackupMetadata => {
+    const fullname = filename.replace(backupExt, "");
 
-        return backupName;
+    const [createdStr, name] = fullname.split("_");
+
+    const created = date.parse(createdStr, datePattern);
+
+    return {
+        name,
+        fullname,
+        filename,
+        created,
+        ext: backupExt
     }
 }
 
-export const listBackups = async(dir: string) => fs.promises.readdir(dir);
+export const findBackupByName = async(serverName: string, backupName: string) => {
+    const backups = await listBackups(serverName);
+    const backup = parseBackupName(backupName);
 
-export const getLatestBackup = async(checkAll: boolean = true, dir?: string) => {
-    let backups;
-    if (checkAll) {
-        let autoBackups: Date[] = (await fs.promises.readdir(BACKUP_TYPE.AutomaticBackup)).map((date: string) => parseDateTimeString(date as DateString));
-        let userBackup: Date[] = (await fs.promises.readdir(BACKUP_TYPE.UserBackup)).map((date: string) => parseDateTimeString(date as DateString));
+    return backups.sort((a, b) => {
+        if (backup.name) {
+            const aName = a.name || "";
+            const bName = b.name || "";
+            const dstA = levenshtein.distance(aName, backup.name);
+            const dstB = levenshtein.distance(bName, backup.name);
+            if (dstA < dstB) {
+                return -1;
+            }
+            return 1;
+        }
+        
 
-        backups = [...autoBackups, ...userBackup].sort();
-    }else if (dir) {
-        backups = (await fs.promises.readdir(dir)).map((date: string) => parseDateTimeString(date as DateString));
-    }else {
-        throw "Check all was false but dir was not provided!";
+        const dateDstA = backup.created.getTime() - a.created.getTime();
+        const dateDstB = backup.created.getTime() - b.created.getTime();
+        if (dateDstA < dateDstB) {
+            return 1;
+        }
+        return -1;
+    });
+}
+
+
+export const restoreFromBackup = async(server: GameServer, serverName: string, backupName: string) => {
+    
+}
+
+export const listBackups = async(serverName: string, type: BackupType | BackupType[] = [BackupType.Automatic, BackupType.User]): Promise<BackupMetadata[]> => {
+    let types = Array.isArray(type) ? type : [type];
+
+    let backups = [];
+
+    for (const t of types) {
+        backups.push(...await fs.promises.readdir(backupTypeToPath(t, serverName)));
     }
 
-    
-    
-    return createDateTimeString(backups[backups.length - 1]);
+    return backups.map(parseBackupName);
+};
+
+
+export const getLatestBackup = async(serverName: string, type: BackupType | BackupType[] = [BackupType.Automatic, BackupType.User]): Promise<BackupMetadata | null> => {
+    let backups = (await listBackups(serverName, type)).sort();
+    const latest: BackupMetadata | undefined = backups[backups.length - 1];
+    return latest || null;
 }
+findBackupByName("test", "09.11.2021-18.48.15.zip");

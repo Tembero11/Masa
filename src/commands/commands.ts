@@ -18,5 +18,5 @@ export default Object.freeze([
   new RestartCommand(),
   new StartCommand(),
   new StopCommand(),
-  new LatestCommand()
+  new LatestCommand(),
 ].reduce((map, obj) => map.set(obj.name, obj), new Map<string, Command>()));
