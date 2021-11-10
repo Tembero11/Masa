@@ -2,7 +2,7 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction, MessageEmbed } from "discord.js";
 import { generateButtonRow, getDefaultCommandEmbed } from "../helpers";
 import Command from "./general";
-import * as ServerHandler from "../serverHandler";
+import { ServerHandler } from "../serverHandler";
 import assert from "assert";
 
 export class StartCommand extends Command {
@@ -21,7 +21,7 @@ export class StartCommand extends Command {
       let serverName = interaction.options.getString("server");
       assert(serverName);
 
-      let server = ServerHandler.servers.get(serverName);
+      let server = ServerHandler.getServerByName(serverName);
       assert(server);
 
       if (server.hasStreams) {

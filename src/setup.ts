@@ -2,8 +2,8 @@ import { BackupType, createBackupsFolder } from "./backup";
 import figlet from "figlet";
 import fs from "fs";
 import path from "path";
-import { serverInitializer } from "./serverHandler";
-import {  BotConfig, ServerMetadata, createConfigs, loadConfig } from "./config";
+import { ServerHandler } from "./serverHandler";
+import {  BotConfig, ServerMetadata, createConfigs, loadConfig, prettyPrint, writeConfig } from "./config";
 import inquirer from "inquirer";
 import inquirerAutocompletePrompt from "inquirer-autocomplete-prompt";
 import VanillaInstaller from "./classes/server/installer/VanillaInstaller";
@@ -12,6 +12,7 @@ import Installer, { VersionManifest } from "./classes/server/installer/Installer
 import PaperInstaller from "./classes/server/installer/PaperInstaller";
 import assert from "assert";
 import { client } from "./client";
+import { nanoid } from "nanoid";
 
 inquirer.registerPrompt("autocomplete", inquirerAutocompletePrompt);
 
@@ -35,9 +36,9 @@ const setup = async () => {
     await createConfigs(async(filename) => {
         switch (filename) {
             case "bot.json":
-                return JSON.stringify(await botSetup(), null, 2);
+                return prettyPrint(await botSetup());
             case "servers.json":
-                return JSON.stringify([await serverInstaller([])], null, 2);
+                return prettyPrint([await serverInstaller([])]);
             default:
                 return null;
         }
@@ -46,7 +47,16 @@ const setup = async () => {
     await createBackupsFolder(BackupType.Automatic);
     await createBackupsFolder(BackupType.User);
 
-    const serverList = await loadConfig<ServerMetadata[]>("servers.json");
+    let serverList = await loadConfig<ServerMetadata[]>("servers.json");
+    serverList = serverList.map((e) => {
+        if (!e.uuid) {
+            e.uuid = nanoid(9);
+        }
+        return e;
+    });
+    await writeConfig("servers.json", prettyPrint(serverList));
+    
+
     config = await loadConfig<BotConfig>("bot.json");
 
 
@@ -54,7 +64,7 @@ const setup = async () => {
     await client.login(config["token"]);
     console.log(serverList);
 
-    serverInitializer(serverList);
+    ServerHandler.serverInitializer(serverList);
 
 
     return true;

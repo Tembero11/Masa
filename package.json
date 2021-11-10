@@ -29,6 +29,7 @@
     "inquirer-autocomplete-prompt": "^1.4.0",
     "js-yaml": "^4.1.0",
     "ms": "^2.1.2",
+    "nanoid": "^3.1.30",
     "socket.io-client": "^4.2.0"
   },
   "devDependencies": {

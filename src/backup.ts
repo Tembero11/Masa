@@ -21,6 +21,16 @@ export interface BackupMetadata {
     created: Date,
     ext: string
 }
+export interface BackupManifest {
+    _comment: string,
+    backups: {
+        [key: string]: {
+            name?: string,
+            desc?: string,
+            date: number
+        }
+    }
+}
 
 
 

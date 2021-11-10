@@ -1,26 +1,8 @@
-// Commands.addCommand("restart", "Restart the server", (msg) => {
-//   let embed = getDefaultCommandEmbed(msg)
-//   .setDescription("Server is restarting...");
-
-//   msg.channel.send(embed).then((msg) => {
-//     ServerHandler.restart().then((result) => {
-//       embed.setDescription(result.status);
-//       msg.edit(embed);
-//     }).catch((result) => {
-//       embed.setDescription(result.status);
-//       msg.edit(embed);
-//     });
-//   })
-// });
-// Commands.addCommand("easteregg", "An easter egg :egg:", (msg) => {
-//   msg.reply(config["easteregg"][Math.floor(Math.random() * config["easteregg"].length)]);
-// });
-
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import { generateButtonRow, getDefaultCommandEmbed } from "../helpers";
 import Command from "./general";
-import * as ServerHandler from "../serverHandler";
+import { ServerHandler } from "../serverHandler";
 import assert from "assert";
 
 export class RestartCommand extends Command {
@@ -39,7 +21,7 @@ export class RestartCommand extends Command {
       let serverName = interaction.options.getString("server");
       assert(serverName);
 
-      let server = ServerHandler.servers.get(serverName);
+      let server = ServerHandler.getServerByName(serverName);
       assert(server);
 
       embed.setDescription(`Attempting to ${server.hasStreams ? "restart" : "start"} **${serverName}**...`);

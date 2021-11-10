@@ -3,7 +3,7 @@ import assert from "assert";
 import { CommandInteraction } from "discord.js";
 import { BackupMetadata, BackupType, listBackups } from "../backup";
 import { getDefaultCommandEmbed } from "../helpers";
-import * as ServerHandler from "../serverHandler";
+import { ServerHandler } from "../serverHandler";
 import Command from "./general";
 
 export class BackupsCommand extends Command {
@@ -22,7 +22,7 @@ export class BackupsCommand extends Command {
       let serverName = interaction.options.getString("server");
       assert(serverName);
 
-      let server = ServerHandler.servers.get(serverName);
+      let server = ServerHandler.getServerByName(serverName);
       assert(server);
 
       let autoBackups = await listBackups(serverName, BackupType.Automatic);

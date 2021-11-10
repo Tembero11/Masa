@@ -14,6 +14,7 @@ export interface ServerMetadata {
    * The name of the minecraft server
    */
   name: string
+  uuid: string
   description: string
   /**
    * the command that starts the server. This runs inside the server folder
@@ -83,10 +84,18 @@ export const createConfigs = async(content?: (filename: string) => Promise<strin
   return createdConfigs;
 }
 
+export const prettyPrint = (data: Object) => {
+  return JSON.stringify(data, null, 2);
+}
+
 export const loadConfig = async<T extends any>(filename: string): Promise<T> => {
   const filePath = path.join(configDir, filename);
   
   const content = await fs.promises.readFile(filePath, "utf8");
   const contentParsed = JSON.parse(content);
   return contentParsed as T;
+}
+
+export const writeConfig = async(filename: string, data: string) => {
+  await fs.promises.writeFile(path.join(configDir, filename), data, {encoding: "utf8"});
 }

@@ -2,7 +2,7 @@ import Discord, { Intents, MessageEmbed } from "discord.js";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
 import { setPresence } from "./helpers";
-import { Presence, start, stop, restart, servers } from "./serverHandler";
+import { Presence, ServerHandler } from "./serverHandler";
 import setup, { config } from "./setup";
 import commands from "./commands/commands";
 
@@ -64,24 +64,24 @@ client.on("interactionCreate", async (interaction) => {
   let embed = new MessageEmbed();
 
   if (action && serverName) {
-    let server = servers.get(serverName);
+    let server = ServerHandler.getServerByName(serverName);
     if (server) {
       switch (action) {
         case "server_start":
           await interaction.deferReply({ephemeral: true});
-          await start(serverName);
+          await ServerHandler.start(serverName);
           embed.setDescription(`**${serverName}** started succesfully!`);
           await interaction.editReply({embeds: [embed]});
           break;
         case "server_stop":
           await interaction.deferReply({ephemeral: true});
-          await stop(serverName);
+          await ServerHandler.stop(serverName);
           embed.setDescription(`**${serverName}** stopped succesfully!`);
           await interaction.editReply({embeds: [embed]});
           break;
         case "server_restart":
           await interaction.deferReply({ephemeral: true});
-          await restart(serverName);
+          await ServerHandler.restart(serverName);
           embed.setDescription(`**${serverName}** restarted succesfully!`);
           await interaction.editReply({embeds: [embed]});
           break;

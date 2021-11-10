@@ -1,21 +1,9 @@
-// Commands.addCommand("backup", "Create a backup", (msg) => {
-//   createNewBackup(BACKUP_TYPE.UserBackup).then(() => {
-//     let embed = getDefaultCommandEmbed(msg).setDescription("Backup succesfully created!");
-
-//     msg.channel.send(embed);
-//   }).catch(() => {
-//     let embed = getDefaultCommandEmbed(msg).setDescription("Backup creation failed!");
-
-//     msg.channel.send(embed);
-//   });
-// });
-
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import { BackupType, createBackup } from "../backup";
 import { getDefaultCommandEmbed } from "../helpers";
 import Command from "./general";
-import * as ServerHandler from "../serverHandler";
+import { ServerHandler } from "../serverHandler";
 import assert from "assert";
 
 export class BackupCommand extends Command {
@@ -35,7 +23,7 @@ export class BackupCommand extends Command {
       let serverName = interaction.options.getString("server");
       assert(serverName);
 
-      let server = ServerHandler.servers.get(serverName);
+      let server = ServerHandler.getServerByName(serverName);
       assert(server);
 
       const backupName = interaction.options.getString("name") || undefined;

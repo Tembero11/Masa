@@ -5,6 +5,7 @@ import assert from "assert";
 import { BackupType, createBackup } from "./backup";
 import chalk from "chalk";
 import ms from "ms";
+import { nanoid } from "nanoid";
 
 // export let commandProcess: ChildProcessWithoutNullStreams | undefined;
 
@@ -27,97 +28,121 @@ export enum Presence {
   SERVER_OFFLINE = "Server is offline."
 }
 
-// export let servers: GameServer[] = [];
+export abstract class ServerHandler {
+  /**
+   * Map has names as keys
+   */
+  private static servers = new Map<string, GameServer>();
+  /**
+   * Map has ids as keys
+   */
+  private static ids = new Map<string, string>();
 
-export let servers = new Map<string, GameServer>();
-
-export const serverInitializer = (serverMeta: ServerMetadata[]) => {
-  serverMeta.forEach((meta) => {
-    assert(!servers.get(meta.name), "One or more servers have the same name!");
-
-    let server = new GameServer(meta.command, meta.directory);
-
-    setServerStatus(meta.name, server, Presence.SERVER_OFFLINE, true);
-
-    server.on("join", (e) => {
-      if (meta.advanced?.welcomeMsg) {
-        let msg = meta.advanced.welcomeMsg;
-        msg = msg.replaceAll("{PLAYER}", e.player.username);
-        msg = msg.replaceAll("{ONLINE}", e.player.server.playerCount.toString());
-        e.player.sendMessage(msg);
-      }
-      setServerStatus(meta.name, server, Presence.SERVER_ONLINE, true);
-    });
-    server.on("quit", (e) => {
-      setServerStatus(meta.name, server, Presence.SERVER_ONLINE, true);
-    });
-
-    server.on("ready", () => {
-      server.events.disableAutosave();
-      setServerStatus(meta.name, server, Presence.SERVER_ONLINE, true);
-    });
-
-    if (meta.logs) {
-      console.log(`Logs are enabled on "${chalk.underline(meta.name)}"`)
-      server.std.on("out", (reader) => {
-        process.stdout.write(reader.data);
-      });
-    }
-
-    server.on("close", e => setServerStatus(meta.name, server, Presence.SERVER_OFFLINE, true));
-
-
-    // Setup backups
-    if (meta.backups) {
-      const { backupInterval } = meta.backups;
-      const { backupLimit } = meta.backups;
-
-      let backupIntervalMs = typeof backupInterval == "string" ? ms(backupInterval) : backupInterval;
-
-      assert(backupInterval && backupLimit);
-
-      console.log(`Automatic backups are made every ${ms(backupIntervalMs, {long: true})} for server "${chalk.underline(meta.name)}".`);
-
-      setInterval(() => {
-        createBackup(server, meta.name, BackupType.Automatic, { backupLimit }).then((backup) => {
-          console.log(`An automatic backup was succesfully created! ${backup.filename || ""}`);
-        }).catch((err) => {
-          console.warn(chalk.yellow(err));
-        });
-      }, backupIntervalMs);
-    }else {
-      console.warn(chalk.yellow(`Automatic backups are ${chalk.bold("disabled")} for server "${chalk.underline(meta.name)}".`))
-    }
-
-
-    servers.set(meta.name, server);
-  });
-}
-
-export const start = async(serverName: string) => {
-  let server = servers.get(serverName);
-  assert(server);
-  server.start();
-
-  return await server.waitfor("ready");
-}
-
-export const stop = async(serverName: string) => {
-  let server = servers.get(serverName);
-  assert(server);
-  return await server.stop();
-}
-
-export const restart = async(serverName: string) => {
-  let server = servers.get(serverName);
-  assert(server);
-
-  if (server.hasStreams) {
-    await server.stop();
+  static getServerByName(serverName: string): GameServer | undefined {
+    return ServerHandler.servers.get(serverName);
   }
-  await server.start();
+  static getServerById(id: string): GameServer | undefined {
+    const name = ServerHandler.idToName(id);
+    if (name) {
+      return ServerHandler.servers.get(name);
+    }
+  }
+  static nameToId(name: string) {
+    return [...ServerHandler.ids.entries()].find((e) => e[1] == name);
+  }
+  static idToName(id: string) {
+    return ServerHandler.ids.get(id);
+  }
+  static start = async(serverName: string) => {
+    let server = ServerHandler.servers.get(serverName);
+    assert(server);
+    server.start();
+  
+    return await server.waitfor("ready");
+  }
+  
+  static stop = async(serverName: string) => {
+    let server = ServerHandler.servers.get(serverName);
+    assert(server);
+    return await server.stop();
+  }
+  
+  static restart = async(serverName: string) => {
+    let server = ServerHandler.servers.get(serverName);
+    assert(server);
+  
+    if (server.hasStreams) {
+      await server.stop();
+    }
+    await server.start();
+  
+    return await server.waitfor("ready");
+  }
 
-  return await server.waitfor("ready");
+
+  static serverInitializer = (serverMeta: ServerMetadata[]) => {
+    serverMeta.forEach((meta) => {
+      assert(!ServerHandler.servers.get(meta.name), "One or more servers have the same name!");
+  
+      let server = new GameServer(meta.command, meta.directory);
+  
+      setServerStatus(meta.name, server, Presence.SERVER_OFFLINE, true);
+  
+      server.on("join", (e) => {
+        if (meta.advanced?.welcomeMsg) {
+          let msg = meta.advanced.welcomeMsg;
+          msg = msg.replaceAll("{PLAYER}", e.player.username);
+          msg = msg.replaceAll("{ONLINE}", e.player.server.playerCount.toString());
+          e.player.sendMessage(msg);
+        }
+        setServerStatus(meta.name, server, Presence.SERVER_ONLINE, true);
+      });
+      server.on("quit", (e) => {
+        setServerStatus(meta.name, server, Presence.SERVER_ONLINE, true);
+      });
+  
+      server.on("ready", () => {
+        server.events.disableAutosave();
+        setServerStatus(meta.name, server, Presence.SERVER_ONLINE, true);
+      });
+  
+      if (meta.logs) {
+        console.log(`Logs are enabled on "${chalk.underline(meta.name)}"`)
+        server.std.on("out", (reader) => {
+          process.stdout.write(reader.data);
+        });
+      }
+  
+      server.on("close", e => setServerStatus(meta.name, server, Presence.SERVER_OFFLINE, true));
+  
+  
+      // Setup backups
+      if (meta.backups) {
+        const { backupInterval } = meta.backups;
+        const { backupLimit } = meta.backups;
+  
+        let backupIntervalMs = typeof backupInterval == "string" ? ms(backupInterval) : backupInterval;
+  
+        assert(backupInterval && backupLimit);
+  
+        console.log(`Automatic backups are made every ${ms(backupIntervalMs, {long: true})} for server "${chalk.underline(meta.name)}".`);
+  
+        setInterval(() => {
+          createBackup(server, meta.name, BackupType.Automatic, { backupLimit }).then((backup) => {
+            console.log(`An automatic backup was succesfully created! ${backup.filename || ""}`);
+          }).catch((err) => {
+            console.warn(chalk.yellow(err));
+          });
+        }, backupIntervalMs);
+      }else {
+        console.warn(chalk.yellow(`Automatic backups are ${chalk.bold("disabled")} for server "${chalk.underline(meta.name)}".`))
+      }
+  
+  
+      ServerHandler.servers.set(meta.name, server);
+      ServerHandler.ids.set(meta.uuid, meta.name);
+    });
+  }
 }
 
 // export const start = () => {

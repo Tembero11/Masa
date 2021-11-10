@@ -4,7 +4,7 @@ import { CommandInteraction } from "discord.js";
 import { BackupMetadata, BackupType, getLatestBackup } from "../backup";
 import { getDefaultCommandEmbed } from "../helpers";
 import Command from "./general";
-import * as ServerHandler from "../serverHandler";
+import { ServerHandler } from "../serverHandler";
 import date from "date-and-time";
 
 export class LatestCommand extends Command {
@@ -22,7 +22,7 @@ export class LatestCommand extends Command {
       let serverName = interaction.options.getString("server");
       assert(serverName);
 
-      let server = ServerHandler.servers.get(serverName);
+      let server = ServerHandler.getServerByName(serverName);
       assert(server);
 
       latest = await getLatestBackup(serverName);
