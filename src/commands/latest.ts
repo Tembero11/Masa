@@ -1,11 +1,8 @@
 import  { SlashCommandBuilder } from "@discordjs/builders";
-import assert from "assert";
 import { CommandInteraction } from "discord.js";
-import { BackupMetadata, BackupType, getLatestBackup } from "../backup";
-import { getDefaultCommandEmbed } from "../helpers";
+import { fieldFromBackup, getDefaultCommandEmbed } from "../helpers";
 import Command from "./general";
 import { ServerHandler } from "../serverHandler";
-import date from "date-and-time";
 
 export class LatestCommand extends Command {
   name = "latest";
@@ -17,34 +14,40 @@ export class LatestCommand extends Command {
   .addStringOption(option => option.setName("server").setDescription("Enter the name of the server you want to get the latest backup from").setRequired(true));
 
   handler = async(interaction: CommandInteraction): Promise<void> => {
-    let latest: BackupMetadata | null;
-    try {
-      let serverName = interaction.options.getString("server");
-      assert(serverName);
+    let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
 
+    let serverName = interaction.options.getString("server");
+    if (serverName) {
       let server = ServerHandler.getServerByName(serverName);
-      assert(server);
-
-      latest = await getLatestBackup(serverName);
-      if (latest) {
-        let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL())
-        .setTitle("The latest backup is...")
-        .setDescription(`**${latest.filename}** -> ${date.format(latest.created, "DD/MM/YYYY HH:mm:ss")}`);
-
-        await interaction.reply({embeds: [embed]});
+      if (server) {
+        if (server.backups) {
+          const latestUser = server.backups.getLatestUser();
+          const latestAutomatic = server.backups.getLatestAutomatic();
+          const latest = server.backups.getLatest();
+  
+          if (latest) {
+            embed.setTitle("Latest backups")
+  
+            embed.addField("LATEST BACKUP", "The latest backup from all backups.");
+            embed.addFields([fieldFromBackup(latest)]);
+  
+            if (latestAutomatic) {
+              embed.addField("LATEST AUTOMATIC BACKUP", "The latest backup created automatically.");
+              embed.addFields([fieldFromBackup(latestAutomatic)]);
+            }
+            if (latestUser) {
+              embed.addField("LATEST USER BACKUP", "The latest backup created by a user.");
+              embed.addFields([fieldFromBackup(latestUser)]);
+            }
+          }else {
+            embed.setDescription(`Backups are not enabled for **${serverName}** :slight_frown:`);
+          }
+        }
       }else {
-        let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL())
-          .setDescription("There are now backups :slight_frown:")
-
-        await interaction.reply({embeds: [embed]});
+        embed.setDescription(`**${serverName}** is not a server!`);
       }
-    }catch(err) {
-      console.log(err);
-      let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL())
-        .setDescription("Something went wrong :slight_frown:")
-
-      await interaction.reply({ embeds: [embed] });
     }
+    await interaction.reply({embeds: [embed]});
   };
   
   constructor() {

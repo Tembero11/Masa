@@ -4,11 +4,24 @@ import assert from "assert";
 import GameServerArgumentBuilder from "../GameServerArgumentBuilder";
 import ServerCommunicator from "./ServerCommunicator";
 import { NoStandardStreamsError } from "../Errors";
+import BackupModule from "./BackupModule";
+import { ServerMetadata } from "../../config";
 
 export default class GameServer extends ServerCommunicator {
   private command;
   readonly dir;
   private serverProcess: ChildProcessWithoutNullStreams | null = null;
+
+  public backups: BackupModule | undefined;
+
+  get name() {
+    return this.metadata?.name;
+  }
+  get tag() {
+    return this.metadata?.tag;
+  }
+
+  public readonly metadata;
 
   get pid(): number | undefined {
     return this.serverProcess?.pid;
@@ -19,13 +32,23 @@ export default class GameServer extends ServerCommunicator {
    * @param command 
    * @param directory The directory in which the command is run
    */
-  constructor(command: string, directory: string) {
+  constructor(command: string, directory: string, metadata?: ServerMetadata) {
     super(null, null, null);
 
+    this.metadata = metadata;
 
     this.command = command;
     this.dir = directory;
   }
+  async enableBackups() {
+    assert(this.metadata);
+    this.backups = new BackupModule(this);
+    const bmodule = await this.backups.init()
+    setInterval(() => bmodule.createAutomatic(`test${Math.floor(Math.random() * 10000)}`), 30000);
+
+    return this;
+  }
+  
 
   reload() {
     assert(this.serverProcess);

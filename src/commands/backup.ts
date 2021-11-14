@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { BackupType, createBackup } from "../backup";
+// import { BackupType, createBackup } from "../backup";
 import { getDefaultCommandEmbed } from "../helpers";
 import Command from "./general";
 import { ServerHandler } from "../serverHandler";
@@ -14,30 +14,29 @@ export class BackupCommand extends Command {
     .setName(this.name)
     .setDescription(this.desc)
     .addStringOption(option => option.setName("server").setDescription("Enter the name of the server you want to backup").setRequired(true))
-    .addStringOption(option => option.setName("name").setDescription("Enter the name of the backup").setRequired(false));
+    .addStringOption(option => option.setName("name").setDescription("Enter the name of the backup").setRequired(false))
+    .addStringOption(option => option.setName("description").setDescription("Describe the backup").setRequired(false));
     
   handler = async (interaction: CommandInteraction): Promise<void> => {
     let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
 
-    try {
-      let serverName = interaction.options.getString("server");
-      assert(serverName);
-
+    let serverName = interaction.options.getString("server");
+    if (serverName) {
       let server = ServerHandler.getServerByName(serverName);
-      assert(server);
-
-      const backupName = interaction.options.getString("name") || undefined;
-
-      let backup = await createBackup(server, serverName, BackupType.User, {name: backupName});
-      embed.setDescription(`**${backup.fullname}** was succesfully created!`);
-    }catch(err) {
-      embed.setDescription("Backup creation failed!");
+      if (server) {
+        if (server.backups) {
+          const backupName = interaction.options.getString("name") || undefined;
+          const desc = interaction.options.getString("description") || undefined;
+    
+          let backup = await server.backups.createUser(backupName, desc, interaction.member?.user.id);
+          embed.setDescription(`**${backup.id}** was succesfully created!`);
+        }else {
+          embed.setDescription(`Backups are not enabled for **${serverName}** :slight_frown:`);
+        }
+      }else {
+        embed.setDescription(`**${serverName}** is not a server!`);
+      }
     }
-
     await interaction.reply({embeds: [embed]});
   };
-
-  constructor() {
-    super();
-  }
 }

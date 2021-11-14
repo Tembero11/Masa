@@ -4,6 +4,8 @@ import path from "path";
 import { Presence } from "./serverHandler";
 import { GameServer } from "./classes/MasaAPI";
 import assert from "assert";
+import date from "date-and-time";
+import { BackupMetadata } from "./classes/server/BackupModule";
 
 export const serverDir = path.join(process.cwd(), "server");
 
@@ -124,6 +126,19 @@ export const setPresence = (presence: Presence) => {
 export const getDefaultCommandEmbed = (authorName: string, avatarURL?: string | null) => {
   return new MessageEmbed()
       .setAuthor(authorName, avatarURL || undefined);
+}
+export const fieldFromBackup = (backup: BackupMetadata) => {
+  const e = backup;
+  const created = date.format(new Date(e.created), "ddd, MMM DD YYYY, HH:mm");
+  return {
+    name: e.name || created,
+    value: [
+      ...(e.desc ? [`> **Description**: \`${e.desc}\``] : []),
+      `> **Created**_    _: \`${created}\``,
+      ...(e.author ? [`> **Author**_     _: <@${e.author}>`] : []),
+      `> **ID**_         _: \`${e.id}\``,
+    ].join("\n")
+  }
 }
 
 

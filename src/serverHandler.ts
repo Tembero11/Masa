@@ -2,7 +2,7 @@ import { setServerStatus } from "./helpers";
 import {GameServer} from "./classes/MasaAPI";
 import { ServerMetadata } from "./config";
 import assert from "assert";
-import { BackupType, createBackup } from "./backup";
+// import { BackupType, createBackup } from "./backup";
 import chalk from "chalk";
 import ms from "ms";
 import { nanoid } from "nanoid";
@@ -84,7 +84,10 @@ export abstract class ServerHandler {
     serverMeta.forEach((meta) => {
       assert(!ServerHandler.servers.get(meta.name), "One or more servers have the same name!");
   
-      let server = new GameServer(meta.command, meta.directory);
+      let server = new GameServer(meta.command, meta.directory, meta);
+      if (meta.backups) {
+        server.enableBackups();
+      }
   
       setServerStatus(meta.name, server, Presence.SERVER_OFFLINE, true);
   
@@ -117,30 +120,30 @@ export abstract class ServerHandler {
   
   
       // Setup backups
-      if (meta.backups) {
-        const { backupInterval } = meta.backups;
-        const { backupLimit } = meta.backups;
+      // if (meta.backups) {
+      //   const { backupInterval } = meta.backups;
+      //   const { backupLimit } = meta.backups;
   
-        let backupIntervalMs = typeof backupInterval == "string" ? ms(backupInterval) : backupInterval;
+      //   let backupIntervalMs = typeof backupInterval == "string" ? ms(backupInterval) : backupInterval;
   
-        assert(backupInterval && backupLimit);
+      //   assert(backupInterval && backupLimit);
   
-        console.log(`Automatic backups are made every ${ms(backupIntervalMs, {long: true})} for server "${chalk.underline(meta.name)}".`);
+      //   console.log(`Automatic backups are made every ${ms(backupIntervalMs, {long: true})} for server "${chalk.underline(meta.name)}".`);
   
-        setInterval(() => {
-          createBackup(server, meta.name, BackupType.Automatic, { backupLimit }).then((backup) => {
-            console.log(`An automatic backup was succesfully created! ${backup.filename || ""}`);
-          }).catch((err) => {
-            console.warn(chalk.yellow(err));
-          });
-        }, backupIntervalMs);
-      }else {
-        console.warn(chalk.yellow(`Automatic backups are ${chalk.bold("disabled")} for server "${chalk.underline(meta.name)}".`))
-      }
+      //   setInterval(() => {
+      //     createBackup(server, meta.name, BackupType.Automatic, { backupLimit }).then((backup) => {
+      //       console.log(`An automatic backup was succesfully created! ${backup.filename || ""}`);
+      //     }).catch((err) => {
+      //       console.warn(chalk.yellow(err));
+      //     });
+      //   }, backupIntervalMs);
+      // }else {
+      //   console.warn(chalk.yellow(`Automatic backups are ${chalk.bold("disabled")} for server "${chalk.underline(meta.name)}".`))
+      // }
   
   
       ServerHandler.servers.set(meta.name, server);
-      ServerHandler.ids.set(meta.uuid, meta.name);
+      ServerHandler.ids.set(meta.tag, meta.name);
     });
   }
 }

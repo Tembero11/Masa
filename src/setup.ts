@@ -1,4 +1,4 @@
-import { BackupType, createBackupsFolder } from "./backup";
+// import { BackupType, createBackupsFolder } from "./backup";
 import figlet from "figlet";
 import fs from "fs";
 import path from "path";
@@ -44,13 +44,13 @@ const setup = async () => {
         }
     });
 
-    await createBackupsFolder(BackupType.Automatic);
-    await createBackupsFolder(BackupType.User);
+    // await createBackupsFolder(BackupType.Automatic);
+    // await createBackupsFolder(BackupType.User);
 
     let serverList = await loadConfig<ServerMetadata[]>("servers.json");
     serverList = serverList.map((e) => {
-        if (!e.uuid) {
-            e.uuid = nanoid(9);
+        if (!e.tag) {
+            e.tag = nanoid(9);
         }
         return e;
     });

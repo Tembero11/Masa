@@ -50,3 +50,10 @@ export class InstallDirectoryNotEmptyError extends Error {
     this.name = "InstallDirectoryNotEmptyError";
   }
 }
+
+export class NotInitializedError extends Error {
+  constructor(propertyName: string, className: string) {
+    super(`Tried to access ${propertyName} but ${className} was not initialized!`);
+    this.name = "NotInitializedError";
+  }
+}

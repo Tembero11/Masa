@@ -1,7 +1,7 @@
 import Discord, { Intents, MessageEmbed } from "discord.js";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
-import { setPresence } from "./helpers";
+import { getDefaultCommandEmbed, setPresence } from "./helpers";
 import { Presence, ServerHandler } from "./serverHandler";
 import setup, { config } from "./setup";
 import commands from "./commands/commands";
@@ -41,7 +41,7 @@ client.once("ready", () => {
   }
 });
 
-// For messages
+// For commands
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
 
@@ -49,7 +49,15 @@ client.on("interactionCreate", async (interaction) => {
 
   let command = commands.get(interaction.commandName);
   if (command) {
-    command.handler(interaction);
+    try {
+      await command.handler(interaction);
+    }catch(err) {
+      if (!interaction.replied) {
+        let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
+        embed.setDescription("Something went wrong :slight_frown:");
+        await interaction.reply({embeds: [embed]})
+      }
+    }
   }
 });
 // For buttons

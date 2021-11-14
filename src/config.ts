@@ -14,7 +14,7 @@ export interface ServerMetadata {
    * The name of the minecraft server
    */
   name: string
-  uuid: string
+  tag: string
   description: string
   /**
    * the command that starts the server. This runs inside the server folder
