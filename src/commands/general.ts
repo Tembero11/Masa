@@ -1,5 +1,5 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { CommandInteraction } from "discord.js";
+import { ApplicationCommandPermissionData, CommandInteraction } from "discord.js";
 
 export default abstract class Command {
   abstract name: string;

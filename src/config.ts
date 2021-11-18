@@ -6,6 +6,10 @@ export interface BotConfig {
   token: string
   clientID: string
   guildID: string
+  permissions?: {
+    roles: {[key: string]: {id: string, level: number}},
+    commands: {[key: string]: string | string[]}
+  }
   allowedChannels?: string[]
 }
 

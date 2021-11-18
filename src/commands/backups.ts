@@ -8,6 +8,7 @@ import { BackupMetadata } from "../classes/server/BackupModule";
 import { fieldFromBackup, getDefaultCommandEmbed } from "../helpers";
 import { ServerHandler } from "../serverHandler";
 import Command from "./general";
+import { config } from "../setup";
 
 export class BackupsCommand extends Command {
   name = "backups";
