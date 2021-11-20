@@ -4,6 +4,7 @@ import { generateButtonRow, getDefaultCommandEmbed } from "../helpers";
 import Command from "./general";
 import { ServerHandler } from "../serverHandler";
 import assert from "assert";
+import Lang from "../classes/Lang";
 
 export class StopCommand extends Command {
   name = "stop";
@@ -26,20 +27,20 @@ export class StopCommand extends Command {
       assert(server);
 
       if (server.hasStreams) {
-        embed.setDescription(`Attempting to stop **${serverName}**...`);
+        embed.setDescription(Lang.stop.attemptingStop(serverName));
         await interaction.reply({ embeds: [embed] });
 
         await ServerHandler.stop(serverName);
 
-        embed.setDescription(`**${serverName}** stopped succesfully!`);
+        embed.setDescription(Lang.stop.stopped(serverName));
         await interaction.editReply({embeds: [embed], components: [generateButtonRow(serverName, server)]});
       }else {
-        embed.setDescription(`**${serverName}** is already offline!\n\n *Did you mean /start?*`);
+        embed.setDescription(Lang.stop.alreadyOffline(serverName));
         await interaction.reply({ embeds: [embed] });
       }
     } catch (err) {
       console.error(err);
-      embed.setDescription("Something went wrong :slight_frown:");
+      embed.setDescription(Lang.common.unknownErr());
       if (interaction.replied) {
         await interaction.editReply({embeds: [embed]});
       }else {

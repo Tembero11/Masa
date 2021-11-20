@@ -1,4 +1,3 @@
-// import { BackupType, createBackupsFolder } from "./backup";
 import figlet from "figlet";
 import fs from "fs";
 import path from "path";
@@ -13,6 +12,7 @@ import PaperInstaller from "./classes/server/installer/PaperInstaller";
 import assert from "assert";
 import { client } from "./client";
 import { nanoid } from "nanoid";
+import Lang from "./classes/Lang";
 
 inquirer.registerPrompt("autocomplete", inquirerAutocompletePrompt);
 
@@ -58,6 +58,12 @@ const setup = async () => {
     
 
     config = await loadConfig<BotConfig>("bot.json");
+
+    // Set the bot language
+    Lang.setLang(config.language);
+    if (config.language) {
+        console.log(`Using language ${Lang.langFile.name} (${config.language})`);
+    }
 
 
     // // Login to discord

@@ -4,6 +4,7 @@ import { generateButtonRow, getDefaultCommandEmbed } from "../helpers";
 import Command from "./general";
 import { ServerHandler } from "../serverHandler";
 import assert from "assert";
+import Lang from "../classes/Lang";
 
 export class RestartCommand extends Command {
   name = "restart";
@@ -24,16 +25,20 @@ export class RestartCommand extends Command {
       let server = ServerHandler.getServerByName(serverName);
       assert(server);
 
-      embed.setDescription(`Attempting to ${server.hasStreams ? "restart" : "start"} **${serverName}**...`);
+      if (server.hasStreams) {
+        embed.setDescription(Lang.restart.attemptingRestart(serverName))
+      }else {
+        embed.setDescription(Lang.start.attemptingStart(serverName));
+      }
       
       await interaction.reply({ embeds: [embed] });
 
       await ServerHandler.restart(serverName);
-      embed.setDescription(`${serverName} restarted succesfully!`);
+      embed.setDescription(Lang.restart.restarted(serverName));
       await interaction.editReply({ embeds: [embed], components: [generateButtonRow(serverName, server)] });
     } catch (err) {
       console.error(err);
-      embed.setDescription("Something went wrong :slight_frown:");
+      embed.setDescription(Lang.common.unknownErr());
       if (interaction.replied) {
         await interaction.editReply({embeds: [embed]});
       }else {

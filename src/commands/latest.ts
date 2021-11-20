@@ -3,6 +3,7 @@ import { CommandInteraction } from "discord.js";
 import { fieldFromBackup, getDefaultCommandEmbed } from "../helpers";
 import Command from "./general";
 import { ServerHandler } from "../serverHandler";
+import Lang from "../classes/Lang";
 
 export class LatestCommand extends Command {
   name = "latest";
@@ -26,25 +27,25 @@ export class LatestCommand extends Command {
           const latest = server.backups.getLatest();
   
           if (latest) {
-            embed.setTitle("Latest backups")
+            embed.setTitle(Lang.backups.latestBackupHeader())
   
-            embed.addField("LATEST BACKUP", "The latest backup from all backups.");
+            embed.addField(Lang.backups.latestBackupHeader(), Lang.backups.latestBackupDesc());
             embed.addFields([fieldFromBackup(latest)]);
   
             if (latestAutomatic) {
-              embed.addField("LATEST AUTOMATIC BACKUP", "The latest backup created automatically.");
+              embed.addField(Lang.backups.latestAutoBackupHeader(), Lang.backups.latestAutoBackupDesc());
               embed.addFields([fieldFromBackup(latestAutomatic)]);
             }
             if (latestUser) {
-              embed.addField("LATEST USER BACKUP", "The latest backup created by a user.");
+              embed.addField(Lang.backups.latestUserBackupHeader(), Lang.backups.latestUserBackupDesc());
               embed.addFields([fieldFromBackup(latestUser)]);
             }
           }else {
-            embed.setDescription(`Backups are not enabled for **${serverName}** :slight_frown:`);
+            embed.setDescription(Lang.backups.backupsNotEnabled(serverName));
           }
         }
       }else {
-        embed.setDescription(`**${serverName}** is not a server!`);
+        embed.setDescription(Lang.common.serverNotFound(serverName));
       }
     }
     await interaction.reply({embeds: [embed]});

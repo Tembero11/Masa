@@ -1,11 +1,13 @@
 import path from "path";
 import fs from "fs";
 import chalk from "chalk";
+import { Language } from "./classes/Lang";
 
 export interface BotConfig {
   token: string
   clientID: string
   guildID: string
+  language?: Language,
   permissions?: {
     roles: {[key: string]: {id: string, level: number}},
     commands: {[key: string]: string | string[]}

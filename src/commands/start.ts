@@ -4,6 +4,7 @@ import { generateButtonRow, getDefaultCommandEmbed } from "../helpers";
 import Command from "./general";
 import { ServerHandler } from "../serverHandler";
 import assert from "assert";
+import Lang from "../classes/Lang";
 
 export class StartCommand extends Command {
   name = "start";
@@ -25,19 +26,23 @@ export class StartCommand extends Command {
       assert(server);
 
       if (server.hasStreams) {
-        embed.setDescription(`**${serverName}** is already ${server.isJoinable ? "online" : "starting"}!\n\n *Did you mean /restart?*`);
+        if (server.isJoinable) {
+          embed.setDescription(Lang.start.alreadyOnline(serverName));
+        }else {
+          embed.setDescription(Lang.start.alreadyStarting(serverName));
+        }
         await interaction.reply({ embeds: [embed] });
       }else {
-        embed.setDescription(`Attempting to start **${serverName}**...`);
+        embed.setDescription(Lang.start.attemptingStart(serverName));
         await interaction.reply({ embeds: [embed] });
 
         await ServerHandler.start(serverName);
-        embed.setDescription(`**${serverName}** started succesfully!`);
+        embed.setDescription(Lang.start.started(serverName));
         await interaction.editReply({ embeds: [embed], components: [generateButtonRow(serverName, server)] });
       }
     } catch (err) {
       console.error(err);
-      embed.setDescription("Something went wrong :slight_frown:");
+      embed.setDescription(Lang.common.unknownErr());
       if (interaction.replied) {
         await interaction.editReply({embeds: [embed]});
       }else {

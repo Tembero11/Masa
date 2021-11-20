@@ -1,13 +1,12 @@
-import Discord, { GuildApplicationCommandPermissionData, GuildMember, GuildMemberRoleManager, Intents, MessageEmbed } from "discord.js";
+import Discord, { GuildApplicationCommandPermissionData, Intents, MessageEmbed } from "discord.js";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
 import { getDefaultCommandEmbed, setPresence } from "./helpers";
 import { Presence, ServerHandler } from "./serverHandler";
-import setup, { config } from "./setup";
+import { config } from "./setup";
 import commands from "./commands/commands";
 import assert from "assert";
-import util from "util";
-import { ApplicationCommandPermissionTypes } from "discord.js/typings/enums";
+import Lang from "./classes/Lang";
 
 let permissions: GuildApplicationCommandPermissionData[];
 
@@ -48,7 +47,7 @@ client.once("ready", () => {
         );
         if (hasUserDefinedPermissions) {
           permissions = await calculatePermissions(rest, clientId, guildId);
-          await client.guilds.cache.get(guildId)?.commands.permissions.set({ fullPermissions: permissions as any });
+          await client.guilds.cache.get(guildId)?.commands.permissions.set({ fullPermissions: permissions });
         }
 
         
@@ -77,7 +76,7 @@ client.on("interactionCreate", async (interaction) => {
     }catch(err) {
       if (!interaction.replied) {
         let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
-        embed.setDescription("Something went wrong :slight_frown:");
+        embed.setDescription(Lang.common.unknownErr());
         await interaction.reply({embeds: [embed]})
       }
     }
@@ -106,26 +105,30 @@ client.on("interactionCreate", async (interaction) => {
           case "server_start":
             await interaction.deferReply({ephemeral: true});
             await ServerHandler.start(serverName);
-            embed.setDescription(`**${serverName}** started succesfully!`);
+            embed.setDescription(Lang.start.started(serverName));
             await interaction.editReply({embeds: [embed]});
             break;
           case "server_stop":
             await interaction.deferReply({ephemeral: true});
             await ServerHandler.stop(serverName);
-            embed.setDescription(`**${serverName}** stopped succesfully!`);
+            embed.setDescription(Lang.stop.stopped(serverName));
             await interaction.editReply({embeds: [embed]});
             break;
           case "server_restart":
             await interaction.deferReply({ephemeral: true});
             await ServerHandler.restart(serverName);
-            embed.setDescription(`**${serverName}** restarted succesfully!`);
+            embed.setDescription(Lang.restart.restarted(serverName));
             await interaction.editReply({embeds: [embed]});
             break;
           default:
             break;
         }
       }catch(err) {
-        console.log(err);
+        if (!interaction.replied) {
+          let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
+          embed.setDescription(Lang.common.unknownErr());
+          await interaction.reply({embeds: [embed]})
+        }
       }
     }
   }
@@ -179,7 +182,8 @@ const calculatePermissions = async(rest: REST, clientId: string, guildId: string
       permObjects.push(...rolesByLevels.slice(levelIndex).map(e => {
         return {
           id: e.id,
-          type: ApplicationCommandPermissionTypes.ROLE,
+          // 1 = Role & 2 = User
+          type: 1,
           permission: true,
         }
       }));

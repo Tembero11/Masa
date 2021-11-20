@@ -57,3 +57,9 @@ export class NotInitializedError extends Error {
     this.name = "NotInitializedError";
   }
 }
+export class UnknownLanguageError extends Error {
+  constructor(lang: string) {
+    super(`${lang} is not a known language!`);
+    this.name = "UnknownLanguageError";
+  }
+}

@@ -6,6 +6,7 @@ import { GameServer } from "./classes/MasaAPI";
 import assert from "assert";
 import date from "date-and-time";
 import { BackupMetadata } from "./classes/server/BackupModule";
+import Lang from "./classes/Lang";
 
 export const serverDir = path.join(process.cwd(), "server");
 
@@ -25,17 +26,17 @@ export const generateButtonRow = (serverName: string, server: GameServer) => {
   return new MessageActionRow().addComponents([
     new MessageButton()
     .setCustomId(`server_start:${serverName}`)
-    .setLabel("Start")
+    .setLabel(Lang.buttons.start())
     .setStyle("PRIMARY")
     .setDisabled(server.hasStreams),
     new MessageButton()
     .setCustomId(`server_stop:${serverName}`)
-    .setLabel("Stop")
+    .setLabel(Lang.buttons.stop())
     .setStyle("DANGER")
     .setDisabled(!server.hasStreams),
     new MessageButton()
     .setCustomId(`server_restart:${serverName}`)
-    .setLabel("Restart")
+    .setLabel(Lang.buttons.restart())
     .setStyle("DANGER")
   ]);
 }
@@ -133,10 +134,10 @@ export const fieldFromBackup = (backup: BackupMetadata) => {
   return {
     name: e.name || created,
     value: [
-      ...(e.desc ? [`> **Description**: \`${e.desc}\``] : []),
-      `> **Created**_    _: \`${created}\``,
-      ...(e.author ? [`> **Author**_     _: <@${e.author}>`] : []),
-      `> **ID**_         _: \`${e.id}\``,
+      ...(e.desc ? [`> **${Lang.backups.description()}**: \`${e.desc}\``] : []),
+      `> **${Lang.backups.created()}**_    _: \`${created}\``,
+      ...(e.author ? [`> **${Lang.backups.author()}**_     _: <@${e.author}>`] : []),
+      `> **${Lang.backups.ID()}**_         _: \`${e.id}\``,
     ].join("\n")
   }
 }

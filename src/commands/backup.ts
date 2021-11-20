@@ -5,6 +5,7 @@ import { getDefaultCommandEmbed } from "../helpers";
 import Command from "./general";
 import { ServerHandler } from "../serverHandler";
 import assert from "assert";
+import Lang from "../classes/Lang";
 
 export class BackupCommand extends Command {
   name = "backup";
@@ -29,12 +30,12 @@ export class BackupCommand extends Command {
           const desc = interaction.options.getString("description") || undefined;
     
           let backup = await server.backups.createUser(backupName, desc, interaction.member?.user.id);
-          embed.setDescription(`**${backup.id}** was succesfully created!`);
+          embed.setDescription(Lang.backups.backupCreated(backup.id));
         }else {
-          embed.setDescription(`Backups are not enabled for **${serverName}** :slight_frown:`);
+          embed.setDescription(Lang.backups.backupsNotEnabled(serverName));
         }
       }else {
-        embed.setDescription(`**${serverName}** is not a server!`);
+        embed.setDescription(Lang.common.serverNotFound(serverName));
       }
     }
     await interaction.reply({embeds: [embed]});

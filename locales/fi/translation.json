@@ -1,0 +1,59 @@
+{
+  "name": "Finnish",
+  "common": {
+    "serverNotFound": "Palvelinta **%SERVER_NAME%** ei ole!",
+    "unknownErr": "Jotain meni vikaan :slight_frown:"
+  },
+  "buttons": {
+    "start": "Käynnistä",
+    "stop": "Pysäytä",
+    "restart": "Käynnistä uudelleen"
+  },
+  "commands": {
+    "backup": {
+      "backupCreated": "**%BACKUP_NAME%** luotiin onnistuneesti!",
+      "backupsNotEnabled": "Varmuuskopiointi ei ole käytössä palvelimelle **%SERVER_NAME%** :slight_frown:",
+      "listOfUserBackups": "Luettelo käyttäjien luomista varmuuskopioista",
+      "listOfAutoBackups": "Luettelo automaattisista varmuuskopioista",
+      "latestBackupHeader": "**Uusimmat varmuuskopiot**",
+      "latestBackupDesc": "Viimeisin varmuuskopio kaikista varmuuskopioista.",
+      "latestAutoBackupHeader": "**Uusimmat varmuuskopiot**",
+      "latestAutoBackupDesc": "Viimeisin varmuuskopio joka on luotu automaattisesti.",
+      "latestUserBackupHeader": "**Uusimmat varmuuskopiot**",
+      "latestUserBackupDesc": "Viimeisin käyttäjän luoma varmuuskopio. ",
+
+      "userHeader": "**KÄYTTÄJÄ**",
+      "autoHeader": "**AUTOMAATTINEN**",
+      "backupsListed": "Varmuuskopiot lueteltu",
+
+      "author": "Tekijä",
+      "created": "Luotu",
+      "description": "Kuvaus",
+      "ID": "ID"
+    },
+    "start": {
+      "attemptingStart": "Yritetään käynnistää palvelinta **%SERVER_NAME%**...",
+      "started": "**%SERVER_NAME%** käynnistettiin onnistuneesti!",
+      "alreadyOnline": "**%SERVER_NAME%** on jo käynnissä!",
+      "alreadyStarting": "**%SERVER_NAME%** on jo käynnistymässä!"
+    },
+    "stop": {
+      "attemptingStop": "Yritetään pysäyttää palvelinta **%SERVER_NAME%**...",
+      "stopped": "**%SERVER_NAME%** pysäytetty onnistuneesti!",
+      "alreadyOffline": "**%SERVER_NAME%** on jo käynnissä!"
+    },
+    "restart": {
+      "attemptingRestart": "Yritetään käynnistää uudelleen palvelinta **%SERVER_NAME%**...",
+      "restarted": "**%SERVER_NAME%** käynnistettiin uudelleen onnistuneesti!"
+    },
+    "help": {
+      "listOfCommands": "Luettelo Komennoista",
+      "helpDesc": "Luettelo aloittelijoille hyödyllisistä komennoista"
+    },
+    "status": {
+      "serverStatusHeader": "**Palvelimen tila**",
+      "allOperational": "Kaikki järjestelmät toimivat",
+      "operational": "toimiva"
+    }
+  }
+}

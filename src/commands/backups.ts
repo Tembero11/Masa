@@ -1,14 +1,9 @@
 import  { SlashCommandBuilder } from "@discordjs/builders";
-import assert from "assert";
-import date from "date-and-time";
-import { table } from "table";
 import { CommandInteraction } from "discord.js";
-import { BackupMetadata } from "../classes/server/BackupModule";
-// import { BackupMetadata, BackupType, listBackups } from "../backup";
 import { fieldFromBackup, getDefaultCommandEmbed } from "../helpers";
 import { ServerHandler } from "../serverHandler";
 import Command from "./general";
-import { config } from "../setup";
+import Lang from "../classes/Lang";
 
 export class BackupsCommand extends Command {
   name = "backups";
@@ -31,20 +26,20 @@ export class BackupsCommand extends Command {
           let userBackups = server.backups.listUser();
   
   
-          embed.addField("**USER**", "List of user created backups", false);
+          embed.addField(Lang.backups.userHeader(), Lang.backups.listOfUserBackups(), false);
   
           embed.addFields(userBackups.map(fieldFromBackup));
   
-          embed.addField("**AUTOMATIC**", "List of automatic backups", false);
+          embed.addField(Lang.backups.autoHeader(), Lang.backups.listOfAutoBackups(), false);
   
           embed.addFields(autoBackups.map(fieldFromBackup));
   
-          embed.setTitle("Backups listed").setTimestamp();
+          embed.setTitle(Lang.backups.backupsListed()).setTimestamp();
         }else {
-          embed.setDescription(`Backups are not enabled for **${serverName}** :slight_frown:`);
+          embed.setDescription(Lang.backups.backupsNotEnabled(serverName));
         }
       }else {
-        embed.setDescription(`**${serverName}** is not a server!`);
+        embed.setDescription(Lang.common.serverNotFound(serverName));
       }
     }
     await interaction.reply({embeds: [embed]});

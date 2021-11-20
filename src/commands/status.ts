@@ -4,6 +4,7 @@ import { getDefaultCommandEmbed } from "../helpers";
 import Command from "./general";
 import * as ServerHandler from "../serverHandler";
 import { config } from "../../index";
+import Lang from "../classes/Lang";
 
 export class StatusCommand extends Command {
   name = "players";
@@ -16,7 +17,7 @@ export class StatusCommand extends Command {
   handler = async (interaction: CommandInteraction): Promise<void> => {
     let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
 
-    embed.setTitle("Server Status");
+    embed.setTitle(Lang.status.serverStatusHeader());
 
     // if (ServerHandler.isServerJoinable) {
     //   embed.setDescription("All systems operational :green_circle:");

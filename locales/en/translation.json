@@ -1,0 +1,59 @@
+{
+  "name": "English",
+  "common": {
+    "serverNotFound": "**%SERVER_NAME%** is not a server!",
+    "unknownErr": "Something went wrong :slight_frown:"
+  },
+  "buttons": {
+    "start": "Start",
+    "stop": "Stop",
+    "restart": "Restart"
+  },
+  "commands": {
+    "backup": {
+      "backupCreated": "**%BACKUP_NAME%** was succesfully created!",
+      "backupsNotEnabled": "Backups are not enabled for **%SERVER_NAME%** :slight_frown:",
+      "listOfUserBackups": "List of user created backups",
+      "listOfAutoBackups": "List of automatic backups",
+      "latestBackupHeader": "**Latest Backups**",
+      "latestBackupDesc": "The latest backup from all backups.",
+      "latestAutoBackupHeader": "**Latest Backups**",
+      "latestAutoBackupDesc": "The latest backup created automatically.",
+      "latestUserBackupHeader": "**Latest Backups**",
+      "latestUserBackupDesc": "The latest backup created by a user.",
+
+      "userHeader": "**USER**",
+      "autoHeader": "**AUTOMATIC**",
+      "backupsListed": "Backups listed",
+
+      "author": "Author",
+      "description": "Description",
+      "created": "Created",
+      "ID": "ID"
+    },
+    "start": {
+      "attemptingStart": "Attempting to start **%SERVER_NAME%**...",
+      "started": "**%SERVER_NAME%** started successfully!",
+      "alreadyOnline": "**%SERVER_NAME%** is already online!",
+      "alreadyStarting": "**%SERVER_NAME%** is already starting!"
+    },
+    "stop": {
+      "attemptingStop": "Attempting to stop **%SERVER_NAME%**...",
+      "stopped": "**%SERVER_NAME%** stopped successfully!",
+      "alreadyOffline": "**%SERVER_NAME%** is already online!"
+    },
+    "restart": {
+      "attemptingRestart": "Attempting to restart **%SERVER_NAME%**...",
+      "restarted": "**%SERVER_NAME%** restarted successfully!"
+    },
+    "help": {
+      "listOfCommands": "List of Commands",
+      "helpDesc": "A list of helpful commands for beginners"
+    },
+    "status": {
+      "serverStatusHeader": "**Server Status**",
+      "allOperational": "All systems operational",
+      "operational": "operational"
+    }
+  }
+}

@@ -1,5 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
+import Lang from "../classes/Lang";
 import { getDefaultCommandEmbed } from "../helpers";
 import Command from "./general";
 
@@ -14,8 +15,8 @@ export class HelpCommand extends Command {
   handler = async (interaction: CommandInteraction): Promise<void> => {
     let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
 
-    embed.setTitle("List of commands");
-    embed.setDescription("A list of helpful commands for noobs");
+    embed.setTitle(Lang.help.listOfCommands());
+    embed.setDescription(Lang.help.helpDesc());
 
     await interaction.reply({embeds: [embed]})
 
