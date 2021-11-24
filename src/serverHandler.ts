@@ -32,19 +32,27 @@ export abstract class ServerHandler {
   /**
    * Map has names as keys
    */
-  private static servers = new Map<string, GameServer>();
+  private static serversMap = new Map<string, GameServer>();
   /**
    * Map has ids as keys
    */
   private static ids = new Map<string, string>();
 
+  public static get servers() {
+    return Array.from(ServerHandler.serversMap.values());
+  }
+
+  public static get serverNames() {
+    return Array.from(ServerHandler.serversMap.keys());
+  } 
+
   static getServerByName(serverName: string): GameServer | undefined {
-    return ServerHandler.servers.get(serverName);
+    return ServerHandler.serversMap.get(serverName);
   }
   static getServerById(id: string): GameServer | undefined {
     const name = ServerHandler.idToName(id);
     if (name) {
-      return ServerHandler.servers.get(name);
+      return ServerHandler.serversMap.get(name);
     }
   }
   static nameToId(name: string) {
@@ -54,7 +62,7 @@ export abstract class ServerHandler {
     return ServerHandler.ids.get(id);
   }
   static start = async(serverName: string) => {
-    let server = ServerHandler.servers.get(serverName);
+    let server = ServerHandler.serversMap.get(serverName);
     assert(server);
     server.start();
   
@@ -62,13 +70,13 @@ export abstract class ServerHandler {
   }
   
   static stop = async(serverName: string) => {
-    let server = ServerHandler.servers.get(serverName);
+    let server = ServerHandler.serversMap.get(serverName);
     assert(server);
     return await server.stop();
   }
   
   static restart = async(serverName: string) => {
-    let server = ServerHandler.servers.get(serverName);
+    let server = ServerHandler.serversMap.get(serverName);
     assert(server);
   
     if (server.hasStreams) {
@@ -82,14 +90,15 @@ export abstract class ServerHandler {
 
   static serverInitializer = (serverMeta: ServerMetadata[]) => {
     serverMeta.forEach((meta) => {
-      assert(!ServerHandler.servers.get(meta.name), "One or more servers have the same name!");
+      assert(!ServerHandler.serversMap.get(meta.name), "One or more servers have the same name!");
   
       let server = new GameServer(meta.command, meta.directory, meta);
       if (meta.backups) {
         server.enableBackups();
       }
   
-      setServerStatus(meta.name, server, Presence.SERVER_OFFLINE, true);
+      setServerStatus(meta.name, server, Presence.SERVER_OFFLINE);
+
   
       server.on("join", (e) => {
         if (meta.advanced?.welcomeMsg) {
@@ -98,15 +107,14 @@ export abstract class ServerHandler {
           msg = msg.replaceAll("{ONLINE}", e.player.server.playerCount.toString());
           e.player.sendMessage(msg);
         }
-        setServerStatus(meta.name, server, Presence.SERVER_ONLINE, true);
+        setServerStatus(meta.name, server, Presence.SERVER_ONLINE);
       });
       server.on("quit", (e) => {
-        setServerStatus(meta.name, server, Presence.SERVER_ONLINE, true);
+        setServerStatus(meta.name, server, Presence.SERVER_ONLINE);
       });
   
       server.on("ready", () => {
-        server.events.disableAutosave();
-        setServerStatus(meta.name, server, Presence.SERVER_ONLINE, true);
+        setServerStatus(meta.name, server, Presence.SERVER_ONLINE);
       });
   
       if (meta.logs) {
@@ -116,7 +124,7 @@ export abstract class ServerHandler {
         });
       }
   
-      server.on("close", e => setServerStatus(meta.name, server, Presence.SERVER_OFFLINE, true));
+      server.on("close", e => setServerStatus(meta.name, server, Presence.SERVER_OFFLINE));
   
   
       // Setup backups
@@ -142,7 +150,7 @@ export abstract class ServerHandler {
       // }
   
   
-      ServerHandler.servers.set(meta.name, server);
+      ServerHandler.serversMap.set(meta.name, server);
       ServerHandler.ids.set(meta.tag, meta.name);
     });
   }

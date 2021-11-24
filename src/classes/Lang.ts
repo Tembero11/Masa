@@ -61,6 +61,14 @@ interface TranslationFile {
       serverStatusHeader: string
       allOperational: string
       operational: string
+      serverOffline: string
+      serverOnline: string
+      serverStarting: string
+      serverStopping: string
+      serverWithPlayer: string
+      serverWithPlayers: string
+      noPlayers: string
+      playersOnline: string
     }
   }
 }
@@ -68,6 +76,8 @@ interface TranslationFile {
 
 export default abstract class Lang {
   static readonly SERVER_NAME = "%SERVER_NAME%";
+  static readonly PLAYER_COUNT = "%PLAYER_COUNT%";
+  static readonly PLAYER_NAME = "%PLAYER_NAME%";
   static readonly BACKUP_NAME = "%BACKUP_NAME%";
 
   static readonly localesPath = path.join(process.cwd(), "locales");
@@ -144,5 +154,17 @@ export default abstract class Lang {
     serverStatusHeader: () => Lang.langFile.commands.status.serverStatusHeader,
     allOperational: () => Lang.langFile.commands.status.allOperational, 
     operational: () => Lang.langFile.commands.status.operational,
+    serverOffline: (serverName: string) => Lang.langFile.commands.status.serverOffline.replaceAll(Lang.SERVER_NAME, serverName),
+    serverOnline: (serverName: string) => Lang.langFile.commands.status.serverOnline.replaceAll(Lang.SERVER_NAME, serverName),
+    noPlayers: () => Lang.langFile.commands.status.noPlayers,
+    playersOnline: (playerCount: string | number) => Lang.langFile.commands.status.playersOnline.replaceAll(Lang.PLAYER_COUNT, playerCount.toString()),
+    serverStarting: (serverName: string) => Lang.langFile.commands.status.serverStarting.replaceAll(Lang.SERVER_NAME, serverName),
+    serverStopping: (serverName: string) => Lang.langFile.commands.status.serverStopping.replaceAll(Lang.SERVER_NAME, serverName),
+    serverWithPlayer: (serverName: string, playerName: string) => Lang.langFile.commands.status.serverWithPlayer
+    .replaceAll(Lang.SERVER_NAME, serverName)
+    .replaceAll(Lang.PLAYER_NAME, playerName),
+    serverWithPlayers: (serverName: string, playerCount: string | number) => Lang.langFile.commands.status.serverWithPlayers
+    .replaceAll(Lang.SERVER_NAME, serverName)
+    .replaceAll(Lang.PLAYER_COUNT, playerCount.toString()),
   }
 }

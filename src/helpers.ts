@@ -1,4 +1,4 @@
-import {  MessageActionRow, MessageButton, MessageEmbed } from "discord.js";
+import {  ActivityType, MessageActionRow, MessageButton, MessageEmbed, PresenceStatusData, TextChannel } from "discord.js";
 import { client, config } from "../index";
 import path from "path";
 import { Presence } from "./serverHandler";
@@ -43,84 +43,56 @@ export const generateButtonRow = (serverName: string, server: GameServer) => {
 
 
 // TODO: add support for channel names
-export const setServerStatus = (serverName: string, server: GameServer, status: Presence, usePresence: boolean = true) => {
+export const setServerStatus = (serverName: string, server: GameServer, status: Presence) => {
   assert(client.user);
-  // let channel = client.channels.cache.find((channel) => channel.id == channelID);
+  
+
+  let statusText: string | undefined;
+  let statusType: PresenceStatusData | undefined;
+  let activityType: ActivityType | undefined;
 
   switch (status) {
     case Presence.SERVER_ONLINE:
-      let presenceName: string = serverName;
+      statusType = "online";
+      activityType = "PLAYING";
 
-      // TODO add show players check
-      if (true) {
-        if (server.playerCount === 1) {
-          presenceName = `${serverName} with ${server.playersArray[0].username}`;
-        }else if (server.playerCount > 1) {
-          presenceName = `${serverName} with ${server.playerCount} others`;
-        }
+      if (server.playerCount === 1) {
+        statusText = Lang.status.serverWithPlayer(serverName, server.playersArray[0].username);
+      } else if (server.playerCount > 1) {
+        statusText = Lang.status.serverWithPlayers(serverName, server.playerCount);
+      }else {
+        statusText = Lang.status.serverOnline(serverName);
       }
-
-      if (usePresence) {
-        client.user.setPresence({
-          status: "online",
-          activities: [
-            {
-              type: "PLAYING",
-              name: presenceName
-            },
-          ]
-        });
-      }
-      // TODO Add status as channel names
       break;
-    
     case Presence.SERVER_STARTING:
-      
-      client.user.setPresence({
-        status: "dnd",
-        activities: [
-          {
-            type: "WATCHING",
-            name: `${serverName} is starting...`
-          },
-        ]
-      });
-      // TODO Add status as channel names
+      statusType = "dnd";
+      activityType = "WATCHING";
+      statusText = Lang.status.serverStarting(serverName);
       break;
-    
+
     case Presence.SERVER_STOPPING:
-      client.user.setPresence({
-        status: "dnd",
-        activities: [
-          {
-            type: "WATCHING",
-            name: `${serverName} is stopping...`
-          },
-        ]
-      });
-      // TODO Add status as channel names
+      statusType = "dnd";
+      activityType = "WATCHING";
+      statusText = Lang.status.serverStopping(serverName);
       break;
-  
+
     default:
-
-      client.user.setPresence({
-        status: "idle",
-        activities: [
-          {
-            type: "LISTENING",
-            name: `${serverName} is offline!`
-          },
-        ]
-      });
-
+      statusType = "idle";
+      activityType = "LISTENING";
+      statusText = Lang.status.serverOffline(serverName);
       break;
   }
-}
+  console.log("statusText", statusText);
 
-export const setPresence = (presence: Presence) => {
-  if (client && client.user) {
-    
-  }
+  client.user.setPresence({
+    status: statusType,
+    activities: [
+      {
+        type: activityType,
+        name: statusText
+      },
+    ]
+  });
 }
 
 

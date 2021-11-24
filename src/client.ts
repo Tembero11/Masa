@@ -1,7 +1,7 @@
 import Discord, { GuildApplicationCommandPermissionData, Intents, MessageEmbed } from "discord.js";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
-import { getDefaultCommandEmbed, setPresence } from "./helpers";
+import { getDefaultCommandEmbed } from "./helpers";
 import { Presence, ServerHandler } from "./serverHandler";
 import { config } from "./setup";
 import commands from "./commands/commands";
@@ -57,10 +57,6 @@ client.once("ready", () => {
         console.error(error);
       }
     })();
-
-
-
-    setPresence(Presence.SERVER_OFFLINE);
   }
 });
 
@@ -74,6 +70,7 @@ client.on("interactionCreate", async (interaction) => {
     try {
       await command.handler(interaction);
     }catch(err) {
+      console.log(err);
       if (!interaction.replied) {
         let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
         embed.setDescription(Lang.common.unknownErr());

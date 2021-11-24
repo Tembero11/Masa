@@ -53,6 +53,14 @@
     "status": {
       "serverStatusHeader": "**Palvelimen tila**",
       "allOperational": "Kaikki järjestelmät toimivat",
+      "serverOffline": "**%SERVER_NAME%** on pois päältä",
+      "serverOnline": "**%SERVER_NAME%** on käynnissä",
+      "serverStarting": "**%SERVER_NAME%** käynnistyy...",
+      "serverStopping": "**%SERVER_NAME%** pysähtyy...",
+      "serverWithPlayer": "%SERVER_NAME% pelaajan %PLAYER_NAME% kanssa",
+      "serverWithPlayers": "%SERVER_NAME% muun %PLAYER_COUNT% kanssa",
+      "noPlayers": "Ei pelaajia paikalla",
+      "playersOnline": "%PLAYER_COUNT% paikalla",
       "operational": "toimiva"
     }
   }

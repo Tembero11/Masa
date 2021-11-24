@@ -53,6 +53,14 @@
     "status": {
       "serverStatusHeader": "**Server Status**",
       "allOperational": "All systems operational",
+      "serverOffline": "**%SERVER_NAME%** is offline",
+      "serverOnline": "**%SERVER_NAME%** is online",
+      "serverStarting": "**%SERVER_NAME%** is starting...",
+      "serverStopping": "**%SERVER_NAME%** is stopping...",
+      "serverWithPlayer": "%SERVER_NAME% with %PLAYER_NAME%",
+      "serverWithPlayers": "%SERVER_NAME% with %PLAYER_COUNT% others",
+      "noPlayers": "No players online",
+      "playersOnline": "%PLAYER_COUNT% online",
       "operational": "operational"
     }
   }

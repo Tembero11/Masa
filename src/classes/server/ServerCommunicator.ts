@@ -54,6 +54,13 @@ export default class ServerCommunicator {
         return this._stdin != null && this._stdout != null && this._stderr != null;
     }
 
+    /**
+     * @type {boolean} is true if the server is either starting or stopping
+     */
+    get isUnstable() {
+        return this.hasStreams && !this.isJoinable;
+    }
+
     constructor(stdin: Writable | null, stdout: Readable | null, stderr: Readable | null) {
         this._stdin = stdin;
         this._stdout = stdout;
