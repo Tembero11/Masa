@@ -27,20 +27,20 @@ export class StopCommand extends Command {
       assert(server);
 
       if (server.hasStreams) {
-        embed.setDescription(Lang.stop.attemptingStop(serverName));
+        embed.setDescription(Lang.parse(Lang.langFile.commands.stop.attemptingStop, {SERVER_NAME: serverName}));
         await interaction.reply({ embeds: [embed] });
 
         await ServerHandler.stop(serverName);
 
-        embed.setDescription(Lang.stop.stopped(serverName));
+        embed.setDescription(Lang.parse(Lang.langFile.commands.stop.stopped, {SERVER_NAME: serverName}));
         await interaction.editReply({embeds: [embed], components: [generateButtonRow(serverName, server)]});
       }else {
-        embed.setDescription(Lang.stop.alreadyOffline(serverName));
+        embed.setDescription(Lang.parse(Lang.langFile.commands.stop.alreadyOffline, {SERVER_NAME: serverName}));
         await interaction.reply({ embeds: [embed] });
       }
     } catch (err) {
       console.error(err);
-      embed.setDescription(Lang.common.unknownErr());
+      embed.setDescription(Lang.parse(Lang.langFile.common.unknownErr));
       if (interaction.replied) {
         await interaction.editReply({embeds: [embed]});
       }else {

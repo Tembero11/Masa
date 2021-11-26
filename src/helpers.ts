@@ -26,17 +26,17 @@ export const generateButtonRow = (serverName: string, server: GameServer) => {
   return new MessageActionRow().addComponents([
     new MessageButton()
     .setCustomId(`server_start:${serverName}`)
-    .setLabel(Lang.buttons.start())
+    .setLabel(Lang.parse(Lang.langFile.buttons.start))
     .setStyle("PRIMARY")
     .setDisabled(server.hasStreams),
     new MessageButton()
     .setCustomId(`server_stop:${serverName}`)
-    .setLabel(Lang.buttons.stop())
+    .setLabel(Lang.parse(Lang.langFile.buttons.stop))
     .setStyle("DANGER")
     .setDisabled(!server.hasStreams),
     new MessageButton()
     .setCustomId(`server_restart:${serverName}`)
-    .setLabel(Lang.buttons.restart())
+    .setLabel(Lang.parse(Lang.langFile.buttons.restart))
     .setStyle("DANGER")
   ]);
 }
@@ -57,32 +57,39 @@ export const setServerStatus = (serverName: string, server: GameServer, status: 
       activityType = "PLAYING";
 
       if (server.playerCount === 1) {
-        statusText = Lang.status.serverWithPlayer(serverName, server.playersArray[0].username);
+        statusText = Lang.parse(Lang.langFile.commands.status.serverWithPlayer, {
+          SERVER_NAME: serverName,
+          PLAYER_NAME: server.playersArray[0].username
+        });
       } else if (server.playerCount > 1) {
-        statusText = Lang.status.serverWithPlayers(serverName, server.playerCount);
+        statusText = Lang.parse(Lang.langFile.commands.status.serverWithPlayers, {
+          SERVER_NAME: serverName,
+          PLAYER_COUNT: server.playerCount
+        });
       }else {
-        statusText = Lang.status.serverOnline(serverName);
+        statusText = Lang.parse(Lang.langFile.commands.status.serverOnline, {
+          SERVER_NAME: serverName,
+        });
       }
       break;
     case Presence.SERVER_STARTING:
       statusType = "dnd";
       activityType = "WATCHING";
-      statusText = Lang.status.serverStarting(serverName);
+      statusText = Lang.parse(Lang.langFile.commands.status.serverStarting, {SERVER_NAME: serverName});
       break;
 
     case Presence.SERVER_STOPPING:
       statusType = "dnd";
       activityType = "WATCHING";
-      statusText = Lang.status.serverStopping(serverName);
+      statusText = Lang.parse(Lang.langFile.commands.status.serverStopping, {SERVER_NAME: serverName});
       break;
 
     default:
       statusType = "idle";
       activityType = "LISTENING";
-      statusText = Lang.status.serverOffline(serverName);
+      statusText = Lang.parse(Lang.langFile.commands.status.serverOffline, {SERVER_NAME: serverName});
       break;
   }
-  console.log("statusText", statusText);
 
   client.user.setPresence({
     status: statusType,
@@ -106,10 +113,10 @@ export const fieldFromBackup = (backup: BackupMetadata) => {
   return {
     name: e.name || created,
     value: [
-      ...(e.desc ? [`> **${Lang.backups.description()}**: \`${e.desc}\``] : []),
-      `> **${Lang.backups.created()}**_    _: \`${created}\``,
-      ...(e.author ? [`> **${Lang.backups.author()}**_     _: <@${e.author}>`] : []),
-      `> **${Lang.backups.ID()}**_         _: \`${e.id}\``,
+      ...(e.desc ? [`> **${Lang.parse(Lang.langFile.commands.backup.description)}**: \`${e.desc}\``] : []),
+      `> **${Lang.parse(Lang.langFile.commands.backup.created)}**_    _: \`${created}\``,
+      ...(e.author ? [`> **${Lang.parse(Lang.langFile.commands.backup.author)}**_     _: <@${e.author}>`] : []),
+      `> **${Lang.parse(Lang.langFile.commands.backup.ID)}**_         _: \`${e.id}\``,
     ].join("\n")
   }
 }

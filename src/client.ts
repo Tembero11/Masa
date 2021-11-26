@@ -73,7 +73,7 @@ client.on("interactionCreate", async (interaction) => {
       console.log(err);
       if (!interaction.replied) {
         let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
-        embed.setDescription(Lang.common.unknownErr());
+        embed.setDescription(Lang.parse(Lang.langFile.common.unknownErr));
         await interaction.reply({embeds: [embed]})
       }
     }
@@ -102,19 +102,19 @@ client.on("interactionCreate", async (interaction) => {
           case "server_start":
             await interaction.deferReply({ephemeral: true});
             await ServerHandler.start(serverName);
-            embed.setDescription(Lang.start.started(serverName));
+            embed.setDescription(Lang.parse(Lang.langFile.commands.start.started, {SERVER_NAME: serverName}));
             await interaction.editReply({embeds: [embed]});
             break;
           case "server_stop":
             await interaction.deferReply({ephemeral: true});
             await ServerHandler.stop(serverName);
-            embed.setDescription(Lang.stop.stopped(serverName));
+            embed.setDescription(Lang.parse(Lang.langFile.commands.stop.stopped, {SERVER_NAME: serverName}));
             await interaction.editReply({embeds: [embed]});
             break;
           case "server_restart":
             await interaction.deferReply({ephemeral: true});
             await ServerHandler.restart(serverName);
-            embed.setDescription(Lang.restart.restarted(serverName));
+            embed.setDescription(Lang.parse(Lang.langFile.commands.restart.restarted, {SERVER_NAME: serverName}));
             await interaction.editReply({embeds: [embed]});
             break;
           default:
@@ -123,7 +123,7 @@ client.on("interactionCreate", async (interaction) => {
       }catch(err) {
         if (!interaction.replied) {
           let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
-          embed.setDescription(Lang.common.unknownErr());
+          embed.setDescription(Lang.parse(Lang.langFile.common.unknownErr));
           await interaction.reply({embeds: [embed]})
         }
       }

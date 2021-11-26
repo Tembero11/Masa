@@ -27,22 +27,22 @@ export class StartCommand extends Command {
 
       if (server.hasStreams) {
         if (server.isJoinable) {
-          embed.setDescription(Lang.start.alreadyOnline(serverName));
+          embed.setDescription(Lang.parse(Lang.langFile.commands.start.alreadyOnline, {SERVER_NAME: serverName}));
         }else {
-          embed.setDescription(Lang.start.alreadyStarting(serverName));
+          embed.setDescription(Lang.parse(Lang.langFile.commands.start.alreadyStarting, {SERVER_NAME: serverName}));
         }
         await interaction.reply({ embeds: [embed] });
       }else {
-        embed.setDescription(Lang.start.attemptingStart(serverName));
+        embed.setDescription(Lang.parse(Lang.langFile.commands.start.attemptingStart, {SERVER_NAME: serverName}));
         await interaction.reply({ embeds: [embed] });
 
         await ServerHandler.start(serverName);
-        embed.setDescription(Lang.start.started(serverName));
+        embed.setDescription(Lang.parse(Lang.langFile.commands.start.started, {SERVER_NAME: serverName}));
         await interaction.editReply({ embeds: [embed], components: [generateButtonRow(serverName, server)] });
       }
     } catch (err) {
       console.error(err);
-      embed.setDescription(Lang.common.unknownErr());
+      embed.setDescription(Lang.parse(Lang.langFile.common.unknownErr));
       if (interaction.replied) {
         await interaction.editReply({embeds: [embed]});
       }else {

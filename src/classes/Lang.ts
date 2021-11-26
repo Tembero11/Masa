@@ -1,77 +1,11 @@
-import { assert } from "console";
+import assert from "assert";
 import fs from "fs";
 import path from "path";
 import merge from "ts-deepmerge";
 import { UnknownLanguageError } from "./Errors";
+import languages from "../../locales/translation.json";
 
-export type Language = "en" | "fi";
-
-interface TranslationFile {
-  name: string
-  common: {
-    serverNotFound: string,
-    unknownErr: string
-  },
-  buttons: {
-    start: string
-    stop: string
-    restart: string
-  },
-  commands: {
-    backup: {
-      backupCreated: string
-      backupsNotEnabled: string
-      listOfUserBackups: string
-      listOfAutoBackups: string
-      latestBackupHeader: string
-      latestBackupDesc: string
-      latestAutoBackupHeader: string
-      latestAutoBackupDesc: string
-      latestUserBackupHeader: string
-      latestUserBackupDesc: string
-
-      userHeader: string
-      autoHeader: string
-      backupsListed: string
-      author: string
-      created: string
-      ID: string
-      description: string
-    },
-    start: {
-      attemptingStart: string
-      started: string
-      alreadyOnline: string
-      alreadyStarting: string
-    },
-    stop: {
-      attemptingStop: string
-      stopped: string
-      alreadyOffline: string
-    },
-    restart: {
-      attemptingRestart: string
-      restarted: string
-    },
-    help: {
-      listOfCommands: string
-      helpDesc: string
-    },
-    status: {
-      serverStatusHeader: string
-      allOperational: string
-      operational: string
-      serverOffline: string
-      serverOnline: string
-      serverStarting: string
-      serverStopping: string
-      serverWithPlayer: string
-      serverWithPlayers: string
-      noPlayers: string
-      playersOnline: string
-    }
-  }
-}
+export type Language = keyof typeof languages;
 
 
 export default abstract class Lang {
@@ -83,88 +17,32 @@ export default abstract class Lang {
   static readonly localesPath = path.join(process.cwd(), "locales");
 
   static lang: Language = "en";
-  static readonly enTranslation = JSON.parse(fs.readFileSync(path.join(Lang.localesPath, "en", "translation.json"), "utf8")) as TranslationFile;
-  static langFile: TranslationFile = Lang.enTranslation;
+  static langFile: typeof languages["en"];
 
   static setLang(lang: Language = "en") {
-    Lang.lang = lang;
-    const fileloc = Lang.getTranslationFilePath(lang);
-    assert(fs.existsSync(fileloc), new UnknownLanguageError(lang));
-    const content = JSON.parse(fs.readFileSync(fileloc, "utf8")) as TranslationFile;
-    Lang.langFile = merge.withOptions({}, Lang.enTranslation, content);
+    Lang.langFile = merge.withOptions({}, languages["en"], languages[lang]);
   }
   static getTranslationFilePath(lang: Language) {
     return path.join(Lang.localesPath, lang, "translation.json");
   }
 
-
-
-  static readonly common = {
-    serverNotFound: (serverName: string) => Lang.langFile.common.serverNotFound.replaceAll(Lang.SERVER_NAME, serverName),
-    unknownErr: () => Lang.langFile.common.unknownErr
-  }
-
-  static buttons = {
-    start: () => Lang.langFile.buttons.start,
-    stop: () => Lang.langFile.buttons.stop,
-    restart: () => Lang.langFile.buttons.restart,
-  }
-
-  static readonly backups = {
-    backupsNotEnabled: (serverName: string) => Lang.langFile.commands.backup.backupsNotEnabled.replaceAll(Lang.SERVER_NAME, serverName),
-    backupCreated: (backupName: string) => Lang.langFile.commands.backup.backupCreated.replaceAll(Lang.BACKUP_NAME, backupName),
-    listOfUserBackups: () => Lang.langFile.commands.backup.listOfUserBackups,
-    listOfAutoBackups: () => Lang.langFile.commands.backup.listOfAutoBackups,
-    latestBackupHeader: () => Lang.langFile.commands.backup.latestBackupHeader,
-    latestBackupDesc: () => Lang.langFile.commands.backup.latestBackupDesc,
-    latestAutoBackupHeader: () => Lang.langFile.commands.backup.latestAutoBackupHeader,
-    latestAutoBackupDesc: () => Lang.langFile.commands.backup.latestAutoBackupDesc,
-    latestUserBackupHeader: () => Lang.langFile.commands.backup.latestUserBackupHeader,
-    latestUserBackupDesc: () => Lang.langFile.commands.backup.latestUserBackupDesc,
-
-    userHeader: () => Lang.langFile.commands.backup.userHeader,
-    autoHeader: () => Lang.langFile.commands.backup.autoHeader,
-    backupsListed: () => Lang.langFile.commands.backup.backupsListed,
-
-    author: () => Lang.langFile.commands.backup.author,
-    created: () => Lang.langFile.commands.backup.created,
-    ID: () => Lang.langFile.commands.backup.ID,
-    description: () => Lang.langFile.commands.backup.description
-  }
-  static readonly start = {
-    attemptingStart: (serverName: string) => Lang.langFile.commands.start.attemptingStart.replaceAll(Lang.SERVER_NAME, serverName),
-    started: (serverName: string) => Lang.langFile.commands.start.started.replaceAll(Lang.SERVER_NAME, serverName),
-    alreadyOnline: (serverName: string) => Lang.langFile.commands.start.alreadyOnline.replaceAll(Lang.SERVER_NAME, serverName),
-    alreadyStarting: (serverName: string) => Lang.langFile.commands.start.alreadyStarting.replaceAll(Lang.SERVER_NAME, serverName)
-  }
-  static readonly stop = {
-    attemptingStop: (serverName: string) => Lang.langFile.commands.stop.attemptingStop.replaceAll(Lang.SERVER_NAME, serverName),
-    stopped: (serverName: string) => Lang.langFile.commands.stop.stopped.replaceAll(Lang.SERVER_NAME, serverName),
-    alreadyOffline: (serverName: string) => Lang.langFile.commands.stop.alreadyOffline.replaceAll(Lang.SERVER_NAME, serverName),
-  }
-  static readonly restart = {
-    attemptingRestart: (serverName: string) => Lang.langFile.commands.restart.attemptingRestart.replaceAll(Lang.SERVER_NAME, serverName),
-    restarted: (serverName: string) => Lang.langFile.commands.restart.restarted.replaceAll(Lang.SERVER_NAME, serverName),
-  }
-  static readonly help = {
-    listOfCommands: () => Lang.langFile.commands.help.listOfCommands,
-    helpDesc: () => Lang.langFile.commands.help.helpDesc,
-  }
-  static readonly status = {
-    serverStatusHeader: () => Lang.langFile.commands.status.serverStatusHeader,
-    allOperational: () => Lang.langFile.commands.status.allOperational, 
-    operational: () => Lang.langFile.commands.status.operational,
-    serverOffline: (serverName: string) => Lang.langFile.commands.status.serverOffline.replaceAll(Lang.SERVER_NAME, serverName),
-    serverOnline: (serverName: string) => Lang.langFile.commands.status.serverOnline.replaceAll(Lang.SERVER_NAME, serverName),
-    noPlayers: () => Lang.langFile.commands.status.noPlayers,
-    playersOnline: (playerCount: string | number) => Lang.langFile.commands.status.playersOnline.replaceAll(Lang.PLAYER_COUNT, playerCount.toString()),
-    serverStarting: (serverName: string) => Lang.langFile.commands.status.serverStarting.replaceAll(Lang.SERVER_NAME, serverName),
-    serverStopping: (serverName: string) => Lang.langFile.commands.status.serverStopping.replaceAll(Lang.SERVER_NAME, serverName),
-    serverWithPlayer: (serverName: string, playerName: string) => Lang.langFile.commands.status.serverWithPlayer
-    .replaceAll(Lang.SERVER_NAME, serverName)
-    .replaceAll(Lang.PLAYER_NAME, playerName),
-    serverWithPlayers: (serverName: string, playerCount: string | number) => Lang.langFile.commands.status.serverWithPlayers
-    .replaceAll(Lang.SERVER_NAME, serverName)
-    .replaceAll(Lang.PLAYER_COUNT, playerCount.toString()),
+  static parse(text: string, options?: {SERVER_NAME?: string, PLAYER_COUNT?: string | number, PLAYER_NAME?: string, BACKUP_NAME?: string}) {
+    if (text.includes(Lang.SERVER_NAME)) {
+      assert(options && options.SERVER_NAME);
+      text = text.replaceAll(Lang.SERVER_NAME, options.SERVER_NAME);
+    }
+    if (text.includes(Lang.PLAYER_COUNT)) {
+      assert(options && options.PLAYER_COUNT);
+      text = text.replaceAll(Lang.PLAYER_COUNT, options.PLAYER_COUNT.toString());
+    }
+    if (text.includes(Lang.PLAYER_NAME)) {
+      assert(options && options.PLAYER_NAME);
+      text = text.replaceAll(Lang.PLAYER_NAME, options.PLAYER_NAME);
+    }
+    if (text.includes(Lang.BACKUP_NAME)) {
+      assert(options && options.BACKUP_NAME);
+      text = text.replaceAll(Lang.BACKUP_NAME, options.BACKUP_NAME);
+    }
+    return text;
   }
 }

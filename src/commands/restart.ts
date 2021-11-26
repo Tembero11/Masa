@@ -26,19 +26,19 @@ export class RestartCommand extends Command {
       assert(server);
 
       if (server.hasStreams) {
-        embed.setDescription(Lang.restart.attemptingRestart(serverName))
+        embed.setDescription(Lang.parse(Lang.langFile.commands.restart.attemptingRestart, {SERVER_NAME: serverName}))
       }else {
-        embed.setDescription(Lang.start.attemptingStart(serverName));
+        embed.setDescription(Lang.parse(Lang.langFile.commands.start.attemptingStart, {SERVER_NAME: serverName}))
       }
       
       await interaction.reply({ embeds: [embed] });
 
       await ServerHandler.restart(serverName);
-      embed.setDescription(Lang.restart.restarted(serverName));
+      embed.setDescription(Lang.parse(Lang.langFile.commands.restart.restarted, {SERVER_NAME: serverName}));
       await interaction.editReply({ embeds: [embed], components: [generateButtonRow(serverName, server)] });
     } catch (err) {
       console.error(err);
-      embed.setDescription(Lang.common.unknownErr());
+      embed.setDescription(Lang.parse(Lang.langFile.common.unknownErr));
       if (interaction.replied) {
         await interaction.editReply({embeds: [embed]});
       }else {

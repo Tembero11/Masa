@@ -26,20 +26,20 @@ export class BackupsCommand extends Command {
           let userBackups = server.backups.listUser();
   
   
-          embed.addField(Lang.backups.userHeader(), Lang.backups.listOfUserBackups(), false);
+          embed.addField(Lang.parse(Lang.langFile.commands.backup.userHeader), Lang.parse(Lang.langFile.commands.backup.listOfUserBackups), false);
   
           embed.addFields(userBackups.map(fieldFromBackup));
   
-          embed.addField(Lang.backups.autoHeader(), Lang.backups.listOfAutoBackups(), false);
+          embed.addField(Lang.parse(Lang.langFile.commands.backup.autoHeader), Lang.parse(Lang.langFile.commands.backup.listOfAutoBackups), false);
   
           embed.addFields(autoBackups.map(fieldFromBackup));
   
-          embed.setTitle(Lang.backups.backupsListed()).setTimestamp();
+          embed.setTitle(Lang.parse(Lang.langFile.commands.backup.backupsListed)).setTimestamp();
         }else {
-          embed.setDescription(Lang.backups.backupsNotEnabled(serverName));
+          embed.setDescription(Lang.parse(Lang.langFile.commands.backup.backupsNotEnabled, {SERVER_NAME: serverName}));
         }
       }else {
-        embed.setDescription(Lang.common.serverNotFound(serverName));
+        embed.setDescription(Lang.parse(Lang.langFile.common.serverNotFound, {SERVER_NAME: serverName}));
       }
     }
     await interaction.reply({embeds: [embed]});

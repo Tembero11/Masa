@@ -30,12 +30,12 @@ export class BackupCommand extends Command {
           const desc = interaction.options.getString("description") || undefined;
     
           let backup = await server.backups.createUser(backupName, desc, interaction.member?.user.id);
-          embed.setDescription(Lang.backups.backupCreated(backup.id));
+          embed.setDescription(Lang.parse(Lang.langFile.commands.backup.backupCreated, {BACKUP_NAME: backup.id}));
         }else {
-          embed.setDescription(Lang.backups.backupsNotEnabled(serverName));
+          embed.setDescription(Lang.parse(Lang.langFile.commands.backup.backupsNotEnabled, {SERVER_NAME: serverName}));
         }
       }else {
-        embed.setDescription(Lang.common.serverNotFound(serverName));
+        embed.setDescription(Lang.parse(Lang.langFile.common.serverNotFound, {SERVER_NAME: serverName}));
       }
     }
     await interaction.reply({embeds: [embed]});
