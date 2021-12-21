@@ -1,5 +1,7 @@
 # Masa
 
+![Masa Open Source logo](https://github.com/MasaBot/Masa/blob/main/assets/masa_open_source.png)
+
 A [Discord](https://discord.com/) bot built around hosting a Minecraft Server.
 
 ## Why?
