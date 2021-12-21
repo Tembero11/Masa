@@ -1,6 +1,6 @@
-# Masa
-
-![Masa Open Source logo](https://github.com/MasaBot/Masa/blob/main/assets/masa_open_source.png)
+<p align="center" width="100%">
+  <img alt="Masa Open Source logo" src="https://github.com/MasaBot/Masa/blob/main/assets/masa_open_source.png" width="33%"/>
+</p>
 
 A [Discord](https://discord.com/) bot built around hosting a Minecraft Server.
 
@@ -29,9 +29,9 @@ Although Masa currently officially supports only [Vanilla](https://www.minecraft
 ## Planned Features before 1.0
 - [x] Add buttons to the command results
 - [x] Add a server installer
+- [x] Add a finer control over the command permissions
 - [ ] Add chat streaming to Discord & make server commands runnable from Discord
-- [ ] Add a build script-
+- [ ] Add a build script
 - [ ] Make the bot easier to install
-- [ ] Add a finer control over the command permissions
 - [ ] Better config error handling
 - [ ] Backup revert command
