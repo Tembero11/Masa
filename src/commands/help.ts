@@ -2,8 +2,9 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import Lang from "../classes/Lang";
 import { getDefaultCommandEmbed } from "../helpers";
-import Command from "./general";
+import Command, { RegisteredCommand } from "./general";
 
+@RegisteredCommand
 export class HelpCommand extends Command {
   name = "help";
   desc = "List of helpful commands";

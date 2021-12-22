@@ -1,10 +1,11 @@
 import  { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import { fieldFromBackup, getDefaultCommandEmbed } from "../helpers";
-import Command from "./general";
+import Command, { RegisteredCommand } from "./general";
 import { ServerHandler } from "../serverHandler";
 import Lang from "../classes/Lang";
 
+@RegisteredCommand
 export class LatestCommand extends Command {
   name = "latest";
   desc = "Returns the latest backup available";

@@ -1,11 +1,12 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import { generateButtonRow, getDefaultCommandEmbed } from "../helpers";
-import Command from "./general";
+import Command, { RegisteredCommand } from "./general";
 import { ServerHandler } from "../serverHandler";
 import assert from "assert";
 import Lang from "../classes/Lang";
 
+@RegisteredCommand
 export class RestartCommand extends Command {
   name = "restart";
   desc = "Restart the server";

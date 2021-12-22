@@ -2,9 +2,10 @@ import  { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import { fieldFromBackup, getDefaultCommandEmbed } from "../helpers";
 import { ServerHandler } from "../serverHandler";
-import Command from "./general";
+import Command, { RegisteredCommand } from "./general";
 import Lang from "../classes/Lang";
 
+@RegisteredCommand
 export class BackupsCommand extends Command {
   name = "backups";
   desc = "List all backups";

@@ -1,7 +1,8 @@
 import  { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import Command from "./general";
+import Command, { RegisteredCommand } from "./general";
 
+@RegisteredCommand
 export class PingCommand extends Command {
   name = "ping";
   desc = "pings the bot";

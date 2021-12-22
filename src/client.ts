@@ -4,7 +4,7 @@ import { Routes } from "discord-api-types/v9";
 import { getDefaultCommandEmbed } from "./helpers";
 import { Presence, ServerHandler } from "./serverHandler";
 import { config } from "./setup";
-import commands from "./commands/commands";
+import { commands } from "./commands/general";
 import assert from "assert";
 import Lang from "./classes/Lang";
 

@@ -1,4 +1,5 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
+import assert from "assert";
 import { ApplicationCommandPermissionData, CommandInteraction } from "discord.js";
 
 export default abstract class Command {
@@ -11,4 +12,13 @@ export default abstract class Command {
   >;
 
   abstract handler: (interaction: CommandInteraction) => Promise<void>;
+}
+
+export const commands = new Map<string, Command>();
+
+// Used as a decorator when creating a command
+export function RegisteredCommand(Cmd: any) {
+  const cmd = new Cmd();
+
+  commands.set(cmd.name, cmd);
 }

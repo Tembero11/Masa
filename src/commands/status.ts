@@ -1,12 +1,13 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction, MessageEmbed } from "discord.js";
 import { getDefaultCommandEmbed } from "../helpers";
-import Command from "./general";
+import Command, { RegisteredCommand } from "./general";
 import {ServerHandler} from "../serverHandler";
 import { config } from "../../index";
 import Lang from "../classes/Lang";
 import path from "path";
 
+@RegisteredCommand
 export class StatusCommand extends Command {
   name = "status";
   desc = "List of players currently online on the server";
