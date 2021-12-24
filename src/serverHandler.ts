@@ -1,32 +1,19 @@
-import { setServerStatus } from "./helpers";
-import {GameServer} from "./classes/MasaAPI";
+import { setServerStatus, toArrayIfNot } from "./helpers";
+import { GameServer } from "./classes/MasaAPI";
 import { ServerMetadata } from "./config";
 import assert from "assert";
-// import { BackupType, createBackup } from "./backup";
 import chalk from "chalk";
-import ms from "ms";
-import { nanoid } from "nanoid";
-
-// export let commandProcess: ChildProcessWithoutNullStreams | undefined;
-
-
-// Remove this!
-export let isServerJoinable = false;
-
-
-// export enum ServerStatus {
-//   SERVER_CRASHED = "Server crashed!",
-//   SERVER_STARTED = "Server started succesfully!",
-//   SERVER_STOPPED = "Server stopped!",
-//   SERVER_ALREADY_OFFLINE = "Server is already offline!"
-// }
+import { client } from "./client";
+import Lang from "./classes/Lang";
+import { MessageEmbed } from "discord.js";
 
 export enum Presence {
-  SERVER_ONLINE = "Server is joinable!",
-  SERVER_STARTING = "Server is starting...",
-  SERVER_STOPPING = "Server is stopping...",
-  SERVER_OFFLINE = "Server is offline."
+  SERVER_ONLINE,
+  SERVER_STARTING,
+  SERVER_STOPPING,
+  SERVER_OFFLINE
 }
+
 
 export abstract class ServerHandler {
   /**
@@ -44,7 +31,7 @@ export abstract class ServerHandler {
 
   public static get serverNames() {
     return Array.from(ServerHandler.serversMap.keys());
-  } 
+  }
 
   static getServerByName(serverName: string): GameServer | undefined {
     return ServerHandler.serversMap.get(serverName);
@@ -61,29 +48,29 @@ export abstract class ServerHandler {
   static idToName(id: string) {
     return ServerHandler.ids.get(id);
   }
-  static start = async(serverName: string) => {
+  static start = async (serverName: string) => {
     let server = ServerHandler.serversMap.get(serverName);
     assert(server);
     server.start();
-  
+
     return await server.waitfor("ready");
   }
-  
-  static stop = async(serverName: string) => {
+
+  static stop = async (serverName: string) => {
     let server = ServerHandler.serversMap.get(serverName);
     assert(server);
     return await server.stop();
   }
-  
-  static restart = async(serverName: string) => {
+
+  static restart = async (serverName: string) => {
     let server = ServerHandler.serversMap.get(serverName);
     assert(server);
-  
+
     if (server.hasStreams) {
       await server.stop();
     }
     await server.start();
-  
+
     return await server.waitfor("ready");
   }
 
@@ -91,15 +78,15 @@ export abstract class ServerHandler {
   static serverInitializer = (serverMeta: ServerMetadata[]) => {
     serverMeta.forEach((meta) => {
       assert(!ServerHandler.serversMap.get(meta.name), "One or more servers have the same name!");
-  
+
       let server = new GameServer(meta.command, meta.directory, meta);
       if (meta.backups) {
         server.enableBackups();
       }
-  
+
       setServerStatus(meta.name, server, Presence.SERVER_OFFLINE);
 
-  
+
       server.on("join", (e) => {
         if (meta.advanced?.welcomeMsg) {
           let msg = meta.advanced.welcomeMsg;
@@ -112,32 +99,59 @@ export abstract class ServerHandler {
       server.on("quit", (e) => {
         setServerStatus(meta.name, server, Presence.SERVER_ONLINE);
       });
-  
+
       server.on("ready", () => {
         setServerStatus(meta.name, server, Presence.SERVER_ONLINE);
       });
-  
+
       if (meta.logs) {
         console.log(`Logs are enabled on "${chalk.underline(meta.name)}"`)
         server.std.on("out", (reader) => {
           process.stdout.write(reader.data);
         });
       }
-  
+
       server.on("close", e => setServerStatus(meta.name, server, Presence.SERVER_OFFLINE));
-  
-  
+
+
+      if (meta.advanced?.chat?.channels) {
+        const { sendPlayerNetworkEvents, sendServerReadyEvent, allowDuplex } = meta.advanced.chat;
+        const channels = toArrayIfNot(meta.advanced.chat.channels);
+        if (client.user) {
+          setupChatStreaming(
+            server,
+            meta.name,
+            channels,
+            sendPlayerNetworkEvents,
+            sendServerReadyEvent,
+            allowDuplex
+          );
+        }else {
+          client.once("ready", _ => setupChatStreaming(
+            server,
+            meta.name,
+            channels,
+            sendPlayerNetworkEvents,
+            sendServerReadyEvent,
+            allowDuplex
+          ));
+        }
+      }else {
+        console.log("Chat streaming is disabled!");
+      }
+
+
       // Setup backups
       // if (meta.backups) {
       //   const { backupInterval } = meta.backups;
       //   const { backupLimit } = meta.backups;
-  
+
       //   let backupIntervalMs = typeof backupInterval == "string" ? ms(backupInterval) : backupInterval;
-  
+
       //   assert(backupInterval && backupLimit);
-  
+
       //   console.log(`Automatic backups are made every ${ms(backupIntervalMs, {long: true})} for server "${chalk.underline(meta.name)}".`);
-  
+
       //   setInterval(() => {
       //     createBackup(server, meta.name, BackupType.Automatic, { backupLimit }).then((backup) => {
       //       console.log(`An automatic backup was succesfully created! ${backup.filename || ""}`);
@@ -148,137 +162,85 @@ export abstract class ServerHandler {
       // }else {
       //   console.warn(chalk.yellow(`Automatic backups are ${chalk.bold("disabled")} for server "${chalk.underline(meta.name)}".`))
       // }
-  
-  
+
+
       ServerHandler.serversMap.set(meta.name, server);
       ServerHandler.ids.set(meta.tag, meta.name);
     });
   }
 }
 
-// export const start = () => {
-//   return new Promise<ServerStatus>((res, rej) => {
-//     if (!commandProcess) {
+const setupChatStreaming = async(
+  server: GameServer,
+  serverName: string,
+  channelIds: string[],
+  sendPlayerNetworkEvents?: boolean,
+  sendServerReadyEvent?: boolean,
+  allowDuplex?: boolean
+) => {
+  const yellowMsgPrefix = "```fix\n";
+  const yellowMsgSuffix = "```";
 
-//       commandProcess = spawn(config["command"], { shell: true, cwd: serverDir });
+  const channels = await Promise.all(channelIds.map(async channelId => {
+    const channel = await client.channels.fetch(channelId);
+    assert(channel?.isText());
+    return channel;
+  }));
 
-//       let command = new GameServerArgumentBuilder("server.jar", {
-//         maxMem: "1024M",
-//         minMem: "1024M",
-//         noGUI: true
-//       });
-//       // GameServerArgumentBuilder.from("java -jar server.jar");
-//       server = new GameServer(command, serverDir);
-//       server.start();
+  server.on("chat", event => {
+    channels.forEach(channel => channel.send(`\`\`\`<${event.player.username}> ${event.message}\`\`\``));
+  });
+  if (sendPlayerNetworkEvents) {
+    server.on("join", event => {
+      channels.forEach(channel => channel.send(`${yellowMsgPrefix}${Lang.parse(Lang.langFile.chat.playerJoined, {
+        PLAYER_NAME: event.player.username,
+        paramBolding: false
+      })}${yellowMsgSuffix}`));
+    });
+    server.on("quit", event => {
+      channels.forEach(channel => channel.send(`${yellowMsgPrefix}${Lang.parse(Lang.langFile.chat.playerLeft, {
+        PLAYER_NAME: event.player.username,
+        paramBolding: false
+      })}${yellowMsgSuffix}`));
+    });
+  }
+  if (sendServerReadyEvent) {
+    server.on("ready", event => {
+      channels.forEach(channel => channel.send(`${yellowMsgPrefix}${Lang.parse(Lang.langFile.chat.serverReady, {
+        SERVER_NAME: serverName,
+        paramBolding: false
+      })}${yellowMsgSuffix}`));
+    });
+  }
 
-//       serverStatus = Presence.SERVER_STARTING;
-//       setPresence(serverStatus);
+  if (allowDuplex) {
+    client.on("messageCreate", (msg) => {
+      if (!msg.author.bot && channelIds.includes(msg.channelId) && server.isJoinable) {
+        const tellraw = [
+          { text: "<" },
+          {
+            text: `@${msg.member?.nickname || msg.author.username}`,
+            color: "aqua",
+            hoverEvent: { action: "show_text", value: `${msg.author.username}#${msg.author.discriminator}` },
+            clickEvent: { action: "open_url", value: `https://discord.com/users/${msg.author.id}` },
+          },
+          { text: "> " },
+          { text: msg.content }
+        ];
 
-//       server.waitfor("done").then((e) => {
-//         serverStatus = Presence.SERVER_ONLINE;
+        server.std.emit("in", `tellraw @a ${JSON.stringify(tellraw)}\n`);
 
-//         res(ServerStatus.SERVER_STARTED);
-//       });
+        const embed = new MessageEmbed();
 
-//       server.on("join", (e) => {
-//         // Update the presence
-//         setPresence(serverStatus);
-//       });
+        embed.setDescription(Lang.parse(Lang.langFile.chat.chatSent, {
+          MESSAGE_LINK: msg.url,
+          SERVER_NAME: serverName,
+        }));
 
-//       server.on("leave", (e) => {
-//         // Update the presence
-//         setPresence(serverStatus);
-//       });
+        msg.channel.send({embeds: [embed]});
+      }
+    });
+  }
 
-//       server.std.on("out", (e) => {
-//         let data = e.data;
-
-//         // Add the line to the lastLine array
-//         if (lastLines.length >= cachedConsoleLines) {
-//           lastLines.shift();
-//         }
-        
-//         lastLines.push(data);
-
-
-//         // Forward the stdout to the console
-//         process.stdout.write(`[${server?.pid || ""}]${data}`);
-//       });
-
-//       server.on("close", (code) => {
-//         commandProcess = undefined;
-
-//         serverStatus = Presence.SERVER_OFFLINE;
-//         setPresence(serverStatus);
-
-//         if (code != 0) {
-//           rej(ServerStatus.SERVER_CRASHED);
-//         }
-
-
-
-//         console.log(`Server closed with code ${code}`);
-//       });
-//     }
-//   })
-// }
-
-// export const stop = async (): Promise<ServerStatus> => {
-//   if (server) {
-//     await server.stop();
-//     return ServerStatus.SERVER_STOPPED;
-//   }else {
-//     return ServerStatus.SERVER_ALREADY_OFFLINE;
-//   }
-//   return new Promise<ServerStatus>((res, rej) => {
-//     if (commandProcess) {
-//       serverStatus = Presence.SERVER_STOPPING;
-//       setPresence(serverStatus);
-
-//       commandProcess.on("close", () => {
-//         res(ServerStatus.SERVER_STOPPED);
-//       });
-
-//       commandProcess.stdin.write("stop\n");
-//     } else {
-//       res(ServerStatus.SERVER_ALREADY_OFFLINE);
-//     }
-//   });
-// }
-
-// export const restart = async (): Promise<ServerStatus> => {
-//   if (commandProcess) {
-//     await stop();
-//     return await start();
-//   } else {
-//     return await start();
-//   }
-// }
-
-// export const getSeed = () => {
-//   return new Promise<number[]>((res, rej) => {
-//     if (commandProcess && server && server.isJoinable) {
-//       const listener = (d: any) => {
-//         let reader = new ConsoleReader(d.toString(), true);
-  
-//         if (reader.isInfo) {
-//           let isSeed = reader.message.search(/Seed: \[[a-zA-Z0-9\-]{1,}\]/) > -1;
-  
-//           if (isSeed) {
-//             let seeds = reader.message.substring("Seed:".length).replaceAll(/\[|\]/g, "").split(",").map((seed) => parseInt(seed));
-  
-//             commandProcess?.removeListener("data", listener);
-
-//             res(seeds);
-//           }
-//         }
-//       }
-  
-//       commandProcess.stdout.on("data", listener);
-  
-//       commandProcess.stdin.write("seed\n");
-//     }else {
-//       rej("Server is offline!");
-//     }
-//   });
-// }
+  console.log("Successfully setup chat streaming to Discord!");
+}

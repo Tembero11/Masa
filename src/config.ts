@@ -40,6 +40,12 @@ export interface ServerMetadata {
   },
   advanced?: {
     welcomeMsg?: string
+    chat?: {
+      channels?: string | string[]
+      sendPlayerNetworkEvents?: boolean
+      sendServerReadyEvent?: boolean
+      allowDuplex?: boolean
+    }
   }
 }
 

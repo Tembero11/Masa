@@ -2,10 +2,21 @@ import assert from "assert";
 import fs from "fs";
 import path from "path";
 import merge from "ts-deepmerge";
-import { UnknownLanguageError } from "./Errors";
+import { NullRequiredLanguageParameterError, UnknownLanguageError } from "./Errors";
 import languages from "../../locales/translation.json";
 
 export type Language = keyof typeof languages;
+
+interface LanguageParseOptions {
+  SERVER_NAME?: string
+  PLAYER_COUNT?: string | number
+  PLAYER_NAME?: string
+  BACKUP_NAME?: string
+  MESSAGE_LINK?: string
+
+
+  paramBolding?: boolean
+}
 
 
 export default abstract class Lang {
@@ -26,22 +37,22 @@ export default abstract class Lang {
     return path.join(Lang.localesPath, lang, "translation.json");
   }
 
-  static parse(text: string, options?: {SERVER_NAME?: string, PLAYER_COUNT?: string | number, PLAYER_NAME?: string, BACKUP_NAME?: string}) {
-    if (text.includes(Lang.SERVER_NAME)) {
-      assert(options && options.SERVER_NAME);
-      text = text.replaceAll(Lang.SERVER_NAME, options.SERVER_NAME);
+  static parse(text: string, options?: LanguageParseOptions) {
+    if (options) {
+      Object.entries(options).forEach(([key, value]) => {
+        if (key === key.toUpperCase()) {
+          if (!key.includes("LINK")) {
+            if (options.paramBolding === undefined || options.paramBolding == true) {
+              value = `**${value}**`;
+            }
+          }
+          text = text.replaceAll(`%${key}%`, value);
+        }
+      });
     }
-    if (text.includes(Lang.PLAYER_COUNT)) {
-      assert(options && options.PLAYER_COUNT);
-      text = text.replaceAll(Lang.PLAYER_COUNT, options.PLAYER_COUNT.toString());
-    }
-    if (text.includes(Lang.PLAYER_NAME)) {
-      assert(options && options.PLAYER_NAME);
-      text = text.replaceAll(Lang.PLAYER_NAME, options.PLAYER_NAME);
-    }
-    if (text.includes(Lang.BACKUP_NAME)) {
-      assert(options && options.BACKUP_NAME);
-      text = text.replaceAll(Lang.BACKUP_NAME, options.BACKUP_NAME);
+    const params = text.match(/%[A-Z_]{3,}%/g);
+    if (params) {
+      throw new NullRequiredLanguageParameterError(params);
     }
     return text;
   }

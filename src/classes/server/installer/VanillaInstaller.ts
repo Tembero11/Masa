@@ -4,7 +4,6 @@ import path from "path";
 import axios from "axios";
 import GameServer from "../GameServer";
 import { EulaNotAcceptedError, InstallDirectoryNotEmptyError } from "../../Errors";
-import { ConsoleColor } from "../../../helpers";
 import Installer, { VersionManifest } from "./Installer";
 import ProgressBar from "./ProgressBar";
 

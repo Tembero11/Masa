@@ -68,7 +68,6 @@ const setup = async () => {
 
     // // Login to discord
     await client.login(config["token"]);
-    console.log(serverList);
 
     ServerHandler.serverInitializer(serverList);
 

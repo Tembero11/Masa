@@ -63,3 +63,10 @@ export class UnknownLanguageError extends Error {
     this.name = "UnknownLanguageError";
   }
 }
+
+export class NullRequiredLanguageParameterError extends Error {
+  constructor(params: string[]) {
+    super(`${params.join(", ")} ${params.length > 1 ? "are" : "is"} null!`);
+    this.name = "NullRequiredLanguageParameterError";
+  }
+}

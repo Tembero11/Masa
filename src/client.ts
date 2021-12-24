@@ -2,15 +2,15 @@ import Discord, { GuildApplicationCommandPermissionData, Intents, MessageEmbed }
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
 import { getDefaultCommandEmbed } from "./helpers";
-import { Presence, ServerHandler } from "./serverHandler";
+import { ServerHandler } from "./serverHandler";
 import { config } from "./setup";
-import { commands } from "./commands/general";
+import commands from "./commands/commands";
 import assert from "assert";
 import Lang from "./classes/Lang";
 
 let permissions: GuildApplicationCommandPermissionData[];
 
-export const client = new Discord.Client({ intents: [Intents.FLAGS.GUILDS] });
+export const client = new Discord.Client({ intents: [Intents.FLAGS.GUILDS, Intents.FLAGS.GUILD_MESSAGES] });
 
 client.once("ready", () => {
   if (client.user) {

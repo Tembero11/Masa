@@ -35,3 +35,5 @@ Although Masa currently officially supports only [Vanilla](https://www.minecraft
 - [ ] Make the bot easier to install
 - [ ] Better config error handling
 - [ ] Backup revert command
+- [ ] World download command
+- [ ] Custom server offline messages in Minecraft?
