@@ -16,8 +16,8 @@ export class HelpCommand extends Command {
   handler = async (interaction: CommandInteraction): Promise<void> => {
     let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
 
-    embed.setTitle(Lang.parse(Lang.langFile.commands.help.listOfCommands));
-    embed.setDescription(Lang.parse(Lang.langFile.commands.help.helpDesc));
+    embed.setTitle(Lang.parse("commands.help.listOfCommands"));
+    embed.setDescription(Lang.parse("commands.help.helpDesc"));
 
     await interaction.reply({embeds: [embed]})
 

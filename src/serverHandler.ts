@@ -192,13 +192,13 @@ const setupChatStreaming = async(
   });
   if (sendPlayerNetworkEvents) {
     server.on("join", event => {
-      channels.forEach(channel => channel.send(`${yellowMsgPrefix}${Lang.parse(Lang.langFile.chat.playerJoined, {
+      channels.forEach(channel => channel.send(`${yellowMsgPrefix}${Lang.parse("chat.playerJoined", {
         PLAYER_NAME: event.player.username,
         paramBolding: false
       })}${yellowMsgSuffix}`));
     });
     server.on("quit", event => {
-      channels.forEach(channel => channel.send(`${yellowMsgPrefix}${Lang.parse(Lang.langFile.chat.playerLeft, {
+      channels.forEach(channel => channel.send(`${yellowMsgPrefix}${Lang.parse("chat.playerLeft", {
         PLAYER_NAME: event.player.username,
         paramBolding: false
       })}${yellowMsgSuffix}`));
@@ -206,7 +206,7 @@ const setupChatStreaming = async(
   }
   if (sendServerReadyEvent) {
     server.on("ready", event => {
-      channels.forEach(channel => channel.send(`${yellowMsgPrefix}${Lang.parse(Lang.langFile.chat.serverReady, {
+      channels.forEach(channel => channel.send(`${yellowMsgPrefix}${Lang.parse("chat.serverReady", {
         SERVER_NAME: serverName,
         paramBolding: false
       })}${yellowMsgSuffix}`));
@@ -232,7 +232,7 @@ const setupChatStreaming = async(
 
         const embed = new MessageEmbed();
 
-        embed.setDescription(Lang.parse(Lang.langFile.chat.chatSent, {
+        embed.setDescription(Lang.parse("chat.chatSent", {
           MESSAGE_LINK: msg.url,
           SERVER_NAME: serverName,
         }));

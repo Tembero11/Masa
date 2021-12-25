@@ -59,8 +59,8 @@ const setup = async () => {
 
     config = await loadConfig<BotConfig>("bot.json");
 
-    // Set the bot language
-    Lang.setLang(config.language);
+    // Set the bot locale
+    Lang.setLocale(config.language);
     if (config.language) {
         console.log(`Using language ${Lang.langFile.name} (${config.language})`);
     }

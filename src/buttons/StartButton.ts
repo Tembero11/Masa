@@ -6,7 +6,7 @@ import { GenericButton } from "./GenericButton";
 
 export class StartButton extends GenericButton {
   readonly customId = "server_start";
-  readonly rawLabel = "buttons.start";
+  readonly labelLangPath = "buttons.start";
   readonly style = "PRIMARY";
 
 
@@ -17,7 +17,7 @@ export class StartButton extends GenericButton {
     let embed = new MessageEmbed();
 
     await ServerHandler.start(serverName);
-    embed.setDescription(Lang.parse(Lang.langFile.commands.start.started, { SERVER_NAME: serverName }));
+    embed.setDescription(Lang.parse("commands.start.started", { SERVER_NAME: serverName }));
     await interaction.editReply({ embeds: [embed] });
   }
 

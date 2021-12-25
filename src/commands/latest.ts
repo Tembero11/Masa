@@ -28,25 +28,25 @@ export class LatestCommand extends Command {
           const latest = server.backups.getLatest();
   
           if (latest) {
-            embed.setTitle(Lang.parse(Lang.langFile.commands.backup.latestBackupHeader))
+            embed.setTitle(Lang.parse("commands.backup.latestBackupHeader"))
   
-            embed.addField(Lang.parse(Lang.langFile.commands.backup.latestBackupHeader), Lang.parse(Lang.langFile.commands.backup.latestBackupDesc));
+            embed.addField(Lang.parse("commands.backup.latestBackupHeader"), Lang.parse("commands.backup.latestBackupDesc"));
             embed.addFields([fieldFromBackup(latest)]);
   
             if (latestAutomatic) {
-              embed.addField(Lang.parse(Lang.langFile.commands.backup.latestAutoBackupHeader), Lang.parse(Lang.langFile.commands.backup.latestBackupDesc));
+              embed.addField(Lang.parse("commands.backup.latestAutoBackupHeader"), Lang.parse("commands.backup.latestBackupDesc"));
               embed.addFields([fieldFromBackup(latestAutomatic)]);
             }
             if (latestUser) {
-              embed.addField(Lang.parse(Lang.langFile.commands.backup.latestUserBackupHeader), Lang.parse(Lang.langFile.commands.backup.latestUserBackupDesc));
+              embed.addField(Lang.parse("commands.backup.latestUserBackupHeader"), Lang.parse("commands.backup.latestUserBackupDesc"));
               embed.addFields([fieldFromBackup(latestUser)]);
             }
           }else {
-            embed.setDescription(Lang.parse(Lang.langFile.commands.backup.backupsNotEnabled, {SERVER_NAME: serverName}));
+            embed.setDescription(Lang.parse("commands.backup.backupsNotEnabled", {SERVER_NAME: serverName}));
           }
         }
       }else {
-        embed.setDescription(Lang.parse(Lang.langFile.common.serverNotFound, {SERVER_NAME: serverName}));
+        embed.setDescription(Lang.parse("common.serverNotFound", {SERVER_NAME: serverName}));
       }
     }
     await interaction.reply({embeds: [embed]});

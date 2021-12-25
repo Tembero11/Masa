@@ -31,6 +31,7 @@
     "js-yaml": "^4.1.0",
     "ms": "^2.1.2",
     "nanoid": "^3.1.30",
+    "property-string-path": "^1.1.0",
     "ts-deepmerge": "^1.1.0"
   },
   "devDependencies": {

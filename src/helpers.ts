@@ -46,23 +46,6 @@ export const generateServerButtonRow = (serverName: string, server: GameServer) 
     new StartButton().setParameters({serverName}).getMessageButton(),
     new StopButton().setParameters({serverName}).getMessageButton(),
     new RestartButton().setParameters({serverName}).getMessageButton()
-  ])
-
-  return new MessageActionRow().addComponents([
-    new MessageButton()
-    .setCustomId(`server_start:${serverName}`)
-    .setLabel(Lang.parse(Lang.langFile.buttons.start))
-    .setStyle("PRIMARY")
-    .setDisabled(server.hasStreams),
-    new MessageButton()
-    .setCustomId(`server_stop:${serverName}`)
-    .setLabel(Lang.parse(Lang.langFile.buttons.stop))
-    .setStyle("DANGER")
-    .setDisabled(!server.hasStreams),
-    new MessageButton()
-    .setCustomId(`server_restart:${serverName}`)
-    .setLabel(Lang.parse(Lang.langFile.buttons.restart))
-    .setStyle("DANGER")
   ]);
 }
 
@@ -84,19 +67,19 @@ export const setServerStatus = (serverName: string, server: GameServer, status: 
       activityType = "PLAYING";
 
       if (server.playerCount === 1) {
-        statusText = Lang.parse(Lang.langFile.commands.status.serverWithPlayer, {
+        statusText = Lang.parse("commands.status.serverWithPlayer", {
           SERVER_NAME: serverName,
           PLAYER_NAME: server.playersArray[0].username,
           paramBolding: false,
         });
       } else if (server.playerCount > 1) {
-        statusText = Lang.parse(Lang.langFile.commands.status.serverWithPlayers, {
+        statusText = Lang.parse("commands.status.serverWithPlayers", {
           SERVER_NAME: serverName,
           PLAYER_COUNT: server.playerCount,
           paramBolding: false,
         });
       }else {
-        statusText = Lang.parse(Lang.langFile.commands.status.serverOnline, {
+        statusText = Lang.parse("commands.status.serverOnline", {
           SERVER_NAME: serverName,
           paramBolding: false,
         });
@@ -105,19 +88,19 @@ export const setServerStatus = (serverName: string, server: GameServer, status: 
     case Presence.SERVER_STARTING:
       statusType = "dnd";
       activityType = "WATCHING";
-      statusText = Lang.parse(Lang.langFile.commands.status.serverStarting, {SERVER_NAME: serverName, paramBolding: false});
+      statusText = Lang.parse("commands.status.serverStarting", {SERVER_NAME: serverName, paramBolding: false});
       break;
 
     case Presence.SERVER_STOPPING:
       statusType = "dnd";
       activityType = "WATCHING";
-      statusText = Lang.parse(Lang.langFile.commands.status.serverStopping, {SERVER_NAME: serverName, paramBolding: false});
+      statusText = Lang.parse("commands.status.serverStopping", {SERVER_NAME: serverName, paramBolding: false});
       break;
 
     default:
       statusType = "idle";
       activityType = "LISTENING";
-      statusText = Lang.parse(Lang.langFile.commands.status.serverOffline, {SERVER_NAME: serverName, paramBolding: false});
+      statusText = Lang.parse("commands.status.serverOffline", {SERVER_NAME: serverName, paramBolding: false});
       break;
   }
 
@@ -139,14 +122,16 @@ export const getDefaultCommandEmbed = (authorName: string, avatarURL?: string | 
 }
 export const fieldFromBackup = (backup: BackupMetadata) => {
   const e = backup;
-  const created = date.format(new Date(e.created), "ddd, MMM DD YYYY, HH:mm");
+  const dateFormat = Lang.getDateOrTimeFormat("longDate");
+  const timeFormat = Lang.getDateOrTimeFormat("time");
+  const created = Lang.translateDateAndTime(date.format(new Date(e.created), dateFormat + " " + timeFormat));
   return {
     name: e.name || created,
     value: [
-      ...(e.desc ? [`> **${Lang.parse(Lang.langFile.commands.backup.description)}**: \`${e.desc}\``] : []),
-      `> **${Lang.parse(Lang.langFile.commands.backup.created)}**_    _: \`${created}\``,
-      ...(e.author ? [`> **${Lang.parse(Lang.langFile.commands.backup.author)}**_     _: <@${e.author}>`] : []),
-      `> **${Lang.parse(Lang.langFile.commands.backup.ID)}**_         _: \`${e.id}\``,
+      ...(e.desc ? [`> **${Lang.parse("commands.backup.description")}**: \`${e.desc}\``] : []),
+      `> **${Lang.parse("commands.backup.created")}**_    _: \`${created}\``,
+      ...(e.author ? [`> **${Lang.parse("commands.backup.author")}**_     _: <@${e.author}>`] : []),
+      `> **${Lang.parse("commands.backup.ID")}**_         _: \`${e.id}\``,
     ].join("\n")
   }
 }

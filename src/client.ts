@@ -75,7 +75,7 @@ client.on("interactionCreate", async (interaction) => {
       // Note: !interaction.replied seemed to crash even though it shouldn't
       try {
         let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
-        embed.setDescription(Lang.parse(Lang.langFile.common.unknownErr));
+        embed.setDescription(Lang.parse("common.unknownErr"));
         await interaction.reply({embeds: [embed]})
       }catch(err) {
         console.log(err);
@@ -102,7 +102,7 @@ client.on("interactionCreate", async (interaction) => {
       await buttons.get(action)!.handler(params, interaction);
     }else {
       let embed = new MessageEmbed();
-      embed.setDescription(Lang.parse(Lang.langFile.common.unknownAction));
+      embed.setDescription(Lang.parse("common.unknownAction"));
       await interaction.editReply({embeds: [embed]});
     }
   } catch (err) {
@@ -110,7 +110,7 @@ client.on("interactionCreate", async (interaction) => {
     // Note: !interaction.replied seemed to crash even though it shouldn't
     try {
       let embed = new MessageEmbed();
-      embed.setDescription(Lang.parse(Lang.langFile.common.unknownErr));
+      embed.setDescription(Lang.parse("common.unknownErr"));
       await interaction.editReply({ embeds: [embed] });
     } catch (err) {
       console.log(err);

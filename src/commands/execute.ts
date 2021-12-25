@@ -42,7 +42,7 @@ export class ExecuteCommand extends Command {
 
         server.std.emit("in", executableCommand);
 
-        embed.setDescription(Lang.parse(Lang.langFile.commands.execute.commandSent, {
+        embed.setDescription(Lang.parse("commands.execute.commandSent", {
           SERVER_NAME: serverName,
           GAME_COMMAND: msgCommand
         }));
@@ -57,12 +57,12 @@ export class ExecuteCommand extends Command {
           actionRow.addComponents(repeatButton.getMessageButton(!server.hasStreams))
         }
       }else {
-        embed.setDescription(Lang.parse(Lang.langFile.commands.status.serverOffline, {
+        embed.setDescription(Lang.parse("commands.status.serverOffline", {
           SERVER_NAME: serverName
         }));
       }
     }else {
-      embed.setDescription(Lang.parse(Lang.langFile.common.serverNotFound, {
+      embed.setDescription(Lang.parse("common.serverNotFound", {
         SERVER_NAME: serverName
       }));
     }

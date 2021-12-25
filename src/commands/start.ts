@@ -28,22 +28,22 @@ export class StartCommand extends Command {
 
       if (server.hasStreams) {
         if (server.isJoinable) {
-          embed.setDescription(Lang.parse(Lang.langFile.commands.start.alreadyOnline, {SERVER_NAME: serverName}));
+          embed.setDescription(Lang.parse("commands.start.alreadyOnline", {SERVER_NAME: serverName}));
         }else {
-          embed.setDescription(Lang.parse(Lang.langFile.commands.start.alreadyStarting, {SERVER_NAME: serverName}));
+          embed.setDescription(Lang.parse("commands.start.alreadyStarting", {SERVER_NAME: serverName}));
         }
         await interaction.reply({ embeds: [embed] });
       }else {
-        embed.setDescription(Lang.parse(Lang.langFile.commands.start.attemptingStart, {SERVER_NAME: serverName}));
+        embed.setDescription(Lang.parse("commands.start.attemptingStart", {SERVER_NAME: serverName}));
         await interaction.reply({ embeds: [embed] });
 
         await ServerHandler.start(serverName);
-        embed.setDescription(Lang.parse(Lang.langFile.commands.start.started, {SERVER_NAME: serverName}));
+        embed.setDescription(Lang.parse("commands.start.started", {SERVER_NAME: serverName}));
         await interaction.editReply({ embeds: [embed], components: [generateServerButtonRow(serverName, server)] });
       }
     } catch (err) {
       console.error(err);
-      embed.setDescription(Lang.parse(Lang.langFile.common.unknownErr));
+      embed.setDescription(Lang.parse("common.unknownErr"));
       if (interaction.replied) {
         await interaction.editReply({embeds: [embed]});
       }else {

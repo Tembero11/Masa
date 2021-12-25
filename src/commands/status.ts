@@ -20,7 +20,7 @@ export class StatusCommand extends Command {
   handler = async (interaction: CommandInteraction): Promise<void> => {
     let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
 
-    embed.setTitle(Lang.parse(Lang.langFile.commands.status.serverStatusHeader));
+    embed.setTitle(Lang.parse("commands.status.serverStatusHeader"));
 
     let servers = ServerHandler.servers;
 
@@ -30,7 +30,7 @@ export class StatusCommand extends Command {
       if (server) {
         servers = [server];
       }else {
-        embed.setDescription(Lang.parse(Lang.langFile.common.serverNotFound, {SERVER_NAME: serverName}));
+        embed.setDescription(Lang.parse("common.serverNotFound", {SERVER_NAME: serverName}));
       }
     }
 
@@ -41,18 +41,18 @@ export class StatusCommand extends Command {
       if (server.name) {
         let serverBlock: string[] = [];
         if (server.isJoinable) {
-          serverBlock.push(Lang.parse(Lang.langFile.commands.status.serverOnline, {SERVER_NAME: server.name}) + " :green_circle:");
+          serverBlock.push(Lang.parse("commands.status.serverOnline", {SERVER_NAME: server.name}) + " :green_circle:");
         } else if (!server.hasStreams) {
-          serverBlock.push(Lang.parse(Lang.langFile.commands.status.serverOffline, {SERVER_NAME: server.name}) + " :red_circle:");
+          serverBlock.push(Lang.parse("commands.status.serverOffline", {SERVER_NAME: server.name}) + " :red_circle:");
         } else if (server.isUnstable) {
-          serverBlock.push(Lang.parse(Lang.langFile.commands.status.serverStarting, {SERVER_NAME: server.name}) + " :yellow_circle:");
+          serverBlock.push(Lang.parse("commands.status.serverStarting", {SERVER_NAME: server.name}) + " :yellow_circle:");
         }
         if (server.isJoinable) {
           if (server.players.size > 0) {
-            serverBlock.push(Lang.parse(Lang.langFile.commands.status.playersOnline, {PLAYER_COUNT: server.playerCount}));
+            serverBlock.push(Lang.parse("commands.status.playersOnline", {PLAYER_COUNT: server.playerCount}));
             serverBlock.push(...server.playersArray.map(player => player.username));
           }else {
-            serverBlock.push(Lang.parse(Lang.langFile.commands.status.noPlayers));
+            serverBlock.push(Lang.parse("commands.status.noPlayers"));
           }
         }
 

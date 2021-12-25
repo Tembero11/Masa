@@ -1,0 +1,57 @@
+{
+  "code": "lol_en",
+  "name": "LOLCAT (Kingdom of Cats)",
+  "translations": {
+    "common": {
+      "serverNotFound": "%SERVER_NAME% no can haz friendz!",
+      "unknownErr": "OH NOEZ! Somethin went wrong! :crying_cat_face:"
+    },
+    "buttons": {
+      "start": "Start",
+      "stop": "Stop",
+      "restart": "Restart"
+    },
+    "commands": {
+      "backup": {
+        "backupCreated": "%BACKUP_NAME% wuz succesfully creatd!",
+        "backupsNotEnabled": "bakups r not enabld 4 %SERVER_NAME% :crying_cat_face:",
+        "listOfUserBackups": "List ov usr creatd bakups",
+        "listOfAutoBackups": "List ov automatic bakups",
+        "latestBackupHeader": "Latest Bakups",
+        "latestBackupDesc": "Teh latest bakup frum all bakups.",
+        "latestAutoBackupHeader": "Latest Bakups",
+        "latestAutoBackupDesc": "Teh latest bakup creatd automatically",
+        "latestUserBackupHeader": "Latest Bakups",
+        "latestUserBackupDesc": "Teh latest bakup creatd by usr",
+  
+        "userHeader": "USR",
+        "autoHeader": "AUTOMATIC",
+        "backupsListed": "Bakups listd"
+      },
+      "start": {
+        "attemptingStart": "Attemptin 2 start %SERVER_NAME%...",
+        "started": "%SERVER_NAME% startd successfully!",
+        "alreadyOnline": "%SERVER_NAME% is already online!",
+        "alreadyStarting": "%SERVER_NAME% is already starting!"
+      },
+      "stop": {
+        "attemptingStop": "Attempting to stop %SERVER_NAME%...",
+        "stopped": "%SERVER_NAME% stoppd successfully!",
+        "alreadyOffline": "%SERVER_NAME% iz already online!"
+      },
+      "restart": {
+        "attemptingRestart": "Attempting to restart %SERVER_NAME%...",
+        "restarted": "%SERVER_NAME% restarted successfully!"
+      },
+      "help": {
+        "listOfCommands": "List ov Commandz",
+        "helpDesc": "A list ov helpful commandz 4 noobs"
+      },
+      "status": {
+        "serverStatusHeader": "Servr Status",
+        "allOperational": "All sistems operashunal",
+        "operational": "operashunal"
+      }
+    }
+  }
+}

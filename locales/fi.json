@@ -1,0 +1,135 @@
+{
+  "code": "fi",
+  "name": "Finnish",
+  "dateFormat": {
+    "shortNumberDate": "DD/MM/YYYY",
+    "shortDate": "MMM DD YYYY",
+    "longDate": "MMMM DD YYYY",
+    "time": "HH:mm"
+  },
+  "translations": {
+    "days": {
+      "long": {
+        "monday": "maanantai",
+        "tuesday": "tiistai",
+        "wednesday": "keskiviikko",
+        "thursday": "torstai",
+        "friday": "perjantai",
+        "saturday": "lauantai",
+        "sunday": "sunnuntai"
+      },
+      "short": {
+        "mon": "ma",
+        "tue": "ti",
+        "wed": "ke",
+        "thu": "to",
+        "fri": "pe",
+        "sat": "la",
+        "sun": "su"
+      }
+    },
+    "months": {
+      "long": {
+        "january": "tammikuu",
+        "february": "helmikuu",
+        "march": "maaliskuu",
+        "april": "huhtikuu",
+        "may": "toukokuu",
+        "june": "kesäkuu",
+        "july": "heinäkuu",
+        "august": "elokuu",
+        "september": "syyskuu",
+        "october": "lokakuu",
+        "november": "marraskuu",
+        "december": "joulukuu"
+      },
+      "short": {
+        "jan": "tammi",
+        "feb": "helmi",
+        "mar": "maalis",
+        "apr": "huhti",
+        "may": "touko",
+        "jun": "kesä",
+        "jul": "heinä",
+        "aug": "elo",
+        "sep": "syys",
+        "oct": "loka",
+        "nov": "marras",
+        "dec": "joulu"
+      }
+    },
+    "common": {
+      "serverNotFound": "Palvelinta %SERVER_NAME% ei ole!",
+      "unknownErr": "Jotain meni vikaan :slight_frown:",
+      "unknownAction": "Luulen, että olemme pudonneet suurennuslasin :mag:... En tunnista tätä toimintoa"
+    },
+    "buttons": {
+      "start": "Käynnistä",
+      "stop": "Pysäytä",
+      "restart": "Käynnistä uudelleen",
+      "repeatCommand": "Toista komento"
+    },
+    "chat": {
+      "playerJoined": "%PLAYER_NAME% liittyi peliin",
+      "playerLeft": "%PLAYER_NAME% poistui pelistä",
+      "serverReady": "%SERVER_NAME% käynnistyi!",
+      "chatSent": "[Tämä](%MESSAGE_LINK%) viesti lähetettiin palvelimelle %SERVER_NAME%"
+    },
+    "commands": {
+      "execute": {
+        "commandSent": "Komento \"%GAME_COMMAND%\" lähetettiin palvelimelle %SERVER_NAME%"
+      },
+      "backup": {
+        "backupCreated": "%BACKUP_NAME% luotiin onnistuneesti!",
+        "backupsNotEnabled": "Varmuuskopiointi ei ole käytössä palvelimelle %SERVER_NAME% :slight_frown:",
+        "listOfUserBackups": "Luettelo käyttäjien luomista varmuuskopioista",
+        "listOfAutoBackups": "Luettelo automaattisista varmuuskopioista",
+        "latestBackupHeader": "Uusimmat varmuuskopiot",
+        "latestBackupDesc": "Viimeisin varmuuskopio kaikista varmuuskopioista.",
+        "latestAutoBackupHeader": "Uusimmat varmuuskopiot",
+        "latestAutoBackupDesc": "Viimeisin varmuuskopio joka on luotu automaattisesti.",
+        "latestUserBackupHeader": "Uusimmat varmuuskopiot",
+        "latestUserBackupDesc": "Viimeisin käyttäjän luoma varmuuskopio. ",
+        "userHeader": "KÄYTTÄJÄ",
+        "autoHeader": "AUTOMAATTINEN",
+        "backupsListed": "Varmuuskopiot lueteltu",
+        "author": "Tekijä",
+        "created": "Luotu",
+        "description": "Kuvaus",
+        "ID": "ID"
+      },
+      "start": {
+        "attemptingStart": "Yritetään käynnistää palvelinta %SERVER_NAME%...",
+        "started": "%SERVER_NAME% käynnistettiin onnistuneesti!",
+        "alreadyOnline": "%SERVER_NAME% on jo käynnissä!",
+        "alreadyStarting": "%SERVER_NAME% on jo käynnistymässä!"
+      },
+      "stop": {
+        "attemptingStop": "Yritetään pysäyttää palvelinta %SERVER_NAME%...",
+        "stopped": "%SERVER_NAME% pysäytetty onnistuneesti!",
+        "alreadyOffline": "%SERVER_NAME% on jo käynnissä!"
+      },
+      "restart": {
+        "attemptingRestart": "Yritetään käynnistää uudelleen palvelinta %SERVER_NAME%...",
+        "restarted": "%SERVER_NAME% käynnistettiin uudelleen onnistuneesti!"
+      },
+      "help": {
+        "listOfCommands": "Luettelo Komennoista",
+        "helpDesc": "Luettelo aloittelijoille hyödyllisistä komennoista"
+      },
+      "status": {
+        "serverStatusHeader": "Palvelimen tila",
+        "allOperational": "Kaikki järjestelmät toimivat",
+        "serverOffline": "%SERVER_NAME% on pois päältä",
+        "serverOnline": "%SERVER_NAME% on käynnissä",
+        "serverStarting": "%SERVER_NAME% käynnistyy...",
+        "serverStopping": "%SERVER_NAME% pysähtyy...",
+        "serverWithPlayer": "%SERVER_NAME% pelaajan %PLAYER_NAME% kanssa",
+        "serverWithPlayers": "%SERVER_NAME% muun %PLAYER_COUNT% kanssa",
+        "noPlayers": "Ei pelaajia paikalla",
+        "playersOnline": "%PLAYER_COUNT% paikalla",
+        "operational": "toimiva"
+      }
+    }
+  }
+}

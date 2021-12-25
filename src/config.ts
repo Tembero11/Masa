@@ -8,6 +8,9 @@ export interface BotConfig {
   clientID: string
   guildID: string
   language?: Language,
+  developer?: {
+    skipLanguageParsing?: boolean
+  }
   permissions?: {
     roles: {[key: string]: {id: string, level: number}},
     commands: {[key: string]: string | string[]}

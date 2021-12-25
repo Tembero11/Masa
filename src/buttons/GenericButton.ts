@@ -1,10 +1,10 @@
 import assert from "assert";
 import { ButtonInteraction, MessageButton, MessageButtonStyleResolvable } from "discord.js"
-import Lang from "../classes/Lang";
+import Lang, { LangPath } from "../classes/Lang";
 
 export abstract class GenericButton {
   abstract readonly customId: string
-  abstract readonly rawLabel: string
+  abstract readonly labelLangPath: LangPath
   abstract readonly style: MessageButtonStyleResolvable;
 
   isGlobal;
@@ -29,7 +29,7 @@ export abstract class GenericButton {
 
     return new MessageButton()
     .setCustomId(this.generatedCustomId || this.generateCustomId())
-    .setLabel(Lang.parse(this.rawLabel))
+    .setLabel(Lang.parse(this.labelLangPath))
     .setStyle(this.style)
     .setDisabled(disabled);
   }

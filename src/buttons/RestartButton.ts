@@ -7,7 +7,7 @@ import { GenericButton } from "./GenericButton";
 export class RestartButton extends GenericButton {
   
   readonly customId = "server_restart";
-  readonly rawLabel = "buttons.restart";
+  readonly labelLangPath = "buttons.restart";
   readonly style = "DANGER";
 
 
@@ -18,7 +18,7 @@ export class RestartButton extends GenericButton {
     let embed = new MessageEmbed();
 
     await ServerHandler.restart(serverName);
-    embed.setDescription(Lang.parse(Lang.langFile.commands.restart.restarted, { SERVER_NAME: serverName }));
+    embed.setDescription(Lang.parse("commands.restart.restarted", { SERVER_NAME: serverName }));
     await interaction.editReply({ embeds: [embed] });
   }
 

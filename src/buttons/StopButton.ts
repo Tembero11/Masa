@@ -6,18 +6,18 @@ import { GenericButton } from "./GenericButton";
 
 export class StopButton extends GenericButton {
   readonly customId = "server_stop";
-  readonly rawLabel = "buttons.stop";
+  readonly labelLangPath = "buttons.stop";
   readonly style = "DANGER";
 
 
   handler = async(params: any, interaction: ButtonInteraction) => {
     const { serverName } = params;
     assert(serverName);
-    
+
     let embed = new MessageEmbed();
 
     await ServerHandler.stop(serverName);
-    embed.setDescription(Lang.parse(Lang.langFile.commands.stop.stopped, { SERVER_NAME: serverName }));
+    embed.setDescription(Lang.parse("commands.stop.stopped", { SERVER_NAME: serverName }));
     await interaction.editReply({ embeds: [embed] });
   }
 
