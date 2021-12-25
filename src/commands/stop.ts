@@ -1,6 +1,6 @@
 import  { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { generateButtonRow, getDefaultCommandEmbed } from "../helpers";
+import { generateServerButtonRow, getDefaultCommandEmbed } from "../helpers";
 import Command, { RegisteredCommand } from "./general";
 import { ServerHandler } from "../serverHandler";
 import assert from "assert";
@@ -34,7 +34,7 @@ export class StopCommand extends Command {
         await ServerHandler.stop(serverName);
 
         embed.setDescription(Lang.parse(Lang.langFile.commands.stop.stopped, {SERVER_NAME: serverName}));
-        await interaction.editReply({embeds: [embed], components: [generateButtonRow(serverName, server)]});
+        await interaction.editReply({embeds: [embed], components: [generateServerButtonRow(serverName, server)]});
       }else {
         embed.setDescription(Lang.parse(Lang.langFile.commands.stop.alreadyOffline, {SERVER_NAME: serverName}));
         await interaction.reply({ embeds: [embed] });

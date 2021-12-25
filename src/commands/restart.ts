@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
-import { generateButtonRow, getDefaultCommandEmbed } from "../helpers";
+import { generateServerButtonRow, getDefaultCommandEmbed } from "../helpers";
 import Command, { RegisteredCommand } from "./general";
 import { ServerHandler } from "../serverHandler";
 import assert from "assert";
@@ -36,7 +36,7 @@ export class RestartCommand extends Command {
 
       await ServerHandler.restart(serverName);
       embed.setDescription(Lang.parse(Lang.langFile.commands.restart.restarted, {SERVER_NAME: serverName}));
-      await interaction.editReply({ embeds: [embed], components: [generateButtonRow(serverName, server)] });
+      await interaction.editReply({ embeds: [embed], components: [generateServerButtonRow(serverName, server)] });
     } catch (err) {
       console.error(err);
       embed.setDescription(Lang.parse(Lang.langFile.common.unknownErr));

@@ -12,12 +12,12 @@ interface LanguageParseOptions {
   PLAYER_COUNT?: string | number
   PLAYER_NAME?: string
   BACKUP_NAME?: string
-  MESSAGE_LINK?: string
+  MESSAGE_LINK?: string,
+  GAME_COMMAND?: string
 
 
   paramBolding?: boolean
 }
-
 
 export default abstract class Lang {
   static readonly SERVER_NAME = "%SERVER_NAME%";

@@ -7,6 +7,7 @@ import { config } from "./setup";
 import commands from "./commands/commands";
 import assert from "assert";
 import Lang from "./classes/Lang";
+import buttons from "./buttons/buttons";
 
 let permissions: GuildApplicationCommandPermissionData[];
 
@@ -71,10 +72,13 @@ client.on("interactionCreate", async (interaction) => {
       await command.handler(interaction);
     }catch(err) {
       console.log(err);
-      if (!interaction.replied) {
+      // Note: !interaction.replied seemed to crash even though it shouldn't
+      try {
         let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
         embed.setDescription(Lang.parse(Lang.langFile.common.unknownErr));
         await interaction.reply({embeds: [embed]})
+      }catch(err) {
+        console.log(err);
       }
     }
   }
@@ -83,52 +87,76 @@ client.on("interactionCreate", async (interaction) => {
 client.on("interactionCreate", async (interaction) => {
   if (!interaction.isButton()) return;
 
+  await interaction.deferReply();
+
   let id = interaction.customId;
 
-  let action = id.split(":")[0];
-  let serverName = id.split(":")[1];
+  try {
+    const firstColon = id.indexOf(":");
+    let action = id.substring(0, firstColon);
+    let params = JSON.parse(id.substring(firstColon + 1));
+    
+    // TODO: add permissions for buttons
 
-  // TODO: add permissions for buttons
-
-  
-
-  let embed = new MessageEmbed();
-
-  if (action && serverName) {
-    let server = ServerHandler.getServerByName(serverName);
-    if (server) {
-      try {
-        switch (action) {
-          case "server_start":
-            await interaction.deferReply({ephemeral: true});
-            await ServerHandler.start(serverName);
-            embed.setDescription(Lang.parse(Lang.langFile.commands.start.started, {SERVER_NAME: serverName}));
-            await interaction.editReply({embeds: [embed]});
-            break;
-          case "server_stop":
-            await interaction.deferReply({ephemeral: true});
-            await ServerHandler.stop(serverName);
-            embed.setDescription(Lang.parse(Lang.langFile.commands.stop.stopped, {SERVER_NAME: serverName}));
-            await interaction.editReply({embeds: [embed]});
-            break;
-          case "server_restart":
-            await interaction.deferReply({ephemeral: true});
-            await ServerHandler.restart(serverName);
-            embed.setDescription(Lang.parse(Lang.langFile.commands.restart.restarted, {SERVER_NAME: serverName}));
-            await interaction.editReply({embeds: [embed]});
-            break;
-          default:
-            break;
-        }
-      }catch(err) {
-        if (!interaction.replied) {
-          let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
-          embed.setDescription(Lang.parse(Lang.langFile.common.unknownErr));
-          await interaction.reply({embeds: [embed]})
-        }
-      }
+    if (buttons.has(action)) {
+      await buttons.get(action)!.handler(params, interaction);
+    }else {
+      let embed = new MessageEmbed();
+      embed.setDescription(Lang.parse(Lang.langFile.common.unknownAction));
+      await interaction.editReply({embeds: [embed]});
+    }
+  } catch (err) {
+    console.log(err);
+    // Note: !interaction.replied seemed to crash even though it shouldn't
+    try {
+      let embed = new MessageEmbed();
+      embed.setDescription(Lang.parse(Lang.langFile.common.unknownErr));
+      await interaction.editReply({ embeds: [embed] });
+    } catch (err) {
+      console.log(err);
     }
   }
+
+  
+  
+
+  // let embed = new MessageEmbed();
+
+  // if (action && serverName) {
+  //   let server = ServerHandler.getServerByName(serverName);
+  //   if (server) {
+  //     try {
+  //       switch (action) {
+  //         case "server_start":
+  //           await interaction.deferReply({ephemeral: true});
+  //           await ServerHandler.start(serverName);
+  //           embed.setDescription(Lang.parse(Lang.langFile.commands.start.started, {SERVER_NAME: serverName}));
+  //           await interaction.editReply({embeds: [embed]});
+  //           break;
+  //         case "server_stop":
+  //           await interaction.deferReply({ephemeral: true});
+  //           await ServerHandler.stop(serverName);
+  //           embed.setDescription(Lang.parse(Lang.langFile.commands.stop.stopped, {SERVER_NAME: serverName}));
+  //           await interaction.editReply({embeds: [embed]});
+  //           break;
+  //         case "server_restart":
+  //           await interaction.deferReply({ephemeral: true});
+  //           await ServerHandler.restart(serverName);
+  //           embed.setDescription(Lang.parse(Lang.langFile.commands.restart.restarted, {SERVER_NAME: serverName}));
+  //           await interaction.editReply({embeds: [embed]});
+  //           break;
+  //         default:
+  //           break;
+  //       }
+  //     }catch(err) {
+  //       if (!interaction.replied) {
+  //         let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
+  //         embed.setDescription(Lang.parse(Lang.langFile.common.unknownErr));
+  //         await interaction.reply({embeds: [embed]})
+  //       }
+  //     }
+  //   }
+  // }
 });
 
 const EVERYONE_PERMISSION_NAME = "@everyone";

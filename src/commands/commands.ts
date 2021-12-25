@@ -7,6 +7,7 @@ import {RestartCommand} from "./restart";
 import {StartCommand} from "./start";
 import {StopCommand} from "./stop";
 import {LatestCommand} from "./latest";
+import {ExecuteCommand} from "./execute";
 import Command from "./general";
 
 export default Object.freeze([
@@ -19,4 +20,5 @@ export default Object.freeze([
   new StartCommand(),
   new StopCommand(),
   new LatestCommand(),
+  new ExecuteCommand()
 ].reduce((map, obj) => map.set(obj.name, obj), new Map<string, Command>()));

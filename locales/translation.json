@@ -3,12 +3,14 @@
     "name": "English",
     "common": {
       "serverNotFound": "%SERVER_NAME% is not a server!",
-      "unknownErr": "Something went wrong :slight_frown:"
+      "unknownErr": "Something went wrong :slight_frown:",
+      "unknownAction": "I think we've dropped the magnifying glass :mag:... I don't recognize this action"
     },
     "buttons": {
       "start": "Start",
       "stop": "Stop",
-      "restart": "Restart"
+      "restart": "Restart",
+      "repeatCommand": "Repeat command"
     },
     "chat": {
       "playerJoined": "%PLAYER_NAME% joined the game",
@@ -17,6 +19,9 @@
       "chatSent": "[This](%MESSAGE_LINK%) message was sent to %SERVER_NAME%"
     },
     "commands": {
+      "execute": {
+        "commandSent": "Command \"%GAME_COMMAND%\" was sent to server %SERVER_NAME%"
+      },
       "backup": {
         "backupCreated": "%BACKUP_NAME% was succesfully created!",
         "backupsNotEnabled": "Backups are not enabled for %SERVER_NAME% :slight_frown:",
@@ -76,12 +81,14 @@
     "name": "Finnish",
     "common": {
       "serverNotFound": "Palvelinta %SERVER_NAME% ei ole!",
-      "unknownErr": "Jotain meni vikaan :slight_frown:"
+      "unknownErr": "Jotain meni vikaan :slight_frown:",
+      "unknownAction": "Luulen, että olemme pudonneet suurennuslasin :mag:... En tunnista tätä toimintoa"
     },
     "buttons": {
       "start": "Käynnistä",
       "stop": "Pysäytä",
-      "restart": "Käynnistä uudelleen"
+      "restart": "Käynnistä uudelleen",
+      "repeatCommand": "Toista komento"
     },
     "chat": {
       "playerJoined": "%PLAYER_NAME% liittyi peliin",
@@ -90,6 +97,9 @@
       "chatSent": "[Tämä](%MESSAGE_LINK%) viesti lähetettiin palvelimelle %SERVER_NAME%"
     },
     "commands": {
+      "execute": {
+        "commandSent": "Komento \"%GAME_COMMAND%\" lähetettiin palvelimelle %SERVER_NAME%"
+      },
       "backup": {
         "backupCreated": "%BACKUP_NAME% luotiin onnistuneesti!",
         "backupsNotEnabled": "Varmuuskopiointi ei ole käytössä palvelimelle %SERVER_NAME% :slight_frown:",

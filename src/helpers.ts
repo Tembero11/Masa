@@ -1,4 +1,4 @@
-import {  ActivityType, MessageActionRow, MessageButton, MessageEmbed, PresenceStatusData } from "discord.js";
+import {  ActivityType, MessageActionRow, MessageButton, MessageEmbed, PresenceStatusData, Sticker } from "discord.js";
 import { client, config } from "../index";
 import path from "path";
 import { Presence } from "./serverHandler";
@@ -7,6 +7,9 @@ import assert from "assert";
 import date from "date-and-time";
 import { BackupMetadata } from "./classes/server/BackupModule";
 import Lang from "./classes/Lang";
+import { StartButton } from "./buttons/StartButton";
+import { RestartButton } from "./buttons/RestartButton";
+import { StopButton } from "./buttons/StopButton";
 
 
 export const isAllowedChannel = (channelID: string) => {
@@ -20,7 +23,31 @@ export const isAllowedChannel = (channelID: string) => {
   return false;
 }
 
-export const generateButtonRow = (serverName: string, server: GameServer) => {
+export const getExecutableGameCommand = (command: string) => {
+  command = command.trim();
+  
+  if (command.startsWith("/")) {
+    command = command.substring(1);
+  }
+  command += "\n";
+  return command;
+}
+export const getMessageGameCommand = (command: string) => {
+  command = command.trim();
+
+  if (!command.startsWith("/")) {
+    command = "/" + command;
+  }
+  return command;
+}
+
+export const generateServerButtonRow = (serverName: string, server: GameServer) => {
+  return new MessageActionRow().addComponents([
+    new StartButton().setParameters({serverName}).getMessageButton(),
+    new StopButton().setParameters({serverName}).getMessageButton(),
+    new RestartButton().setParameters({serverName}).getMessageButton()
+  ])
+
   return new MessageActionRow().addComponents([
     new MessageButton()
     .setCustomId(`server_start:${serverName}`)
