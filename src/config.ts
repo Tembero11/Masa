@@ -2,6 +2,7 @@ import path from "path";
 import fs from "fs";
 import chalk from "chalk";
 import { Language } from "./classes/Lang";
+import { PermissionSettings } from "./classes/PermissionManager";
 
 export interface BotConfig {
   token: string
@@ -12,8 +13,7 @@ export interface BotConfig {
     skipLanguageParsing?: boolean
   }
   permissions?: {
-    roles: {[key: string]: {id: string, level: number}},
-    commands: {[key: string]: string | string[]}
+    roles: PermissionSettings
   }
   allowedChannels?: string[]
 }

@@ -6,6 +6,7 @@ import Command, { RegisteredCommand } from "./general";
 import { ServerHandler } from "../serverHandler";
 import assert from "assert";
 import Lang from "../classes/Lang";
+import { PermissionScope } from "../classes/PermissionManager";
 
 @RegisteredCommand
 export class BackupCommand extends Command {
@@ -18,6 +19,10 @@ export class BackupCommand extends Command {
     .addStringOption(option => option.setName("server").setDescription("Enter the name of the server you want to backup").setRequired(true))
     .addStringOption(option => option.setName("name").setDescription("Enter the name of the backup").setRequired(false))
     .addStringOption(option => option.setName("description").setDescription("Describe the backup").setRequired(false));
+
+  readonly permissionScopes = [
+    PermissionScope.ManageBackups
+  ];
     
   handler = async (interaction: CommandInteraction): Promise<void> => {
     let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
@@ -39,6 +44,6 @@ export class BackupCommand extends Command {
         embed.setDescription(Lang.parse("common.serverNotFound", {SERVER_NAME: serverName}));
       }
     }
-    await interaction.reply({embeds: [embed]});
+    await interaction.reply({embeds: [embed]}); 
   };
 }

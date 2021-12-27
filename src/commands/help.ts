@@ -1,6 +1,7 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import Lang from "../classes/Lang";
+import { PermissionScope } from "../classes/PermissionManager";
 import { getDefaultCommandEmbed } from "../helpers";
 import Command, { RegisteredCommand } from "./general";
 
@@ -12,6 +13,10 @@ export class HelpCommand extends Command {
   builder = new SlashCommandBuilder()
     .setName(this.name)
     .setDescription(this.desc);
+
+  permissionScopes = [
+    PermissionScope.HarmlessCommands
+  ];
 
   handler = async (interaction: CommandInteraction): Promise<void> => {
     let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());

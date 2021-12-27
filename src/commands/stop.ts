@@ -5,6 +5,7 @@ import Command, { RegisteredCommand } from "./general";
 import { ServerHandler } from "../serverHandler";
 import assert from "assert";
 import Lang from "../classes/Lang";
+import { PermissionScope } from "../classes/PermissionManager";
 
 @RegisteredCommand
 export class StopCommand extends Command {
@@ -15,6 +16,10 @@ export class StopCommand extends Command {
 	.setName(this.name)
 	.setDescription(this.desc)
   .addStringOption(option => option.setName("server").setDescription("Enter the name of the server you want to stop").setRequired(true));
+
+  readonly permissionScopes = [
+    PermissionScope.StopServer
+  ];
 
   handler = async(interaction: CommandInteraction): Promise<void> => {
       let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());

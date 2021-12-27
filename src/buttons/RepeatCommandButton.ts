@@ -1,6 +1,7 @@
 import assert from "assert";
-import { ButtonInteraction, MessageEmbed } from "discord.js";
+import { ButtonInteraction, EmojiIdentifierResolvable, MessageEmbed } from "discord.js";
 import Lang, { LangPath } from "../classes/Lang";
+import { PermissionScope } from "../classes/PermissionManager";
 import { getExecutableGameCommand, getMessageGameCommand } from "../helpers";
 import { ServerHandler } from "../serverHandler";
 import { GenericButton } from "./GenericButton";
@@ -10,8 +11,12 @@ export class RepeatCommandButton extends GenericButton {
   readonly labelLangPath = "buttons.repeatCommand";
   readonly style = "DANGER";
 
+  readonly permissionScopes = [
+    PermissionScope.ExecuteGameCommands
+  ]
 
-  handler = async(params: any, interaction: ButtonInteraction) => {
+
+  handler = async (params: any, interaction: ButtonInteraction) => {
     const { serverName, cmd } = params;
     assert(serverName && cmd);
 
@@ -30,18 +35,18 @@ export class RepeatCommandButton extends GenericButton {
           SERVER_NAME: serverName,
           GAME_COMMAND: msgCommand
         }));
-      }else {
+      } else {
         embed.setDescription(Lang.parse("commands.status.serverOffline", {
           SERVER_NAME: serverName
         }));
       }
-    }else {
+    } else {
       embed.setDescription(Lang.parse("common.serverNotFound", {
         SERVER_NAME: serverName
       }));
     }
 
-    interaction.editReply({embeds: [embed]});
+    interaction.editReply({ embeds: [embed] });
   }
 
   setParameters!: (params: {

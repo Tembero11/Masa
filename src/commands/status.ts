@@ -6,6 +6,7 @@ import {ServerHandler} from "../serverHandler";
 import { config } from "../../index";
 import Lang from "../classes/Lang";
 import path from "path";
+import { PermissionScope } from "../classes/PermissionManager";
 
 @RegisteredCommand
 export class StatusCommand extends Command {
@@ -16,6 +17,10 @@ export class StatusCommand extends Command {
     .setName(this.name)
     .setDescription(this.desc)
     .addStringOption(option => option.setName("server").setDescription("Enter the name of the server you want a backups list from").setRequired(false));
+
+  readonly permissionScopes = [
+    PermissionScope.ViewServer
+  ];
 
   handler = async (interaction: CommandInteraction): Promise<void> => {
     let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());

@@ -5,6 +5,7 @@ import Command, { RegisteredCommand } from "./general";
 import { ServerHandler } from "../serverHandler";
 import assert from "assert";
 import Lang from "../classes/Lang";
+import { PermissionScope } from "../classes/PermissionManager";
 
 @RegisteredCommand
 export class RestartCommand extends Command {
@@ -15,6 +16,11 @@ export class RestartCommand extends Command {
     .setName(this.name)
     .setDescription(this.desc)
     .addStringOption(option => option.setName("server").setDescription("Enter the name of the server you want to restart").setRequired(true));
+
+  readonly permissionScopes = [
+    PermissionScope.StartServer,
+    PermissionScope.StopServer
+  ];
 
   handler = async (interaction: CommandInteraction): Promise<void> => {
     let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL())

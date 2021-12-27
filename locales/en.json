@@ -61,7 +61,8 @@
     "common": {
       "serverNotFound": "%SERVER_NAME% is not a server!",
       "unknownErr": "Something went wrong :slight_frown:",
-      "unknownAction": "I think we've dropped the magnifying glass :mag:... I don't recognize this action"
+      "unknownAction": "I think we've dropped the magnifying glass :mag:... I don't recognize this action",
+      "noPermission": "You don't have the required permission to use this action."
     },
     "buttons": {
       "start": "Start",

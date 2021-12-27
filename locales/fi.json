@@ -61,7 +61,8 @@
     "common": {
       "serverNotFound": "Palvelinta %SERVER_NAME% ei ole!",
       "unknownErr": "Jotain meni vikaan :slight_frown:",
-      "unknownAction": "Luulen, että olemme pudonneet suurennuslasin :mag:... En tunnista tätä toimintoa"
+      "unknownAction": "Luulen, että olemme pudonneet suurennuslasin :mag:... En tunnista tätä toimintoa",
+      "noPermission": "Sinulla ei ole tähän toimintoon vaadittuja oikeuksia."
     },
     "buttons": {
       "start": "Käynnistä",

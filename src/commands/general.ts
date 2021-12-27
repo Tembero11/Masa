@@ -1,6 +1,6 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import assert from "assert";
-import { ApplicationCommandPermissionData, CommandInteraction } from "discord.js";
+import { CommandInteraction } from "discord.js";
+import { PermissionScope } from "../classes/PermissionManager";
 
 
 
@@ -12,6 +12,8 @@ export default abstract class Command {
     SlashCommandBuilder,
     "addSubcommand" | "addSubcommandGroup"
   >;
+
+  readonly abstract permissionScopes: PermissionScope[];
 
   abstract handler: (interaction: CommandInteraction) => Promise<void>;
 }

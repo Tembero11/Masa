@@ -3,6 +3,7 @@ import assert from "assert";
 import { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
 import { RepeatCommandButton } from "../buttons/RepeatCommandButton";
 import Lang from "../classes/Lang";
+import { PermissionScope } from "../classes/PermissionManager";
 import { getDefaultCommandEmbed, getExecutableGameCommand, getMessageGameCommand } from "../helpers";
 import { ServerHandler } from "../serverHandler";
 import Command, { RegisteredCommand } from "./general";
@@ -18,6 +19,10 @@ export class ExecuteCommand extends Command {
   .addStringOption(option => option.setName("server")
   .setDescription("Server to execute the command").setRequired(true))
   .addStringOption(option => option.setName("command").setDescription("Minecraft command to execute").setRequired(true));
+
+  permissionScopes = [
+    PermissionScope.ExecuteGameCommands
+  ];
 
   handler = async(interaction: CommandInteraction): Promise<void> => {
     await interaction.deferReply();

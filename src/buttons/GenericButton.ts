@@ -1,13 +1,17 @@
 import assert from "assert";
-import { ButtonInteraction, MessageButton, MessageButtonStyleResolvable } from "discord.js"
+import { ButtonInteraction, EmojiIdentifierResolvable, MessageButton, MessageButtonStyleResolvable } from "discord.js"
 import Lang, { LangPath } from "../classes/Lang";
+import { PermissionScope } from "../classes/PermissionManager";
 
 export abstract class GenericButton {
   abstract readonly customId: string
   abstract readonly labelLangPath: LangPath
   abstract readonly style: MessageButtonStyleResolvable;
+  readonly emoji?: EmojiIdentifierResolvable;
 
   isGlobal;
+
+  abstract readonly permissionScopes: PermissionScope[];
 
   /**
    * 
@@ -27,11 +31,16 @@ export abstract class GenericButton {
     assert(this.params);
     assert(!this.isGlobal);
 
-    return new MessageButton()
-    .setCustomId(this.generatedCustomId || this.generateCustomId())
-    .setLabel(Lang.parse(this.labelLangPath))
-    .setStyle(this.style)
-    .setDisabled(disabled);
+    const btn = new MessageButton()
+      .setCustomId(this.generatedCustomId || this.generateCustomId())
+      .setLabel(Lang.parse(this.labelLangPath))
+      .setStyle(this.style)
+      .setDisabled(disabled);
+
+    if (this.emoji) {
+      btn.setEmoji(this.emoji);
+    }
+    return btn;
   }
 
   generateCustomId() {
@@ -39,7 +48,7 @@ export abstract class GenericButton {
     return this.generatedCustomId;
   }
 
-  setParameters(params: {[key: string]: any}): this {
+  setParameters(params: { [key: string]: any }): this {
     assert(!this.isGlobal);
     this.params = params;
     return this;

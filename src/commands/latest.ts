@@ -4,6 +4,7 @@ import { fieldFromBackup, getDefaultCommandEmbed } from "../helpers";
 import Command, { RegisteredCommand } from "./general";
 import { ServerHandler } from "../serverHandler";
 import Lang from "../classes/Lang";
+import { PermissionScope } from "../classes/PermissionManager";
 
 @RegisteredCommand
 export class LatestCommand extends Command {
@@ -14,6 +15,11 @@ export class LatestCommand extends Command {
 	.setName(this.name)
 	.setDescription(this.desc)
   .addStringOption(option => option.setName("server").setDescription("Enter the name of the server you want to get the latest backup from").setRequired(true));
+  
+
+  readonly permissionScopes = [
+    PermissionScope.ViewBackups
+  ];
 
   handler = async(interaction: CommandInteraction): Promise<void> => {
     let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());

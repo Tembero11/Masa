@@ -1,4 +1,3 @@
-import {PingCommand} from "./ping";
 import {StatusCommand} from "./status";
 import {BackupCommand} from "./backup";
 import {BackupsCommand} from "./backups";
@@ -11,7 +10,6 @@ import {ExecuteCommand} from "./execute";
 import Command from "./general";
 
 export default Object.freeze([
-  new PingCommand(),
   new StatusCommand(),
   new BackupCommand(),
   new BackupsCommand(),
