@@ -18,10 +18,18 @@ export class StartButton extends GenericButton {
     const { serverName } = params;
     assert(serverName);
 
+    const server = ServerHandler.getServerByName(serverName);
+    assert(server);
+
     let embed = new MessageEmbed();
 
-    await ServerHandler.start(serverName);
-    embed.setDescription(Lang.parse("commands.start.started", { SERVER_NAME: serverName }));
+    if (!server.hasStreams) {
+      await ServerHandler.start(serverName);
+      embed.setDescription(Lang.parse("commands.start.started", { SERVER_NAME: serverName }));
+    }else {
+      embed.setDescription(Lang.parse("commands.start.alreadyOnline", { SERVER_NAME: serverName }));
+    }
+
     await interaction.editReply({ embeds: [embed] });
   }
 

@@ -18,10 +18,18 @@ export class StopButton extends GenericButton {
     const { serverName } = params;
     assert(serverName);
 
+    const server = ServerHandler.getServerByName(serverName);
+    assert(server);
+
     let embed = new MessageEmbed();
 
-    await ServerHandler.stop(serverName);
-    embed.setDescription(Lang.parse("commands.stop.stopped", { SERVER_NAME: serverName }));
+    if (server.hasStreams) {
+      await ServerHandler.stop(serverName);
+      embed.setDescription(Lang.parse("commands.stop.stopped", { SERVER_NAME: serverName }));
+    }else {
+      embed.setDescription(Lang.parse("commands.stop.alreadyOffline", { SERVER_NAME: serverName }));
+    }
+
     await interaction.editReply({ embeds: [embed] });
   }
 

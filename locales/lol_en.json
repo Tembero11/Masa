@@ -37,7 +37,7 @@
       "stop": {
         "attemptingStop": "Attempting to stop %SERVER_NAME%...",
         "stopped": "%SERVER_NAME% stoppd successfully!",
-        "alreadyOffline": "%SERVER_NAME% iz already online!"
+        "alreadyOffline": "%SERVER_NAME% iz already offline!"
       },
       "restart": {
         "attemptingRestart": "Attempting to restart %SERVER_NAME%...",

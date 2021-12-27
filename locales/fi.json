@@ -108,7 +108,7 @@
       "stop": {
         "attemptingStop": "Yritetään pysäyttää palvelinta %SERVER_NAME%...",
         "stopped": "%SERVER_NAME% pysäytetty onnistuneesti!",
-        "alreadyOffline": "%SERVER_NAME% on jo käynnissä!"
+        "alreadyOffline": "%SERVER_NAME% on jo pois päältä!"
       },
       "restart": {
         "attemptingRestart": "Yritetään käynnistää uudelleen palvelinta %SERVER_NAME%...",
