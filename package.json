@@ -29,6 +29,7 @@
     "inquirer": "^8.1.2",
     "inquirer-autocomplete-prompt": "^1.4.0",
     "js-yaml": "^4.1.0",
+    "lookpath": "^1.2.2",
     "ms": "^2.1.2",
     "nanoid": "^3.1.30",
     "property-string-path": "^1.1.0",

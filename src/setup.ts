@@ -1,6 +1,5 @@
 import figlet from "figlet";
 import fs from "fs";
-import path from "path";
 import { ServerHandler } from "./serverHandler";
 import {  BotConfig, ServerMetadata, createConfigs, loadConfig, prettyPrint, writeConfig } from "./config";
 import inquirer from "inquirer";
@@ -13,24 +12,26 @@ import assert from "assert";
 import { client } from "./client";
 import { nanoid } from "nanoid";
 import Lang from "./classes/Lang";
+import EnvCheck from "./classes/server/EnvCheck";
+import pjson from "../package.json";
 
 inquirer.registerPrompt("autocomplete", inquirerAutocompletePrompt);
 
 export let config: BotConfig;
 
 const setup = async () => {
-    // Load the package.json file
-    const packagejson = await fs.promises.readFile(path.join(process.cwd(), "package.json"), "utf8");
-    // Parse the package.json file
-    const parsedPackageJson = JSON.parse(packagejson);
-
-    // Print the version of MASA
-    console.log(`Running MASA ${chalk.green("v" + parsedPackageJson["version"])}`);
-    
     // Print a cool 3D logo
     console.log(chalk.red(figlet.textSync("MASA", {
         font: "3D-ASCII"
     })));
+
+    // Print the version of MASA
+    console.log(`Running MASA ${chalk.green("v" + pjson.version)}`);
+
+    const hasJava = await EnvCheck.hasJava(true);
+    if (!hasJava) {
+        console.log(chalk.yellow`WARNING: Java was not automatically detected! This may cause issues with running/installing servers. If an issue occurs please reinstall Java.`);
+    }
 
     // Create all config files that don't already exist
     await createConfigs(async(filename) => {
@@ -70,7 +71,6 @@ const setup = async () => {
     await client.login(config["token"]);
 
     ServerHandler.serverInitializer(serverList);
-
 
     return true;
 }
@@ -122,8 +122,6 @@ export const serverInstaller = async (serverList: ServerMetadata[]) => {
         type: "list",
         choices: [
             { name: "Vanilla" },
-            { name: "Spigot", },
-            { name: "Forge" },
             { name: "Paper" },
         ]
     }])).serverType as string;
