@@ -67,21 +67,47 @@ const setup = async () => {
     }
 
 
-    // // Login to discord
-    await client.login(config["token"]);
+    // Login to discord
+    await connectToDiscord()
 
     ServerHandler.serverInitializer(serverList);
 
     return true;
 }
 
+async function connectToDiscord() {
+    console.log(`Connecting to ${chalk.blueBright("Discord")}...`);
+    try {
+        await client.login(config["token"]);
+
+    }catch(err) {
+        console.log(chalk.red`Could not connect to Discord! The token might be expired or invalid.\n`);
+
+        const { setup } = await inquirer.prompt({
+            message: "Do you want to reset the bot configuration?",
+            name: "setup",
+            type: "confirm",
+        });
+
+        if (setup) {
+            config = await botSetup();
+            await writeConfig("bot.json", prettyPrint(config));
+            console.log(chalk.greenBright`Configuration saved successfully.`);
+            await connectToDiscord();
+        }else {
+            console.log("Could not connect to Discord and a reset was cancelled. Masa will now kindly exit.");
+            process.exit(0)
+        }
+    }
+}
+
 export const botSetup = async (): Promise<BotConfig> => {
-    console.log(`Welcome to using ${chalk.red("MASA")}. To start off let's run a simple setup!`);
+    console.log(`Welcome to using ${chalk.red("Masa")}. To start off let's run a simple setup!`);
 
     let options: BotConfig = await inquirer.prompt(
         [
             {
-                message: "Enter the bot token",
+                message: "Enter bot token",
                 name: "token",
                 type: "input",
             },

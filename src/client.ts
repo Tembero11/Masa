@@ -7,6 +7,7 @@ import commands from "./commands/commands";
 import Lang from "./classes/Lang";
 import buttons from "./buttons/buttons";
 import { PermissionManager } from "./classes/PermissionManager";
+import chalk from "chalk";
 
 let manager: PermissionManager | undefined;
 
@@ -14,7 +15,7 @@ export const client = new Discord.Client({ intents: [Intents.FLAGS.GUILDS, Inten
 
 client.once("ready", () => {
   if (client.user) {
-    console.log(`Logged in as ${client.user.tag}!`);
+    console.log(chalk.greenBright`Successfully logged in as "${client.user.tag}"!`)
 
     const token: string = config["token"];
     const clientId: string = config["clientID"];
@@ -25,7 +26,7 @@ client.once("ready", () => {
 
 
     (async () => {
-      console.log('Started refreshing application (/) commands.');
+      console.log("Started refreshing application (/) commands.");
 
       const permissionsDefined = config.permissions?.roles !== undefined;
 
