@@ -6,6 +6,8 @@ import chalk from "chalk";
 import { client } from "./client";
 import Lang from "./classes/Lang";
 import { MessageEmbed } from "discord.js";
+import { BackupManager } from "./classes/server/backup/BackupManager";
+import path from "path";
 
 export enum Presence {
   SERVER_ONLINE,
@@ -140,7 +142,10 @@ export abstract class ServerHandler {
         console.log("Chat streaming is disabled!");
       }
 
+      // TESTING
+      const manager = new BackupManager(server, path.join(server.dir, "backups"));
 
+      manager.readdirRecursiveFlat(manager.origin).then((flatList) => console.log(flatList))
       // Setup backups
       // if (meta.backups) {
       //   const { backupInterval } = meta.backups;
