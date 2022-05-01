@@ -4,8 +4,17 @@
 
 A [Discord](https://discord.com/) bot built around hosting a Minecraft Server.
 
-## Why?
-The original creator [Tembero11](https://github.com/Tembero11) had a [Minecraft server](https://www.minecraft.net/en-us/download/server) server with a few of his friends and needed an easy way to control the server. That's when he had the idea to make a bot that allows controlling a minecraft server through [Discord](https://discord.com/).
+## What is Masa
+Masa is a bot that allows you to control a [Minecraft Java server](https://www.minecraft.net/en-us/download/server) through [Discord](https://discord.com/). It also does a few other things that may even replace some popular plugins.
+
+## Key features
+- Automatic server installation
+- Server backups
+- Custom permission system
+- Server welcome messages
+- Two way chat between Discord and players on the server
+- Send commands to the Minecraft server from Discord
+- Server status can be seen on Discord
 
 ## Where does it run?
 Masa has been tested on Windows 10/11 & Ubuntu 20.04 (LTS) x64
@@ -14,7 +23,7 @@ Presumably, YES!
 
 Masa is fully compatible with almost any popular Minecraft Java server type.
 
-Although Masa currently officially supports only [Vanilla](https://www.minecraft.net/en-us/download/server), [Paper](https://papermc.io/) and [Spigot](https://www.spigotmc.org/) support for more server types is coming!
+Although Masa currently officially supports [Vanilla](https://www.minecraft.net/en-us/download/server), [Paper](https://papermc.io/) and [Spigot](https://www.spigotmc.org/) support for more server types is coming!
 
 **Note**: If a server type you want to use is not officially supported it may (and probably **will**) work.
 
@@ -30,10 +39,7 @@ Although Masa currently officially supports only [Vanilla](https://www.minecraft
 - [x] Add buttons to the command results
 - [x] Add a server installer
 - [x] Add a finer control over the command permissions
-- [ ] Add chat streaming to Discord & make server commands runnable from Discord
-- [ ] Add a build script
-- [ ] Make the bot easier to install
-- [ ] Better config error handling
+- [x] Add chat streaming to Discord & make server commands runnable from Discord
+- [ ] Dashboard
 - [ ] Backup revert command
-- [ ] World download command
 - [ ] Custom server offline messages in Minecraft?

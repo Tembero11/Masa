@@ -1,6 +1,21 @@
+import AdmZip from "adm-zip";
 import chalk from "chalk";
 import { spawn } from "child_process";
 import { lookpath } from "lookpath";
+
+interface ServerVersionData {
+    id: string
+    name: string
+    release_target: string
+    world_version: number
+    protocol_version: number
+    pack_version: {
+        resource: number
+        data: number
+    }
+    build_time: string
+    stable: boolean
+}
 
 export default abstract class EnvCheck {
     /**
@@ -40,5 +55,20 @@ export default abstract class EnvCheck {
             });
         }
         return false;
+    }
+
+    static async getGameVersion(filepath: string): Promise<ServerVersionData> {
+        return new Promise<ServerVersionData>((resolve, reject) => {
+            const jarFile = new AdmZip(filepath);
+            // Read the version.json file from the .jar server file present since snapshot 18w47b
+            jarFile.readAsTextAsync("version.json", (data, err) => {
+                if (!err && data) {
+                    const parsedData = JSON.parse(data) as ServerVersionData;
+                    resolve(parsedData);
+                }else {
+                    reject(err);
+                }
+            });
+        });
     }
 }

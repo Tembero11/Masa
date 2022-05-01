@@ -19,6 +19,7 @@
     "axios": "^0.21.4",
     "chalk": "^4.1.2",
     "chokidar": "^3.5.2",
+    "cli-spinners": "^2.6.1",
     "date-and-time": "^2.0.1",
     "discord-api-types": "^0.23.1",
     "discord.js": "^13.1.0",
@@ -32,7 +33,9 @@
     "lookpath": "^1.2.2",
     "ms": "^2.1.2",
     "nanoid": "^3.1.30",
+    "ora": "^5.4.1",
     "property-string-path": "^1.1.0",
+    "table": "^6.8.0",
     "ts-deepmerge": "^1.1.0"
   },
   "devDependencies": {

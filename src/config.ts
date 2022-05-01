@@ -18,21 +18,17 @@ export interface BotConfig {
   allowedChannels?: string[]
 }
 
-export interface ServerMetadata {
+export interface RawServerMetadata {
   /**
    * The name of the minecraft server
    */
   name: string
-  tag: string
   description: string
   /**
    * the command that starts the server. This runs inside the server folder
    */
   command: string
-  /**
-   * The directory where the server files are
-   */
-  directory: string,
+
 
   // Whether to show logs to the masa console
   logs?: boolean,
@@ -50,6 +46,16 @@ export interface ServerMetadata {
       allowDuplex?: boolean
     }
   }
+}
+export type ServerMetadata = { tag: string, directory: string } & RawServerMetadata;
+
+export interface ServerListEntry {
+  dir: string
+  tag: string
+  /**
+   * Replaces the default masa.json file name with this value
+   */
+  index?: string
 }
 
 const configDir = path.join(process.cwd(), "config");
@@ -99,7 +105,7 @@ export const createConfigs = async(content?: (filename: string) => Promise<strin
   return createdConfigs;
 }
 
-export const prettyPrint = (data: Object) => {
+export const prettyPrint = (data: object) => {
   return JSON.stringify(data, null, 2);
 }
 
@@ -113,4 +119,11 @@ export const loadConfig = async<T extends any>(filename: string): Promise<T> => 
 
 export const writeConfig = async(filename: string, data: string) => {
   await fs.promises.writeFile(path.join(configDir, filename), data, {encoding: "utf8"});
+}
+
+export async function writeServerMetadata(serverDir: string, metadata: RawServerMetadata, index = "masa.json") {
+  await fs.promises.writeFile(path.join(serverDir, index), prettyPrint(metadata), {encoding: "utf8"});
+}
+export async function readServerMetadata(serverDir: string, index = "masa.json") {
+  return JSON.parse(await fs.promises.readFile(path.join(serverDir, index), {encoding: "utf8"})) as RawServerMetadata;
 }

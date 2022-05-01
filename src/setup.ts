@@ -1,19 +1,16 @@
 import figlet from "figlet";
-import fs from "fs";
 import { ServerHandler } from "./serverHandler";
-import {  BotConfig, ServerMetadata, createConfigs, loadConfig, prettyPrint, writeConfig } from "./config";
+import {  BotConfig, ServerMetadata, createConfigs, loadConfig, prettyPrint, writeConfig, writeServerMetadata, ServerListEntry, readServerMetadata } from "./config";
 import inquirer from "inquirer";
 import inquirerAutocompletePrompt from "inquirer-autocomplete-prompt";
-import VanillaInstaller from "./classes/server/installer/VanillaInstaller";
 import chalk from "chalk";
-import Installer, { VersionManifest } from "./classes/server/installer/Installer";
-import PaperInstaller from "./classes/server/installer/PaperInstaller";
-import assert from "assert";
 import { client } from "./client";
 import { nanoid } from "nanoid";
 import Lang from "./classes/Lang";
 import EnvCheck from "./classes/server/EnvCheck";
 import pjson from "../package.json";
+import { serverInstallerPrompt } from "./serverInstallerPrompt";
+import { getBorderCharacters, table } from "table";
 
 inquirer.registerPrompt("autocomplete", inquirerAutocompletePrompt);
 
@@ -39,7 +36,18 @@ const setup = async () => {
             case "bot.json":
                 return prettyPrint(await botSetup());
             case "servers.json":
-                return prettyPrint([await serverInstaller([])]);
+                const installerResult = await serverInstallerPrompt([]);
+                
+                if (installerResult) {
+                    const { dir } = installerResult;
+                    const serverMeta: any = installerResult;
+                    delete serverMeta.dir;
+                    await writeServerMetadata(dir, serverMeta);
+
+                    return prettyPrint([{ dir }])
+                }
+
+                return prettyPrint([]);
             default:
                 return null;
         }
@@ -48,15 +56,25 @@ const setup = async () => {
     // await createBackupsFolder(BackupType.Automatic);
     // await createBackupsFolder(BackupType.User);
 
-    let serverList = await loadConfig<ServerMetadata[]>("servers.json");
-    serverList = serverList.map((e) => {
-        if (!e.tag) {
-            e.tag = nanoid(9);
-        }
-        return e;
-    });
-    await writeConfig("servers.json", prettyPrint(serverList));
+    let serverList = await loadConfig<ServerListEntry[]>("servers.json");
     
+    const serverMetaList: ServerMetadata[] = [];
+    for (let i = 0; i < serverList.length; i++) {
+        const serverEntry = serverList[i];
+        // Generate a server tag if one doesn't exist yet
+        if (!serverEntry.tag) {
+            serverEntry.tag = nanoid(9);
+        }
+        try {
+            let rawMeta = await readServerMetadata(serverEntry.dir);
+
+            let meta: ServerMetadata = {...rawMeta, tag: serverEntry.tag, directory: serverEntry.dir}
+            serverMetaList.push(meta);
+        }catch(err) {
+            console.log(chalk.yellow`WARNING: Server "${serverEntry.tag}" in directory "${serverEntry.dir}" has an invalid configuration and could not be loaded.`);
+        }
+    }
+    await writeConfig("servers.json", prettyPrint(serverList));
 
     config = await loadConfig<BotConfig>("bot.json");
 
@@ -68,9 +86,20 @@ const setup = async () => {
 
 
     // Login to discord
-    await connectToDiscord()
+    await connectToDiscord();
 
-    ServerHandler.serverInitializer(serverList);
+    const serverTable = table([
+        ["Name", "Description", "Directory", "Tag"].map(title => chalk.bold.redBright(title)),
+        ...serverMetaList.map(meta => {
+            return [meta.name, meta.description || chalk.gray("No description"), meta.directory, meta.tag]
+        }),
+    ], {
+        border: getBorderCharacters("honeywell")
+    })
+
+    console.log(serverTable.trim());
+
+    ServerHandler.serverInitializer(serverMetaList);
 
     return true;
 }
@@ -124,119 +153,6 @@ export const botSetup = async (): Promise<BotConfig> => {
         ],
     );
     return options;
-}
-
-export const serverInstaller = async (serverList: ServerMetadata[]) => {
-    let options: { [key: string]: any } = {};
-
-    options.willInstall = (await inquirer.prompt(
-        [{
-            message: "No servers found. Would you like to install a new one?",
-            name: "willInstall",
-            type: "confirm",
-        }],
-    )).willInstall as boolean;
-
-    if (!options.willInstall) {
-        console.log("No servers to take care of. MASA will now exit :(");
-        process.exit();
-    }
-
-    options.serverType = (await inquirer.prompt([{
-        message: "What kind of server would you like to install?",
-        name: "serverType",
-        type: "list",
-        choices: [
-            { name: "Vanilla" },
-            { name: "Paper" },
-        ]
-    }])).serverType as string;
-
-    options.version = (await inquirer.prompt([{
-        message: "What version do you want to play?",
-        name: "version",
-        type: "autocomplete",
-        source: async function (answersSoFar: any, input: string) {
-            input = input || "latest";
-            let manifest: VersionManifest | null = null;
-            switch (options.serverType) {
-                case "Vanilla":
-                    manifest = await VanillaInstaller.getVersions();
-                case "Paper":
-                    manifest = await PaperInstaller.getVersions();
-                default:
-                    break;
-            }
-            if (manifest) {
-                if (input.startsWith("latest")) {
-                    input = manifest.latest.release;
-                }
-    
-                return manifest.versions
-                .filter((value) => value.id.startsWith(input) && (value.type == "release"))
-                .map((e) => e.id);
-            }
-        }
-    }])).version as string;
-
-    options.dir = (await inquirer.prompt([{
-        message: "Where will the server be installed? (path to folder)",
-        name: "dir",
-        type: "input",
-        validate: async (input) => {
-            if (fs.existsSync(input)) {
-                let contents = await fs.promises.readdir(input);
-                if (contents.length != 0) {
-                    return "Directory not empty!";
-                }
-            }
-            return true;
-        }
-    }])).dir as string;
-
-    options.name = (await inquirer.prompt([{
-        message: "What should we call the server?",
-        name: "name",
-        type: "input",
-        validate: async (input) => {
-            let server = serverList.find((e => e.name == input));
-            if (server) {
-                return "Server name is taken";
-            }
-            return true;
-        }
-    }])).name as string;
-
-    let eula = (await inquirer.prompt([{
-        message: "Do you accept the End User License Agreement (EULA) (https://account.mojang.com/documents/minecraft_eula)?",
-        name: "eula",
-        type: "confirm",
-    }])).eula as boolean;
-
-    if (options.willInstall && eula) {
-        let installer: null | Installer = null;
-        switch (options.serverType) {
-            case "Vanilla":
-                installer = new VanillaInstaller(options.version);
-                break;
-            case "Paper":
-                installer = new PaperInstaller(options.version);
-                break;
-            default:
-                break;
-        }
-
-        assert(installer);
-
-        await installer.acceptEULA().install(options.dir);
-
-        return {
-            name: options.name as string,
-            command: `java -Xmx1024M -Xms1024M -jar ${installer.filename} nogui`,
-            description: "",
-            directory: options.dir as string
-        };
-    }
 }
 
 export default setup;

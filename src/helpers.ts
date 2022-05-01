@@ -1,6 +1,6 @@
-import {  ActivityType, MessageActionRow, MessageButton, MessageEmbed, PresenceStatusData, Sticker } from "discord.js";
+import {  ActivityType, MessageActionRow, MessageEmbed, PresenceStatusData } from "discord.js";
 import { client, config } from "../index";
-import path from "path";
+import { nanoid } from "nanoid";
 import { Presence } from "./serverHandler";
 import { GameServer } from "./classes/MasaAPI";
 import assert from "assert";
@@ -10,6 +10,8 @@ import Lang from "./classes/Lang";
 import { StartButton } from "./buttons/StartButton";
 import { RestartButton } from "./buttons/RestartButton";
 import { StopButton } from "./buttons/StopButton";
+import path from "path";
+
 
 
 export const isAllowedChannel = (channelID: string) => {
@@ -51,6 +53,9 @@ export const generateServerButtonRow = (serverName: string, server: GameServer) 
 
 export const toArrayIfNot = <T>(value: T | T[]): T[] => Array.isArray(value) ? value : [ value ];
 
+export const normalizeFilePath = (filepath: string) => filepath.replaceAll("\\", "/")
+
+export const genServerTag = () => nanoid(9);
 
 // TODO: add support for channel names
 export const setServerStatus = (serverName: string, server: GameServer, status: Presence) => {
@@ -120,6 +125,7 @@ export const getDefaultCommandEmbed = (authorName: string, avatarURL?: string | 
   return new MessageEmbed()
       .setAuthor(authorName, avatarURL || undefined);
 }
+
 export const fieldFromBackup = (backup: BackupMetadata) => {
   const e = backup;
   const dateFormat = Lang.getDateOrTimeFormat("longDate");
