@@ -144,8 +144,7 @@ export abstract class ServerHandler {
 
       // TESTING
       const manager = new BackupManager(server, path.join(server.dir, "backups"));
-
-      manager.readdirRecursiveFlat(manager.origin).then((flatList) => console.log(flatList))
+      manager.createBackup().then(e => console.log("Backup created!!!!!!!"))
       // Setup backups
       // if (meta.backups) {
       //   const { backupInterval } = meta.backups;

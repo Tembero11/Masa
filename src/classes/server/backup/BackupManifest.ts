@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 
-enum BackupType {
+export enum BackupType {
   Manual = "manual",
   Automatic = "auto"
 }
@@ -12,14 +12,15 @@ interface BackupManifest {
 
 interface BackupMetadata {
   id: string
-  created: number
-  type: BackupType
+  created: string
+  type: BackupType.Automatic
 }
-type ManualBackupMetadata = {
+type ManualBackupMetadata = BackupMetadata & {
   name: string
   desc: string
   author: string
-} & BackupMetadata
+  type: BackupType.Manual
+}
 
 export class BackupManifestController {
   manifest: BackupManifest
@@ -34,6 +35,9 @@ export class BackupManifestController {
 
   write = async() => await fs.promises.writeFile(this.filepath, this.toString(), { encoding: "utf8", });
   writeSync = () => fs.writeFileSync(this.filepath, this.toString(), { encoding: "utf8" });
+
+  addAuto = (backup: BackupMetadata) => this.manifest.backups.push(backup);
+  addManual = (backup: ManualBackupMetadata) => this.manifest.backups.push(backup);
 
   toString() {
     return JSON.stringify(this.manifest, null, 2);

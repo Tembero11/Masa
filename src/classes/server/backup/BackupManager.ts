@@ -4,7 +4,8 @@ import fs from "fs";
 import path from "path";
 import { Readable } from "stream";
 import GameServer from "../GameServer";
-import { BackupManifestController } from "./BackupManifest";
+import { BackupManifestController, BackupType } from "./BackupManifest";
+import { nanoid } from "nanoid";
 
 type CompressionType = "zip" | "gzip";
 
@@ -64,6 +65,34 @@ export class BackupManager {
       gzip: true
     }, files);
   }
+
+  async writeBackup(id: string, compression?: CompressionType) {
+    const filepath = path.join(this.dest, id);
+
+    const filesFlat = await this.readdirRecursiveFlat(this.origin);
+
+    const readStream = await this.createReadStream(filesFlat, compression);
+    const writeStream = fs.createWriteStream(filepath);
+
+    readStream.pipe(writeStream);
+  }
+
+  async createBackup() {
+    const id = this.genBackupId();
+    await this.writeBackup(id);
+
+    const isoDate = new Date().toISOString();
+
+    this.manifest.addAuto({
+      id,
+      created: isoDate,
+      type: BackupType.Automatic
+    });
+
+    await this.manifest.write();
+  }
+
+  genBackupId = () => nanoid(9) 
 
   normalizePathDelimiters = (p: string) => p.replaceAll("\\", "/");
 }
