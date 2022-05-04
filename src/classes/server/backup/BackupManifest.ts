@@ -30,10 +30,18 @@ export class BackupManifestController {
     this.dest = dest;
     this.filepath = path.join(dest, "manifest.json");
 
-    this.manifest = { backups: [] };
+    try {
+      this.manifest = this.readSync();
+    }catch(err) {
+      this.manifest = { backups: [] }; 
+    }
   }
 
-  write = async() => await fs.promises.writeFile(this.filepath, this.toString(), { encoding: "utf8", });
+
+  read = async() => JSON.parse(await fs.promises.readFile(this.filepath, { encoding: "utf8" })) as BackupManifest;
+  readSync = () => JSON.parse(fs.readFileSync(this.filepath, { encoding: "utf8" })) as BackupManifest;
+
+  write = async() => await fs.promises.writeFile(this.filepath, this.toString(), { encoding: "utf8" });
   writeSync = () => fs.writeFileSync(this.filepath, this.toString(), { encoding: "utf8" });
 
   addAuto = (backup: BackupMetadata) => this.manifest.backups.push(backup);

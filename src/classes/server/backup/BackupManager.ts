@@ -23,20 +23,36 @@ export class BackupManager {
 
 
   constructor(server: GameServer, dest: string, options?: BackupManagerOptions) {
-      this.dest = dest;
-      this.origin = server.dir;
+      this.dest = this.normalizePathDelimiters(path.resolve(dest));
+      this.origin = this.normalizePathDelimiters(path.resolve(server.dir));
 
       this.compression = options?.compression || "gzip";
 
       this.manifest = new BackupManifestController(this.dest);
   }
 
-  async readdirRecursiveFlat(dir: string) {
+  async createBackupDir() {
+    try {
+      await fs.promises.stat(this.dest);
+    }catch(err) {
+      await fs.promises.mkdir(this.dest, { recursive: true });
+      return true;
+    }
+    return false;
+  }
+
+  async readdirRecursiveFlat(dir: string, options?: { ignoreDestDir?: boolean }) {
     const contents = await fs.promises.readdir(dir, { withFileTypes: true });
     const flatList: string[] = [];
 
     for (const dirent of contents) {
       const direntPath = this.normalizePathDelimiters(path.join(dir, dirent.name));
+
+      if (options?.ignoreDestDir) {
+        if (direntPath.startsWith(this.dest)) {
+          continue;
+        }
+      }
 
       if (dirent.isDirectory()) {
         flatList.push(...await this.readdirRecursiveFlat(direntPath));
@@ -66,11 +82,10 @@ export class BackupManager {
     }, files);
   }
 
-  async writeBackup(id: string, compression?: CompressionType) {
+  async writeBackupArchive(id: string, compression?: CompressionType) {
     const filepath = path.join(this.dest, id);
 
-    const filesFlat = await this.readdirRecursiveFlat(this.origin);
-
+    const filesFlat = await this.readdirRecursiveFlat(this.origin, { ignoreDestDir: true });
     const readStream = await this.createReadStream(filesFlat, compression);
     const writeStream = fs.createWriteStream(filepath);
 
@@ -79,7 +94,8 @@ export class BackupManager {
 
   async createBackup() {
     const id = this.genBackupId();
-    await this.writeBackup(id);
+    const filename = this.getFilename(id, this.compression);
+    await this.writeBackupArchive(filename);
 
     const isoDate = new Date().toISOString();
 
@@ -95,4 +111,12 @@ export class BackupManager {
   genBackupId = () => nanoid(9) 
 
   normalizePathDelimiters = (p: string) => p.replaceAll("\\", "/");
+
+  getFilename(idOrName: string, compression?: CompressionType) {
+    if (!compression) compression = this.compression;
+    if (compression == "gzip") {
+      return idOrName + ".tar.gz"
+    }
+    return idOrName + ".zip"
+  }
 }

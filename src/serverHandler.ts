@@ -144,7 +144,9 @@ export abstract class ServerHandler {
 
       // TESTING
       const manager = new BackupManager(server, path.join(server.dir, "backups"));
-      manager.createBackup().then(e => console.log("Backup created!!!!!!!"))
+      manager.createBackupDir().then(created => {
+        manager.createBackup().then(e => console.log("Backup created!!!!!!!"))
+      });
       // Setup backups
       // if (meta.backups) {
       //   const { backupInterval } = meta.backups;
