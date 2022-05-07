@@ -4,9 +4,10 @@ import fs from "fs";
 import path from "path";
 import { Readable } from "stream";
 import GameServer from "../GameServer";
-import { BackupManifestController, BackupType } from "./BackupManifest";
+import { AutoBackupMetadata, BackupManifestController, BackupType, ManualBackupMetadata } from "./BackupManifest";
 import { nanoid } from "nanoid";
 import assert from "assert";
+import { BackupMetadata } from "./BackupManifest";
 
 export type CompressionType = "zip" | "gzip";
 
@@ -114,7 +115,7 @@ export class BackupManager {
   }
 
   async writeBackupArchive(id: string, compression?: CompressionType) {
-    const filepath = path.join(this.dest, id);
+    const filepath = path.join(this.dest, this.getFilename(id, compression));
 
     const filesFlat = await this.readdirRecursiveFlat(this.origin, {
       ignoreDestDir: true,
@@ -129,30 +130,44 @@ export class BackupManager {
     readStream.pipe(writeStream);
   }
 
+  createBackup(meta: {name: string, desc: string, author: string}): Promise<ManualBackupMetadata>
+  createBackup(meta?: undefined): Promise<AutoBackupMetadata>
   async createBackup(meta?: {name: string, desc: string, author: string}) {
     const compression = this.compression;
 
     const id = this.genBackupId();
-    const filename = this.getFilename(id, compression);
-    await this.writeBackupArchive(filename);
+    await this.writeBackupArchive(id);
 
     const isoDate = new Date().toISOString();
 
-    const base = {
+    let backup = {
       id,
       created: isoDate,
       compression,
+      ...(meta ? {...meta, type: BackupType.Manual} : {
+        type: BackupType.Automatic
+      })
+    }
+    this.manifest.add(backup);
+
+    await this.manifest.write();
+
+    return backup;
+  }
+
+  async deleteBackup(id: string) {
+    const backup = this.manifest.get(id);
+    if (!backup) return;
+
+    const filepath = this.getPotentialPath(id, backup.compression);
+
+    try {
+      await fs.promises.unlink(filepath);
+    }catch(err) {
+      console.log(err)
     }
 
-    if (meta) {
-      const { name, desc, author } = meta;
-      this.manifest.addManual({...base, name, desc, author,type: BackupType.Manual});
-    }else {
-      this.manifest.addAuto({
-        ...base,
-        type: BackupType.Automatic
-      });
-    }
+    this.manifest.remove(id);
 
     await this.manifest.write();
   }
@@ -160,6 +175,10 @@ export class BackupManager {
   genBackupId = () => nanoid(9) 
 
   normalizePathDelimiters = (p: string) => p.replaceAll("\\", "/");
+
+  getPotentialPath(id: string, compression: CompressionType) {
+    return this.normalizePathDelimiters(path.join(this.dest, this.getFilename(id, compression)));
+  }
 
   getFilename(idOrName: string, compression?: CompressionType) {
     if (!compression) compression = this.compression;

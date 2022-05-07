@@ -149,7 +149,12 @@ export abstract class ServerHandler {
           name: "testi",
           desc: "village",
           author: "blablabla tembero"
-        }).then(e => console.log("Backup created!!!!!!!"))
+        }).then(e => {
+          console.log("Backup created!!!!!!!" + e.id);
+          manager.deleteBackup(e.id).then(v => {
+            console.log(e.id + " Deleted")
+          });
+        })
       });
       // Setup backups
       // if (meta.backups) {

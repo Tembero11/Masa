@@ -12,13 +12,17 @@ interface BackupManifest {
   backups: BackupMetadata[]
 }
 
-interface BackupMetadata {
+export interface BackupMetadata {
   id: string
   created: string
   compression: CompressionType
 }
-type AutoBackupMetadata = BackupMetadata & { type: BackupType.Automatic }
-type ManualBackupMetadata = BackupMetadata & {
+
+export interface AutoBackupMetadata extends BackupMetadata {
+  type: BackupType.Automatic
+}
+
+export interface ManualBackupMetadata extends BackupMetadata {
   name: string
   desc: string
   author: string
@@ -51,6 +55,12 @@ export class BackupManifestController {
 
   addAuto = (backup: AutoBackupMetadata) => this.manifest.backups.push(backup);
   addManual = (backup: ManualBackupMetadata) => this.manifest.backups.push(backup);
+  add = (backup: BackupMetadata & {type: BackupType}) => this.manifest.backups.push(backup);
+
+  remove = (id: string) => this.manifest.backups.filter(meta => meta.id == id);
+
+  get = (id: string) => this.manifest.backups.find(meta => meta.id == id);
+  // getByName = (name: string) => this.manifest.backups.find(meta => )
 
   toString() {
     return JSON.stringify(this.manifest, null, 2);
