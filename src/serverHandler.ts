@@ -143,9 +143,13 @@ export abstract class ServerHandler {
       }
 
       // TESTING
-      const manager = new BackupManager(server, path.join(server.dir, "backups"));
+      const manager = new BackupManager(server, path.join(server.dir, "backups"), { compression: "zip" });
       manager.createBackupDir().then(created => {
-        manager.createBackup().then(e => console.log("Backup created!!!!!!!"))
+        manager.createBackup({
+          name: "testi",
+          desc: "village",
+          author: "blablabla tembero"
+        }).then(e => console.log("Backup created!!!!!!!"))
       });
       // Setup backups
       // if (meta.backups) {

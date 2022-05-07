@@ -1,5 +1,6 @@
 import fs from "fs";
 import path from "path";
+import { CompressionType } from "./BackupManager";
 
 export enum BackupType {
   Manual = "manual",
@@ -7,14 +8,16 @@ export enum BackupType {
 }
 
 interface BackupManifest {
+  version: number
   backups: BackupMetadata[]
 }
 
 interface BackupMetadata {
   id: string
   created: string
-  type: BackupType.Automatic
+  compression: CompressionType
 }
+type AutoBackupMetadata = BackupMetadata & { type: BackupType.Automatic }
 type ManualBackupMetadata = BackupMetadata & {
   name: string
   desc: string
@@ -23,6 +26,8 @@ type ManualBackupMetadata = BackupMetadata & {
 }
 
 export class BackupManifestController {
+  readonly version = 1;
+
   manifest: BackupManifest
   readonly dest: string
   readonly filepath: string
@@ -33,7 +38,7 @@ export class BackupManifestController {
     try {
       this.manifest = this.readSync();
     }catch(err) {
-      this.manifest = { backups: [] }; 
+      this.manifest = { version: this.version, backups: [] }; 
     }
   }
 
@@ -44,7 +49,7 @@ export class BackupManifestController {
   write = async() => await fs.promises.writeFile(this.filepath, this.toString(), { encoding: "utf8" });
   writeSync = () => fs.writeFileSync(this.filepath, this.toString(), { encoding: "utf8" });
 
-  addAuto = (backup: BackupMetadata) => this.manifest.backups.push(backup);
+  addAuto = (backup: AutoBackupMetadata) => this.manifest.backups.push(backup);
   addManual = (backup: ManualBackupMetadata) => this.manifest.backups.push(backup);
 
   toString() {
