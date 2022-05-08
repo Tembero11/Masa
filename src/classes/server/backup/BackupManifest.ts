@@ -9,7 +9,7 @@ export enum BackupType {
 
 interface BackupManifest {
   version: number
-  backups: BackupMetadata[]
+  backups: AutoOrManualBackupMetadata[]
 }
 
 export interface BackupMetadata {
@@ -28,11 +28,12 @@ export interface ManualBackupMetadata extends BackupMetadata {
   author: string
   type: BackupType.Manual
 }
+export type AutoOrManualBackupMetadata = AutoBackupMetadata | ManualBackupMetadata;
 
 export class BackupManifestController {
   readonly version = 1;
 
-  manifest: BackupManifest
+  protected manifest: BackupManifest
   readonly dest: string
   readonly filepath: string
   constructor(dest: string) {
@@ -55,12 +56,41 @@ export class BackupManifestController {
 
   addAuto = (backup: AutoBackupMetadata) => this.manifest.backups.push(backup);
   addManual = (backup: ManualBackupMetadata) => this.manifest.backups.push(backup);
-  add = (backup: BackupMetadata & {type: BackupType}) => this.manifest.backups.push(backup);
+  add = (backup: AutoOrManualBackupMetadata) => this.manifest.backups.push(backup);
 
   remove = (id: string) => this.manifest.backups.filter(meta => meta.id == id);
 
   get = (id: string) => this.manifest.backups.find(meta => meta.id == id);
-  // getByName = (name: string) => this.manifest.backups.find(meta => )
+
+  getLatest() {
+    return this.manifest.backups.sort((a, b) => {
+      const aEpoch = new Date(a.created).getTime();   
+      const bEpoch = new Date(b.created).getTime();
+      return aEpoch - bEpoch;
+    })[0];
+  }
+
+  getByName(name: string) {
+    return this.manifest.backups.find(meta => {
+      if (meta.type == BackupType.Manual) {
+          return meta.name == name;
+      }
+      return false;
+    }) as ManualBackupMetadata | undefined;
+  }
+
+  getAllManual = () => this.manifest.backups.filter(meta => meta.type == BackupType.Manual);
+  getAllAutomatic = () => this.manifest.backups.filter(meta => meta.type == BackupType.Automatic);
+
+  // TODO: add getByProperty
+
+  get backups() {
+    return this.manifest.backups;
+  }
+
+  get length() {
+    return this.manifest.backups.length;
+  }
 
   toString() {
     return JSON.stringify(this.manifest, null, 2);

@@ -145,7 +145,8 @@ export abstract class ServerHandler {
       // TESTING
       const manager = new BackupManager(server, path.join(server.dir, "backups"), { compression: "gzip" });
       manager.createBackupDir().then(created => {
-        manager.revertBackup("Efz8X0oXu")
+        // console.log(manager.manifest.getByProperty("name", "df"))
+        // manager.revertBackup("Efz8X0oXu")
         // manager.createBackup({
         //   name: "testi",
         //   desc: "village",

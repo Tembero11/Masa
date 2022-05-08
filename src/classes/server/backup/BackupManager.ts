@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 import { Readable } from "stream";
 import GameServer from "../GameServer";
-import { AutoBackupMetadata, BackupManifestController, BackupType, ManualBackupMetadata } from "./BackupManifest";
+import { AutoBackupMetadata, AutoOrManualBackupMetadata, BackupManifestController, BackupType, ManualBackupMetadata } from "./BackupManifest";
 import { nanoid } from "nanoid";
 import { NoBackupError } from "../../Errors";
 
@@ -142,7 +142,7 @@ export class BackupManager {
 
     const isoDate = new Date().toISOString();
 
-    let backup = {
+    let backup: AutoOrManualBackupMetadata = {
       id,
       created: isoDate,
       compression,
