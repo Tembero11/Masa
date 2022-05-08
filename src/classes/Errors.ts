@@ -70,3 +70,10 @@ export class NullRequiredLanguageParameterError extends Error {
     this.name = "NullRequiredLanguageParameterError";
   }
 }
+
+export class NoBackupError extends Error {
+  constructor(backupId: string) {
+    super(`A backup with the id of "${backupId}" doesn't exist.`);
+    this.name = "NoBackupError";
+  }
+}

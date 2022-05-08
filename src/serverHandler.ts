@@ -143,18 +143,20 @@ export abstract class ServerHandler {
       }
 
       // TESTING
-      const manager = new BackupManager(server, path.join(server.dir, "backups"), { compression: "zip" });
+      const manager = new BackupManager(server, path.join(server.dir, "backups"), { compression: "gzip" });
       manager.createBackupDir().then(created => {
-        manager.createBackup({
-          name: "testi",
-          desc: "village",
-          author: "blablabla tembero"
-        }).then(e => {
-          console.log("Backup created!!!!!!!" + e.id);
-          manager.deleteBackup(e.id).then(v => {
-            console.log(e.id + " Deleted")
-          });
-        })
+        manager.revertBackup("Efz8X0oXu")
+        // manager.createBackup({
+        //   name: "testi",
+        //   desc: "village",
+        //   author: "blablabla tembero"
+        // }).then(e => {
+        //   console.log("Backup created!!!!!!!" + e.id);
+        //   // manager.deleteBackup(e.id).then(v => {
+        //   //   console.log(e.id + " Deleted")
+        //   // });
+        //   manager.extractBackup(e.id, path.join(process.cwd(), "test"))
+        // })
       });
       // Setup backups
       // if (meta.backups) {

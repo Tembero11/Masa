@@ -6,8 +6,7 @@ import { Readable } from "stream";
 import GameServer from "../GameServer";
 import { AutoBackupMetadata, BackupManifestController, BackupType, ManualBackupMetadata } from "./BackupManifest";
 import { nanoid } from "nanoid";
-import assert from "assert";
-import { BackupMetadata } from "./BackupManifest";
+import { NoBackupError } from "../../Errors";
 
 export type CompressionType = "zip" | "gzip";
 
@@ -17,7 +16,7 @@ interface BackupManagerOptions {
 
 export class BackupManager {
   readonly server;
-  
+
   get origin() {
     return this.normalizePathDelimiters(path.resolve(this.server.dir));
   }
@@ -41,14 +40,14 @@ export class BackupManager {
   async createBackupDir() {
     try {
       await fs.promises.stat(this.dest);
-    }catch(err) {
+    } catch (err) {
       await fs.promises.mkdir(this.dest, { recursive: true });
       return true;
     }
     return false;
   }
 
-  async readdirRecursiveFlat(dir: string, options?: { ignoreDestDir?: boolean, ignoredFileTypes?: string[]  }) {
+  async readdirRecursiveFlat(dir: string, options?: { ignoreDestDir?: boolean, ignoredFileTypes?: string[] }) {
     const contents = await fs.promises.readdir(dir, { withFileTypes: true });
     let flatList: string[] = [];
 
@@ -77,12 +76,12 @@ export class BackupManager {
         flatList.push(direntPath);
       }
     }
-    
+
 
     return flatList;
   }
 
-  async createReadStream(files: string[], options?: {compression?: CompressionType, withOriginDir?: boolean}) {
+  async createReadStream(files: string[], options?: { compression?: CompressionType, withOriginDir?: boolean }) {
     let compression = options?.compression;
     let withOriginDir = options?.withOriginDir;
     if (!options?.compression) compression = this.compression;
@@ -95,14 +94,14 @@ export class BackupManager {
       }
       return filePath;
     });
-    
+
     if (compression == "zip") {
       const zip = new AdmZip();
 
       await Promise.all(relativeFiles.map(async (filePath, index) => {
         const absoluteFilePath = files[index];
         const content = await fs.promises.readFile(absoluteFilePath);
-        
+
         zip.addFile(filePath, content);
       }));
 
@@ -121,18 +120,21 @@ export class BackupManager {
       ignoreDestDir: true,
       ignoredFileTypes: [".jar"]
     });
-    const readStream = await this.createReadStream(filesFlat,{
+    const readStream = await this.createReadStream(filesFlat, {
       compression,
       withOriginDir: false
     });
     const writeStream = fs.createWriteStream(filepath);
 
-    readStream.pipe(writeStream);
+    return new Promise<void>(resolve => {
+      writeStream.on("close", resolve);
+      readStream.pipe(writeStream);
+    });
   }
 
-  createBackup(meta: {name: string, desc: string, author: string}): Promise<ManualBackupMetadata>
+  createBackup(meta: { name: string, desc: string, author: string }): Promise<ManualBackupMetadata>
   createBackup(meta?: undefined): Promise<AutoBackupMetadata>
-  async createBackup(meta?: {name: string, desc: string, author: string}) {
+  async createBackup(meta?: { name: string, desc: string, author: string }) {
     const compression = this.compression;
 
     const id = this.genBackupId();
@@ -144,7 +146,7 @@ export class BackupManager {
       id,
       created: isoDate,
       compression,
-      ...(meta ? {...meta, type: BackupType.Manual} : {
+      ...(meta ? { ...meta, type: BackupType.Manual } : {
         type: BackupType.Automatic
       })
     }
@@ -156,14 +158,14 @@ export class BackupManager {
   }
 
   async deleteBackup(id: string) {
-    const backup = this.manifest.get(id);
-    if (!backup) return;
+    const meta = this.manifest.get(id);
+    if (!meta) throw new NoBackupError(id);
 
-    const filepath = this.getPotentialPath(id, backup.compression);
+    const filepath = this.getPotentialPath(id, meta.compression);
 
     try {
       await fs.promises.unlink(filepath);
-    }catch(err) {
+    } catch (err) {
       console.log(err)
     }
 
@@ -172,7 +174,57 @@ export class BackupManager {
     await this.manifest.write();
   }
 
-  genBackupId = () => nanoid(9) 
+  async extractBackup(id: string, dest: string, options?: { overwrite?: boolean }) {
+    const meta = this.manifest.get(id);
+    if (!meta) throw new NoBackupError(id);
+
+    const filepath = this.getPotentialPath(id, meta.compression);
+
+    if (meta.compression == "zip") {
+      const zipBuffer = await fs.promises.readFile(filepath);
+      const zip = new AdmZip(zipBuffer);
+
+      return new Promise<boolean>((resolve, reject) => {
+        zip.extractAllToAsync(dest, options?.overwrite, (err) => {
+          if (err) {
+            reject(err);
+          } else {
+            resolve(true);
+          }
+        });
+      });
+    } else {
+      await tar.x({
+        file: filepath,
+        cwd: dest,
+        keep: !options?.overwrite
+      });
+      return true;
+    }
+  }
+
+  async revertBackup(id: string) {
+    const meta = this.manifest.get(id);
+    if (!meta) throw new NoBackupError(id);
+
+
+    const dirents = await fs.promises.readdir(this.origin, { withFileTypes: true });
+
+    for (const dirent of dirents) {
+      const direntPath = this.normalizePathDelimiters(path.join(this.origin, dirent.name));
+      if (dirent.isDirectory()) {
+        if (direntPath != this.dest) {
+          await fs.promises.rm(direntPath, { recursive: true });
+        }
+      }else {
+        await fs.promises.unlink(direntPath);
+      }
+    }
+
+    await this.extractBackup(id, this.origin, { overwrite: false });
+  }
+
+  genBackupId = () => nanoid(9)
 
   normalizePathDelimiters = (p: string) => p.replaceAll("\\", "/");
 
