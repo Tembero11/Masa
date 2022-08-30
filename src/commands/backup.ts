@@ -3,9 +3,6 @@ import { CommandInteraction } from "discord.js";
 // import { BackupType, createBackup } from "../backup";
 import { getDefaultCommandEmbed } from "../helpers";
 import Command, { RegisteredCommand } from "./general";
-import { ServerHandler } from "../serverHandler";
-import assert from "assert";
-import Lang from "../classes/Lang";
 import { PermissionScope } from "../classes/PermissionManager";
 
 @RegisteredCommand
@@ -28,22 +25,22 @@ export class BackupCommand extends Command {
     let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
 
     let serverName = interaction.options.getString("server");
-    if (serverName) {
-      let server = ServerHandler.getServerByName(serverName);
-      if (server) {
-        if (server.backups) {
-          const backupName = interaction.options.getString("name") || undefined;
-          const desc = interaction.options.getString("description") || undefined;
+    // if (serverName) {
+    //   let server = ServerHandler.getServerByName(serverName);
+    //   if (server) {
+    //     if (server.backups) {
+    //       const backupName = interaction.options.getString("name") || undefined;
+    //       const desc = interaction.options.getString("description") || undefined;
     
-          let backup = await server.backups.createUser(backupName, desc, interaction.member?.user.id);
-          embed.setDescription(Lang.parse("commands.backup.backupCreated", {BACKUP_NAME: backup.id}));
-        }else {
-          embed.setDescription(Lang.parse("commands.backup.backupsNotEnabled", {SERVER_NAME: serverName}));
-        }
-      }else {
-        embed.setDescription(Lang.parse("common.serverNotFound", {SERVER_NAME: serverName}));
-      }
-    }
+    //       let backup = await server.backups.createUser(backupName, desc, interaction.member?.user.id);
+    //       embed.setDescription(Lang.parse("commands.backup.backupCreated", {BACKUP_NAME: backup.id}));
+    //     }else {
+    //       embed.setDescription(Lang.parse("commands.backup.backupsNotEnabled", {SERVER_NAME: serverName}));
+    //     }
+    //   }else {
+    //     embed.setDescription(Lang.parse("common.serverNotFound", {SERVER_NAME: serverName}));
+    //   }
+    // }
     await interaction.reply({embeds: [embed]}); 
   };
 }

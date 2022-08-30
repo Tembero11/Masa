@@ -99,7 +99,7 @@ const setup = async () => {
 
     console.log(serverTable.trim());
 
-    ServerHandler.serverInitializer(serverMetaList);
+    await ServerHandler.serverInitializer(serverMetaList);
 
     return true;
 }

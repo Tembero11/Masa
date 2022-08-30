@@ -6,8 +6,9 @@ import chalk from "chalk";
 import { client } from "./client";
 import Lang from "./classes/Lang";
 import { MessageEmbed } from "discord.js";
-import { BackupManager } from "./classes/server/backup/BackupManager";
 import path from "path";
+import GameServerBackupManager from "./classes/server/backup/GameServerBackupManager";
+import ms from "ms";
 
 export enum Presence {
   SERVER_ONLINE,
@@ -77,14 +78,11 @@ export abstract class ServerHandler {
   }
 
 
-  static serverInitializer = (serverMeta: ServerMetadata[]) => {
-    serverMeta.forEach((meta) => {
+  static serverInitializer = async(serverMeta: ServerMetadata[]) => {
+    for (const meta of serverMeta) {
       assert(!ServerHandler.serversMap.get(meta.name), "One or more servers have the same name!");
 
       let server = new GameServer(meta.command, meta.directory, meta);
-      if (meta.backups) {
-        server.enableBackups();
-      }
 
       setServerStatus(meta.name, server, Presence.SERVER_OFFLINE);
 
@@ -143,48 +141,60 @@ export abstract class ServerHandler {
       }
 
       // TESTING
-      const manager = new BackupManager(server, path.join(server.dir, "backups"), { compression: "gzip" });
-      manager.createBackupDir().then(created => {
-        // console.log(manager.manifest.getByProperty("name", "df"))
-        // manager.revertBackup("Efz8X0oXu")
-        // manager.createBackup({
-        //   name: "testi",
-        //   desc: "village",
-        //   author: "blablabla tembero"
-        // }).then(e => {
-        //   console.log("Backup created!!!!!!!" + e.id);
-        //   // manager.deleteBackup(e.id).then(v => {
-        //   //   console.log(e.id + " Deleted")
-        //   // });
-        //   manager.extractBackup(e.id, path.join(process.cwd(), "test"))
-        // })
-      });
+      // const manager = new GameServerBackupManager(server, path.join(server.dir, "backups"), { compression: "gzip" });
+      // manager.createBackupDir().then(created => {
+      //   console.log(manager.manifest.getLatestManual())
+      //   // manager.manifest.getByProperty("name", "gzip")[0]
+      //   // console.log(manager.manifest.getByProperty("name", "df"))
+      //   // manager.revertBackup("Efz8X0oXu")
+      //   manager.createBackup({
+      //     name: "testi",
+      //     desc: "village",
+      //     author: "blablabla tembero"
+      //   }).then(e => {
+      //     console.log("Backup created!!!!!!!" + e.id);
+      //     // manager.deleteBackup(e.id).then(v => {
+      //     //   console.log(e.id + " Deleted")
+      //     // });
+      //     // manager.extractBackup(e.id, path.join(process.cwd(), "test"))
+      //   })
+      // });
       // Setup backups
-      // if (meta.backups) {
-      //   const { backupInterval } = meta.backups;
-      //   const { backupLimit } = meta.backups;
+      if (meta.backups) {
+        const { backupInterval, backupLimit } = meta.backups;
 
-      //   let backupIntervalMs = typeof backupInterval == "string" ? ms(backupInterval) : backupInterval;
+        let backupIntervalMs = typeof backupInterval == "string" ? ms(backupInterval) : backupInterval;
 
-      //   assert(backupInterval && backupLimit);
+        assert(backupInterval && backupLimit);
 
-      //   console.log(`Automatic backups are made every ${ms(backupIntervalMs, {long: true})} for server "${chalk.underline(meta.name)}".`);
+        console.log(`Automatic backups are made every ${ms(backupIntervalMs, { long: true })} for server "${chalk.underline(meta.name)}".`);
 
-      //   setInterval(() => {
-      //     createBackup(server, meta.name, BackupType.Automatic, { backupLimit }).then((backup) => {
-      //       console.log(`An automatic backup was succesfully created! ${backup.filename || ""}`);
-      //     }).catch((err) => {
-      //       console.warn(chalk.yellow(err));
-      //     });
-      //   }, backupIntervalMs);
-      // }else {
-      //   console.warn(chalk.yellow(`Automatic backups are ${chalk.bold("disabled")} for server "${chalk.underline(meta.name)}".`))
-      // }
+        const backupPath = path.join(server.dir, "backups");
+
+        const manager = new GameServerBackupManager(server, backupPath);
+
+        await manager.createBackupDir()
+
+        setInterval(async() => {
+          if (manager.manifest.backupCount >= backupLimit) {
+            const backupMeta = manager.manifest.getOldestAutomatic();
+            if (backupMeta) {
+              await manager.deleteBackup(backupMeta.id);
+            }
+          }
+          await manager.prepareForBackup();
+          const backup = await manager.createBackup();
+          await manager.afterBackup();
+          console.log(`An automatic backup was succesfully created! ${manager.getFilename(backup.id)}`);
+        }, backupIntervalMs);
+      }else {
+        console.warn(chalk.yellow(`Automatic backups are ${chalk.bold("disabled")} for server "${chalk.underline(meta.name)}".`))
+      }
 
 
       ServerHandler.serversMap.set(meta.name, server);
       ServerHandler.ids.set(meta.tag, meta.name);
-    });
+    }
   }
 }
 

@@ -2,7 +2,6 @@ import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import assert from "assert";
 import ServerCommunicator from "./ServerCommunicator";
 import { NoStandardStreamsError } from "../Errors";
-import BackupModule from "./BackupModule";
 import { ServerMetadata } from "../../config";
 
 export default class GameServer extends ServerCommunicator {
@@ -10,7 +9,6 @@ export default class GameServer extends ServerCommunicator {
   readonly dir;
   private serverProcess: ChildProcessWithoutNullStreams | null = null;
 
-  public backups: BackupModule | undefined;
 
   get name() {
     return this.metadata?.name;
@@ -37,14 +35,6 @@ export default class GameServer extends ServerCommunicator {
 
     this.command = command;
     this.dir = directory;
-  }
-  async enableBackups() {
-    assert(this.metadata);
-    this.backups = new BackupModule(this);
-    const bmodule = await this.backups.init()
-    setInterval(() => bmodule.createAutomatic(`test${Math.floor(Math.random() * 10000)}`), 30000);
-
-    return this;
   }
   
 

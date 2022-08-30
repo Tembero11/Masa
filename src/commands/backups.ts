@@ -26,27 +26,27 @@ export class BackupsCommand extends Command {
     let serverName = interaction.options.getString("server");
     if (serverName) {
       let server = ServerHandler.getServerByName(serverName);
-      if (server) {
-        if (server.backups) {
-          let autoBackups = server.backups.listAutomatic();
-          let userBackups = server.backups.listUser();
+      // if (server) {
+      //   if (server.backups) {
+      //     let autoBackups = server.backups.listAutomatic();
+      //     let userBackups = server.backups.listUser();
   
   
-          embed.addField(Lang.parse("commands.backup.userHeader"), Lang.parse("commands.backup.listOfUserBackups"), false);
+      //     embed.addField(Lang.parse("commands.backup.userHeader"), Lang.parse("commands.backup.listOfUserBackups"), false);
   
-          embed.addFields(userBackups.map(fieldFromBackup));
+      //     embed.addFields(userBackups.map(fieldFromBackup));
   
-          embed.addField(Lang.parse("commands.backup.autoHeader"), Lang.parse("commands.backup.listOfAutoBackups"), false);
+      //     embed.addField(Lang.parse("commands.backup.autoHeader"), Lang.parse("commands.backup.listOfAutoBackups"), false);
   
-          embed.addFields(autoBackups.map(fieldFromBackup));
+      //     embed.addFields(autoBackups.map(fieldFromBackup));
   
-          embed.setTitle(Lang.parse("commands.backup.backupsListed")).setTimestamp();
-        }else {
-          embed.setDescription(Lang.parse("commands.backup.backupsNotEnabled", {SERVER_NAME: serverName}));
-        }
-      }else {
-        embed.setDescription(Lang.parse("common.serverNotFound", {SERVER_NAME: serverName}));
-      }
+      //     embed.setTitle(Lang.parse("commands.backup.backupsListed")).setTimestamp();
+      //   }else {
+      //     embed.setDescription(Lang.parse("commands.backup.backupsNotEnabled", {SERVER_NAME: serverName}));
+      //   }
+      // }else {
+      //   embed.setDescription(Lang.parse("common.serverNotFound", {SERVER_NAME: serverName}));
+      // }
     }
     await interaction.reply({embeds: [embed]});
   };

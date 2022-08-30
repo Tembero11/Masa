@@ -10,17 +10,12 @@ import { NoBackupError } from "../../Errors";
 
 export type CompressionType = "zip" | "gzip";
 
-interface BackupManagerOptions {
+export interface BackupManagerOptions {
   compression?: CompressionType
 }
 
 export class BackupManager {
-  readonly server;
-
-  get origin() {
-    return this.normalizePathDelimiters(path.resolve(this.server.dir));
-  }
-
+  readonly origin: string;
   readonly dest: string;
 
   readonly compression: CompressionType;
@@ -28,8 +23,8 @@ export class BackupManager {
   manifest: BackupManifestController
 
 
-  constructor(server: GameServer, dest: string, options?: BackupManagerOptions) {
-    this.server = server;
+  constructor(origin: string, dest: string, options?: BackupManagerOptions) {
+    this.origin = origin;
     this.dest = this.normalizePathDelimiters(path.resolve(dest));
 
     this.compression = options?.compression || "gzip";
@@ -47,7 +42,7 @@ export class BackupManager {
     return false;
   }
 
-  async readdirRecursiveFlat(dir: string, options?: { ignoreDestDir?: boolean, ignoredFileTypes?: string[] }) {
+  async readdirRecursiveFlat(dir: string, options?: { ignoreDestDir?: boolean, filter?: (filepath: string, dirent: fs.Dirent) => boolean}) {
     const contents = await fs.promises.readdir(dir, { withFileTypes: true });
     let flatList: string[] = [];
 
@@ -59,16 +54,7 @@ export class BackupManager {
           continue;
         }
       }
-      if (options?.ignoredFileTypes) {
-        let isIgnored = false;
-        for (const ext of options.ignoredFileTypes) {
-          if (path.extname(direntPath) == ext) {
-            isIgnored = true;
-            break;
-          }
-        }
-        if (isIgnored) continue;
-      }
+      if (options?.filter && !options.filter(direntPath, dirent)) continue;
 
       if (dirent.isDirectory()) {
         flatList.push(...await this.readdirRecursiveFlat(direntPath, options));
@@ -118,7 +104,7 @@ export class BackupManager {
 
     const filesFlat = await this.readdirRecursiveFlat(this.origin, {
       ignoreDestDir: true,
-      ignoredFileTypes: [".jar"]
+      filter: (filepath, dirent) => path.extname(dirent.name) != ".jar"
     });
     const readStream = await this.createReadStream(filesFlat, {
       compression,

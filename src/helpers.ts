@@ -5,12 +5,12 @@ import { Presence } from "./serverHandler";
 import { GameServer } from "./classes/MasaAPI";
 import assert from "assert";
 import date from "date-and-time";
-import { BackupMetadata } from "./classes/server/BackupModule";
 import Lang from "./classes/Lang";
 import { StartButton } from "./buttons/StartButton";
 import { RestartButton } from "./buttons/RestartButton";
 import { StopButton } from "./buttons/StopButton";
 import path from "path";
+import { ManualBackupMetadata } from "./classes/server/backup/BackupManifest";
 
 
 
@@ -126,7 +126,7 @@ export const getDefaultCommandEmbed = (authorName: string, avatarURL?: string | 
       .setAuthor(authorName, avatarURL || undefined);
 }
 
-export const fieldFromBackup = (backup: BackupMetadata) => {
+export const fieldFromBackup = (backup: ManualBackupMetadata) => {
   const e = backup;
   const dateFormat = Lang.getDateOrTimeFormat("longDate");
   const timeFormat = Lang.getDateOrTimeFormat("time");
