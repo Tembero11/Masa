@@ -11,6 +11,7 @@ import EnvCheck from "./classes/server/EnvCheck";
 import pjson from "../package.json";
 import { serverInstallerPrompt } from "./serverInstallerPrompt";
 import { getBorderCharacters, table } from "table";
+import openHTTP from "./api/openServer";
 
 inquirer.registerPrompt("autocomplete", inquirerAutocompletePrompt);
 
@@ -100,6 +101,8 @@ const setup = async () => {
     console.log(serverTable.trim());
 
     await ServerHandler.serverInitializer(serverMetaList);
+
+    openHTTP({ log: true })
 
     return true;
 }
