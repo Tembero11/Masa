@@ -4,6 +4,7 @@ import { WebSocketServer } from "ws";
 
 import serverListRouter from "./serverList";
 import playerListRouter from "./playerList";
+import serverInfoRouter from "./serverInfo";
 import { ServerHandler } from "../serverHandler";
 
 /**
@@ -71,6 +72,7 @@ export function openRoutes() {
     });
     app.use("/api/v1", serverListRouter);
     app.use("/api/v1", playerListRouter);
+    app.use("/api/v1", serverInfoRouter);
 
 
     app.disable("x-powered-by")
