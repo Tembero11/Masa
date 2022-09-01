@@ -5,12 +5,14 @@ import { WebSocketServer } from "ws";
 import serverListRouter from "./serverList";
 import playerListRouter from "./playerList";
 import serverInfoRouter from "./serverInfo";
+import statusControlRouter from "./statusControl";
 import { ServerHandler } from "../serverHandler";
 
 /**
  * HTTP Server default port
  */
 const PORT = 55642;
+const API_PREFIX = "/api/v1"
 
 const app = express();
 
@@ -70,9 +72,11 @@ export function openRoutes() {
     app.get("/", (req, res)  => {
         res.send("Hello from Masa. This service is clealy up!");
     });
-    app.use("/api/v1", serverListRouter);
-    app.use("/api/v1", playerListRouter);
-    app.use("/api/v1", serverInfoRouter);
+
+    app.use(API_PREFIX, serverListRouter);
+    app.use(API_PREFIX, playerListRouter);
+    app.use(API_PREFIX, serverInfoRouter);
+    app.use(API_PREFIX, statusControlRouter);
 
 
     app.disable("x-powered-by")
