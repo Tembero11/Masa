@@ -25,6 +25,7 @@ interface WS_Events {
     quit: WS_QuitEvent,
     serverReady: WS_ServerReadyEvent
     serverClose: WS_ServerCloseEvent
+    serverConsole: WS_ServerConsoleEvent
 }
 
 interface WS_BaseEvent {
@@ -43,6 +44,11 @@ interface WS_ServerReadyEvent extends WS_BaseEvent {
     server: ServerTag
 }
 interface WS_ServerCloseEvent extends WS_BaseEvent {
+    server: ServerTag
+}
+
+interface WS_ServerConsoleEvent extends WS_BaseEvent {
+    data: string
     server: ServerTag
 }
 

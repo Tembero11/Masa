@@ -56,6 +56,13 @@ wss.on("connection", function connection(ws) {
                 server: gameServer.tag
             });
         });
+        gameServer.std.on("out", reader => {
+            if (!gameServer.tag) return;
+            sender.sendEvent("serverConsole", {
+                data: reader.data,
+                server: gameServer.tag
+            })
+        });
     });
 });
 
