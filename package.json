@@ -36,6 +36,7 @@
     "ms": "^2.1.2",
     "nanoid": "^3.1.30",
     "ora": "^5.4.1",
+    "pidusage": "^3.0.0",
     "property-string-path": "^1.1.0",
     "table": "^6.8.0",
     "tar": "^6.1.11",

@@ -7,6 +7,7 @@ import playerListRouter from "./playerList";
 import serverInfoRouter from "./serverInfo";
 import statusControlRouter from "./statusControl";
 import { ServerHandler } from "../serverHandler";
+import { WS_EventSender } from "./events";
 
 /**
  * HTTP Server default port
@@ -26,32 +27,34 @@ wss.on("connection", function connection(ws) {
         console.log("received: %s", data);
     });
 
+    const sender = new WS_EventSender(ws);
+
     ServerHandler.servers.forEach(gameServer => {
-        gameServer.on("join", (event) => {
-            ws.send(JSON.stringify({
-                username: event.player.username,
-                server: gameServer.tag,
-                eventType: "join"
-            }))
+        gameServer.on("join", async(event) => {
+            if (!gameServer.tag) return;
+            sender.sendEvent("join", {
+                player: await sender.createSocketPlayer(event.player),
+                server: gameServer.tag
+            });
         });
-        gameServer.on("quit", (event) => {
-            ws.send(JSON.stringify({
-                username: event.player.username,
-                server: gameServer.tag,
-                eventType: "quit"
-            }))
+        gameServer.on("quit", async(event) => {
+            if (!gameServer.tag) return;
+            sender.sendEvent("quit", {
+                player: await sender.createSocketPlayer(event.player),
+                server: gameServer.tag
+            });
         });
         gameServer.on("ready", (event) => {
-            ws.send(JSON.stringify({
-                server: gameServer.tag,
-                eventType: "serverReady"
-            }))
+            if (!gameServer.tag) return;
+            sender.sendEvent("serverReady", {
+                server: gameServer.tag
+            });
         });
         gameServer.on("close", (event) => {
-            ws.send(JSON.stringify({
-                server: gameServer.tag,
-                eventType: "serverClose"
-            }))
+            if (!gameServer.tag) return;
+            sender.sendEvent("serverClose", {
+                server: gameServer.tag
+            });
         });
     });
 });
