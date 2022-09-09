@@ -6,6 +6,7 @@ import serverListRouter from "./serverList";
 import playerListRouter from "./playerList";
 import serverInfoRouter from "./serverInfo";
 import statusControlRouter from "./statusControl";
+import receiveCommandRouter from "./receiveCommand";
 import { ServerHandler } from "../serverHandler";
 import { WS_EventSender } from "./events";
 
@@ -87,7 +88,7 @@ export function openRoutes() {
     app.use(API_PREFIX, playerListRouter);
     app.use(API_PREFIX, serverInfoRouter);
     app.use(API_PREFIX, statusControlRouter);
-
+    app.use(API_PREFIX, receiveCommandRouter);
 
     app.disable("x-powered-by")
 }
