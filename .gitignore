@@ -1,9 +1,7 @@
 node_modules
 test
+dist
 logs
 /server
-backups
-user_backups
 package-lock.json
-config.yml
 config

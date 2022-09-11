@@ -2,12 +2,11 @@
   "name": "masa",
   "version": "0.0.1",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "dev": "nodemon index.ts",
-    "start": "ts-node index.ts"
+    "start": "ts-node src/index.ts"
   },
-  "author": "Tembero",
+  "author": "Tembero11",
   "license": "MIT",
   "engines": {
     "node": ">=16.6.0"
@@ -15,12 +14,10 @@
   "dependencies": {
     "@discordjs/builders": "^0.6.0",
     "@discordjs/rest": "^0.1.0-canary.0",
-    "@types/ws": "^8.5.3",
     "adm-zip": "^0.5.9",
     "axios": "^0.21.4",
     "chalk": "^4.1.2",
     "chokidar": "^3.5.2",
-    "cli-spinners": "^2.6.1",
     "date-and-time": "^2.0.1",
     "discord-api-types": "^0.23.1",
     "discord.js": "^13.1.0",
@@ -31,15 +28,13 @@
     "glob": "^7.2.0",
     "inquirer": "^8.1.2",
     "inquirer-autocomplete-prompt": "^1.4.0",
-    "js-yaml": "^4.1.0",
     "lookpath": "^1.2.2",
     "ms": "^2.1.2",
     "nanoid": "^3.1.30",
-    "ora": "^5.4.1",
     "property-string-path": "^1.1.0",
     "table": "^6.8.0",
     "tar": "^6.1.11",
-    "ts-deepmerge": "^1.1.0",
+    "ts-deepmerge": "^3.0.0",
     "ws": "^8.8.1"
   },
   "devDependencies": {
@@ -51,10 +46,10 @@
     "@types/glob": "^7.2.0",
     "@types/inquirer": "^8.1.1",
     "@types/inquirer-autocomplete-prompt": "^1.3.3",
-    "@types/js-yaml": "^4.0.3",
     "@types/ms": "^0.7.31",
     "@types/node": "^16.7.8",
     "@types/tar": "^6.1.2",
+    "@types/ws": "^8.5.3",
     "@types/yawn-yaml": "^1.4.0",
     "ts-node": "^10.1.0",
     "typescript": "^4.3.5"
