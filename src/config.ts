@@ -47,11 +47,12 @@ export interface RawServerMetadata {
     }
   }
 }
-export type ServerMetadata = { tag: string, directory: string } & RawServerMetadata;
+export type ServerMetadata = { tag: string, directory: string, shouldTriggerRCONReset?: boolean } & RawServerMetadata;
 
 export interface ServerListEntry {
   dir: string
   tag: string
+  shouldTriggerRCONReset?: boolean
   /**
    * Replaces the default masa.json file name with this value
    */

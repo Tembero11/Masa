@@ -5,8 +5,9 @@ export interface CommunicatorEvent {
     join: PlayerJoinEvent,
     login: PlayerLoginEvent,
     quit: PlayerQuitEvent,
-    ready: GameReadyEvent
-    save: GameSaveEvent
+    ready: GameReadyEvent,
+    rconReady: RconReadyEvent,
+    save: GameSaveEvent,
     autosaveOff: AutosaveOffEvent,
     autosaveOn: AutosaveOnEvent,
     close: GameCloseEvent,
@@ -35,6 +36,10 @@ export enum EventType {
      * Called when the game fully loads and is joinable.
      */
     GameReadyEvent = "ready",
+    /**
+     * Called when the rcon server is ready
+     */
+    RconReadyEvent = "rconReady",
     /**
      * Called when the game closes
      */
@@ -117,6 +122,14 @@ export class PlayerQuitEvent extends Event {
 export class GameReadyEvent extends Event {
     readonly date: Date;
     readonly type = EventType.GameReadyEvent;
+    constructor(date: Date) {
+        super();
+        this.date = date;
+    }
+}
+export class RconReadyEvent extends Event {
+    readonly date: Date;
+    readonly type = EventType.RconReadyEvent;
     constructor(date: Date) {
         super();
         this.date = date;

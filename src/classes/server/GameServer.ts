@@ -3,6 +3,10 @@ import assert from "assert";
 import ServerCommunicator from "./ServerCommunicator";
 import { NoStandardStreamsError } from "../Errors";
 import { ServerMetadata } from "../../config";
+import { nanoid } from "nanoid";
+import PropertiesManager from "../PropertiesManager";
+import path from "path";
+import RCON from 'rcon-srcds';
 
 export default class GameServer extends ServerCommunicator {
   private command;
@@ -14,9 +18,10 @@ export default class GameServer extends ServerCommunicator {
     return this.metadata?.name;
   }
   get tag() {
-    return this.metadata?.tag;
+    return this.metadata?.tag || this._tag as string;
   }
 
+  private readonly _tag?: string;
   public readonly metadata;
 
   get pid(): number | undefined {
@@ -31,10 +36,41 @@ export default class GameServer extends ServerCommunicator {
   constructor(command: string, directory: string, metadata?: ServerMetadata) {
     super(null, null, null);
 
-    this.metadata = metadata;
+    if (metadata) {
+      this.metadata = metadata;
+    }else {
+      this._tag = GameServer.generateId();
+    }
 
     this.command = command;
     this.dir = directory;
+
+    const properties = new PropertiesManager(path.join(this.dir, "server.properties"));
+
+    if (this.metadata?.shouldTriggerRCONReset) {
+      properties.set("enable-rcon", "true");
+      properties.set("rcon.password", nanoid(25));
+      properties.set("rcon.port", "25565");
+      properties.set("broadcast-rcon-to-ops", "false");
+      properties.writeSync();
+    }
+    if (properties.get("enable-rcon") == "true") {
+      const password = properties.get("rcon.password") || "";
+
+      const rcon = new RCON({ host: "127.0.0.1", port: parseInt(properties.get("rcon.port") || "") });
+      this.on("rconReady", async e => {
+        try {
+          await rcon.authenticate(password);
+        }catch(err) {
+          console.error(err);
+          console.log("RCON connection failed.");
+        }
+      });
+    }
+  }
+
+  static generateId() {
+    return nanoid(9);
   }
   
 
