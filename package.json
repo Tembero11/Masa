@@ -32,6 +32,7 @@
     "ms": "^2.1.2",
     "nanoid": "^3.1.30",
     "property-string-path": "^1.1.0",
+    "rcon-srcds": "^2.0.1",
     "table": "^6.8.0",
     "tar": "^6.1.11",
     "ts-deepmerge": "^3.0.0",
