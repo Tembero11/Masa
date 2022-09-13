@@ -74,7 +74,6 @@ const setup = async () => {
                 ...rawMeta,
                 tag: serverEntry.tag,
                 directory: serverEntry.dir,
-                shouldTriggerRCONReset: serverEntry.shouldTriggerRCONReset
             }
             serverMetaList.push(meta);
         }catch(err) {
@@ -107,8 +106,8 @@ const setup = async () => {
     console.log(serverTable.trim());
 
     await ServerHandler.serverInitializer(serverMetaList);
-
-    openHTTP({ log: true })
+    
+    // openHTTP({ log: true })
 
     return true;
 }

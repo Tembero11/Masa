@@ -52,7 +52,6 @@ export type ServerMetadata = { tag: string, directory: string, shouldTriggerRCON
 export interface ServerListEntry {
   dir: string
   tag: string
-  shouldTriggerRCONReset?: boolean
   /**
    * Replaces the default masa.json file name with this value
    */
