@@ -1,6 +1,6 @@
 import assert from "assert";
 import { NoPlayerError } from "./Errors";
-import Event, { AutosaveOffEvent, AutosaveOnEvent, PlayerChatEvent, GameReadyEvent, EventType, GameSaveEvent, PlayerJoinEvent, PlayerQuitEvent, UnknownEvent, PlayerLoginEvent } from "./Event";
+import Event, { AutosaveOffEvent, AutosaveOnEvent, PlayerChatEvent, GameReadyEvent, EventType, GameSaveEvent, PlayerJoinEvent, PlayerQuitEvent, UnknownEvent, PlayerLoginEvent, RconReadyEvent } from "./Event";
 import Player from "./Player";
 import ServerCommunicator from "./server/ServerCommunicator";
 
@@ -49,6 +49,8 @@ export default class ConsoleReader {
                 return new PlayerLoginEvent(this.date, this.getLoggedInPlayer());
             }else if (this.isJoinEvent) {
                 return new PlayerJoinEvent(this.date, this.getJoinedPlayer());
+            }else if (this.isRconReadyEvent) {
+                return new RconReadyEvent(this.date);
             }
         }else if (this.isDoneMessage) {
             return new GameReadyEvent(this.date);
@@ -228,6 +230,10 @@ export default class ConsoleReader {
 
     get isDoneMessage() { 
         return !this.isChatMessage && this.data.search(/Done \(.{1,}\)\!/) > -1;
+    }
+
+    get isRconReadyEvent() {
+        return !this.isChatMessage && this.data.search(/RCON running on .{3,}/) > -1;
     }
 
     /**

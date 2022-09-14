@@ -12,6 +12,7 @@ import pjson from "../package.json";
 import { serverInstallerPrompt } from "./serverInstallerPrompt";
 import { getBorderCharacters, table } from "table";
 import openHTTP from "./api/openServer";
+import PropertiesManager from "./classes/PropertiesManager";
 
 inquirer.registerPrompt("autocomplete", inquirerAutocompletePrompt);
 
@@ -69,7 +70,11 @@ const setup = async () => {
         try {
             let rawMeta = await readServerMetadata(serverEntry.dir);
 
-            let meta: ServerMetadata = {...rawMeta, tag: serverEntry.tag, directory: serverEntry.dir}
+            let meta: ServerMetadata = {
+                ...rawMeta,
+                tag: serverEntry.tag,
+                directory: serverEntry.dir,
+            }
             serverMetaList.push(meta);
         }catch(err) {
             console.log(chalk.yellow`WARNING: Server "${serverEntry.tag}" in directory "${serverEntry.dir}" has an invalid configuration and could not be loaded.`);
@@ -101,8 +106,8 @@ const setup = async () => {
     console.log(serverTable.trim());
 
     await ServerHandler.serverInitializer(serverMetaList);
-
-    openHTTP({ log: true })
+    
+    // openHTTP({ log: true })
 
     return true;
 }

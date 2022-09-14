@@ -2,7 +2,16 @@ import { ChildProcessWithoutNullStreams, spawn } from "child_process";
 import assert from "assert";
 import ServerCommunicator from "./ServerCommunicator";
 import { NoStandardStreamsError } from "../Errors";
-import { ServerMetadata } from "../../config";
+import { nanoid } from "nanoid";
+import PropertiesManager from "../PropertiesManager";
+import path from "path";
+import RCON from 'rcon-srcds';
+
+interface Options {
+  enableRCON?: boolean
+  name?: string
+  tag?: string
+}
 
 export default class GameServer extends ServerCommunicator {
   private command;
@@ -11,30 +20,86 @@ export default class GameServer extends ServerCommunicator {
 
 
   get name() {
-    return this.metadata?.name;
+    return this.options?.name;
   }
   get tag() {
-    return this.metadata?.tag;
+    return this.options?.tag || this._tag as string;
   }
 
-  public readonly metadata;
+  private readonly _tag?: string;
+  public readonly options;
 
   get pid(): number | undefined {
     return this.serverProcess?.pid;
   }
+
+  rcon: GameServerRCON | undefined;
 
   /**
    * 
    * @param command 
    * @param directory The directory in which the command is run
    */
-  constructor(command: string, directory: string, metadata?: ServerMetadata) {
+  constructor(command: string, directory: string, options?: Options) {
     super(null, null, null);
 
-    this.metadata = metadata;
+    if (options) {
+      if (options.enableRCON === undefined) options.enableRCON = true;
+      this.options = options;
+    }else {
+      this._tag = GameServer.generateTag();
+    }
 
     this.command = command;
     this.dir = directory;
+
+    const properties = new PropertiesManager(path.join(this.dir, "server.properties"));
+
+    properties.set("enable-rcon", "true");
+
+    let rconPass = properties.get("rcon.password");
+    if (!rconPass) {
+      rconPass = nanoid(25);
+      properties.set("rcon.password", rconPass);
+    }
+
+    let rconPort = properties.get("rcon.port");
+    if (!rconPort) {
+      rconPort = "27565";
+      properties.set("rcon.port", rconPort);
+    }
+
+    properties.writeSync();
+
+    this.rcon = new GameServerRCON(this, "127.0.0.1", parseInt(rconPort), rconPass);
+
+    this.on("rconReady", async e => {
+      if (await this.rcon!.establishConnection()) {
+        console.log(`RCON successfully connected on server ${this.tag}`);
+      } else {
+        console.log(`RCON connection failed on server ${this.tag}`);
+      }
+    });
+  }
+
+  /**
+   * Sends a command to the game through RCON if available. Defaults to sending through stdin.
+   * @param gameCommand {A string containing a gameCommand with or without a slash}
+   */
+  sendGameCommand(gameCommand: string) {
+    if (!this.hasStreams) return;
+
+    if (gameCommand.startsWith("/")) gameCommand = gameCommand.substring(1);
+
+    if (this.rcon?.isConnected) {
+      this.rcon.sendGameCommand(gameCommand);
+    }else {
+      this.std.emit("in", gameCommand + "\n");
+    }
+  }
+
+  static generateTag() {
+    return nanoid(9);
   }
   
 
@@ -121,13 +186,43 @@ export default class GameServer extends ServerCommunicator {
   }
 }
 
-// class GameServerChildProcess {
-//   stdout: Writable;
-//   constructor(stdin: stream.Writable, stdout: stream.Readable, stderr: stream.Readable) {
-//     this.stdout = new Writable();
-//     this.stdout._write = () => {
-//       if (!serverProcess) return "";
-//       return serverProcess.stdout.read(size);
-//     }
-//   }
-// }
+class GameServerRCON {
+  gameServer: GameServer;
+  private host: string;
+  private port: number;
+  private password: string;
+
+  
+  get isConnected(): boolean {
+    return this.rawRcon?.isAuthenticated() || false;
+  }
+  
+
+  protected rawRcon: RCON | undefined;
+
+  constructor(gameServer: GameServer, host: string, port: number, password: string) {
+    this.gameServer = gameServer;
+    this.host = host;
+    this.port = port;
+    this.password = password;
+  }
+
+  async establishConnection(): Promise<boolean> {
+    assert(!this.isConnected, "establishConnection got called when RCON is already connected!");
+
+    this.rawRcon = new RCON({ host: this.host, port: this.port });
+
+    try {
+      await this.rawRcon.authenticate(this.password);
+      return true;
+    } catch (err) {
+      return false;
+    }
+  }
+
+  async sendGameCommand(gameCommand: string) {
+    assert(this.isConnected, "RCON is not connected!");
+
+    return await this.rawRcon!.execute(gameCommand);
+  }
+}

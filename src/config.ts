@@ -47,7 +47,7 @@ export interface RawServerMetadata {
     }
   }
 }
-export type ServerMetadata = { tag: string, directory: string } & RawServerMetadata;
+export type ServerMetadata = { tag: string, directory: string, shouldTriggerRCONReset?: boolean } & RawServerMetadata;
 
 export interface ServerListEntry {
   dir: string

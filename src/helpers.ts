@@ -1,5 +1,5 @@
 import {  ActivityType, MessageActionRow, MessageEmbed, PresenceStatusData } from "discord.js";
-import { client, config } from "../index";
+import { client, config } from "./index";
 import { nanoid } from "nanoid";
 import { Presence } from "./serverHandler";
 import { GameServer } from "./classes/MasaAPI";

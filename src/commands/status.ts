@@ -3,7 +3,7 @@ import { CommandInteraction, MessageEmbed } from "discord.js";
 import { getDefaultCommandEmbed } from "../helpers";
 import Command, { RegisteredCommand } from "./general";
 import {ServerHandler} from "../serverHandler";
-import { config } from "../../index";
+import { config } from "../index";
 import Lang from "../classes/Lang";
 import path from "path";
 import { PermissionScope } from "../classes/PermissionManager";
