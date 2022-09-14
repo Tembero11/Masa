@@ -51,6 +51,12 @@ export abstract class ServerHandler {
   static idToName(id: string) {
     return ServerHandler.ids.get(id);
   }
+
+  static deleteServerFromMemory(id: string, name: string) {
+    ServerHandler.ids.delete(id);
+    return ServerHandler.serversMap.delete(name);
+  }
+
   static start = async (serverName: string) => {
     let server = ServerHandler.serversMap.get(serverName);
     assert(server);
@@ -77,128 +83,135 @@ export abstract class ServerHandler {
     return await server.waitfor("ready");
   }
 
+  static async setupServer(meta: ServerMetadata) {
+    assert(!ServerHandler.serversMap.get(meta.name), "One or more servers have the same name!");
 
-  static serverInitializer = async(serverMeta: ServerMetadata[]) => {
-    for (const meta of serverMeta) {
-      assert(!ServerHandler.serversMap.get(meta.name), "One or more servers have the same name!");
+    if (ServerHandler.getServerById(meta.tag)) {
+      ServerHandler.deleteServerFromMemory(meta.tag, meta.name);
+    }
 
-      let server = new GameServer(meta.command, meta.directory, { disableRCON: false, metadata: meta });
+    let server = new GameServer(meta.command, meta.directory, { disableRCON: false, metadata: meta });
 
-      setServerStatus(meta.name, server, Presence.SERVER_OFFLINE);
+    setServerStatus(meta.name, server, Presence.SERVER_OFFLINE);
 
 
-      server.on("join", (e) => {
-        if (meta.advanced?.welcomeMsg) {
-          let msg = meta.advanced.welcomeMsg;
-          msg = msg.replaceAll("{PLAYER}", e.player.username);
-          msg = msg.replaceAll("{ONLINE}", e.player.server.playerCount.toString());
-          e.player.sendMessage(msg);
-        }
-        setServerStatus(meta.name, server, Presence.SERVER_ONLINE);
-      });
-      server.on("quit", (e) => {
-        setServerStatus(meta.name, server, Presence.SERVER_ONLINE);
-      });
-
-      server.on("ready", () => {
-        setServerStatus(meta.name, server, Presence.SERVER_ONLINE);
-      });
-
-      if (meta.logs) {
-        console.log(`Logs are enabled on "${chalk.underline(meta.name)}"`)
-        server.std.on("out", (reader) => {
-          process.stdout.write(reader.data);
-        });
+    server.on("join", (e) => {
+      if (meta.advanced?.welcomeMsg) {
+        let msg = meta.advanced.welcomeMsg;
+        msg = msg.replaceAll("{PLAYER}", e.player.username);
+        msg = msg.replaceAll("{ONLINE}", e.player.server.playerCount.toString());
+        e.player.sendMessage(msg);
       }
+      setServerStatus(meta.name, server, Presence.SERVER_ONLINE);
+    });
+    server.on("quit", (e) => {
+      setServerStatus(meta.name, server, Presence.SERVER_ONLINE);
+    });
 
-      server.on("close", e => setServerStatus(meta.name, server, Presence.SERVER_OFFLINE));
+    server.on("ready", () => {
+      setServerStatus(meta.name, server, Presence.SERVER_ONLINE);
+    });
+
+    if (meta.logs) {
+      console.log(`Logs are enabled on "${chalk.underline(meta.name)}"`)
+      server.std.on("out", (reader) => {
+        process.stdout.write(reader.data);
+      });
+    }
+
+    server.on("close", e => setServerStatus(meta.name, server, Presence.SERVER_OFFLINE));
 
 
-      if (meta.advanced?.chat?.channels) {
-        const { sendPlayerNetworkEvents, sendServerReadyEvent, allowDuplex } = meta.advanced.chat;
-        const channels = toArrayIfNot(meta.advanced.chat.channels);
-        if (client.user) {
-          setupChatStreaming(
-            server,
-            meta.name,
-            channels,
-            sendPlayerNetworkEvents,
-            sendServerReadyEvent,
-            allowDuplex
-          );
-        }else {
-          client.once("ready", _ => setupChatStreaming(
-            server,
-            meta.name,
-            channels,
-            sendPlayerNetworkEvents,
-            sendServerReadyEvent,
-            allowDuplex
-          ));
-        }
-      }else {
-        console.log("Chat streaming is disabled!");
+    if (meta.advanced?.chat?.channels) {
+      const { sendPlayerNetworkEvents, sendServerReadyEvent, allowDuplex } = meta.advanced.chat;
+      const channels = toArrayIfNot(meta.advanced.chat.channels);
+      if (client.user) {
+        setupChatStreaming(
+          server,
+          meta.name,
+          channels,
+          sendPlayerNetworkEvents,
+          sendServerReadyEvent,
+          allowDuplex
+        );
+      } else {
+        client.once("ready", _ => setupChatStreaming(
+          server,
+          meta.name,
+          channels,
+          sendPlayerNetworkEvents,
+          sendServerReadyEvent,
+          allowDuplex
+        ));
       }
+    } else {
+      console.log("Chat streaming is disabled!");
+    }
 
-      // TESTING
-      // const manager = new GameServerBackupManager(server, path.join(server.dir, "backups"), { compression: "gzip" });
-      // manager.createBackupDir().then(created => {
-      //   console.log(manager.manifest.getLatestManual())
-      //   // manager.manifest.getByProperty("name", "gzip")[0]
-      //   // console.log(manager.manifest.getByProperty("name", "df"))
-      //   // manager.revertBackup("Efz8X0oXu")
-      //   manager.createBackup({
-      //     name: "testi",
-      //     desc: "village",
-      //     author: "blablabla tembero"
-      //   }).then(e => {
-      //     console.log("Backup created!!!!!!!" + e.id);
-      //     // manager.deleteBackup(e.id).then(v => {
-      //     //   console.log(e.id + " Deleted")
-      //     // });
-      //     // manager.extractBackup(e.id, path.join(process.cwd(), "test"))
-      //   })
-      // });
-      // Setup backups
-      if (meta.backups) {
-        const { backupInterval, backupLimit } = meta.backups;
+    // TESTING
+    // const manager = new GameServerBackupManager(server, path.join(server.dir, "backups"), { compression: "gzip" });
+    // manager.createBackupDir().then(created => {
+    //   console.log(manager.manifest.getLatestManual())
+    //   // manager.manifest.getByProperty("name", "gzip")[0]
+    //   // console.log(manager.manifest.getByProperty("name", "df"))
+    //   // manager.revertBackup("Efz8X0oXu")
+    //   manager.createBackup({
+    //     name: "testi",
+    //     desc: "village",
+    //     author: "blablabla tembero"
+    //   }).then(e => {
+    //     console.log("Backup created!!!!!!!" + e.id);
+    //     // manager.deleteBackup(e.id).then(v => {
+    //     //   console.log(e.id + " Deleted")
+    //     // });
+    //     // manager.extractBackup(e.id, path.join(process.cwd(), "test"))
+    //   })
+    // });
+    // Setup backups
+    if (meta.backups) {
+      const { backupInterval, backupLimit } = meta.backups;
 
-        let backupIntervalMs = typeof backupInterval == "string" ? ms(backupInterval) : backupInterval;
+      let backupIntervalMs = typeof backupInterval == "string" ? ms(backupInterval) : backupInterval;
 
-        assert(backupInterval && backupLimit);
+      assert(backupInterval && backupLimit);
 
-        console.log(`Automatic backups are made every ${ms(backupIntervalMs, { long: true })} for server "${chalk.underline(meta.name)}".`);
+      console.log(`Automatic backups are made every ${ms(backupIntervalMs, { long: true })} for server "${chalk.underline(meta.name)}".`);
 
-        const backupPath = path.join(server.dir, "backups");
+      const backupPath = path.join(server.dir, "backups");
 
-        const manager = new GameServerBackupManager(server, backupPath);
+      const manager = new GameServerBackupManager(server, backupPath);
 
-        await manager.createBackupDir()
+      await manager.createBackupDir()
 
-        setInterval(async() => {
-          if (manager.manifest.backupCount >= backupLimit) {
-            const backupMeta = manager.manifest.getOldestAutomatic();
-            if (backupMeta) {
-              await manager.deleteBackup(backupMeta.id);
-            }
+      setInterval(async () => {
+        if (manager.manifest.backupCount >= backupLimit) {
+          const backupMeta = manager.manifest.getOldestAutomatic();
+          if (backupMeta) {
+            await manager.deleteBackup(backupMeta.id);
           }
-          await manager.prepareForBackup();
-          const backup = await manager.createBackup();
-          await manager.afterBackup();
-          console.log(`An automatic backup was succesfully created! ${manager.getFilename(backup.id)}`);
-        }, backupIntervalMs);
-      }else {
-        console.warn(chalk.yellow(`Automatic backups are ${chalk.bold("disabled")} for server "${chalk.underline(meta.name)}".`))
-      }
+        }
+        await manager.prepareForBackup();
+        const backup = await manager.createBackup();
+        await manager.afterBackup();
+        console.log(`An automatic backup was succesfully created! ${manager.getFilename(backup.id)}`);
+      }, backupIntervalMs);
+    } else {
+      console.warn(chalk.yellow(`Automatic backups are ${chalk.bold("disabled")} for server "${chalk.underline(meta.name)}".`))
+    }
 
 
-      ServerHandler.serversMap.set(meta.name, server);
-      ServerHandler.ids.set(meta.tag, meta.name);
+    ServerHandler.serversMap.set(meta.name, server);
+    ServerHandler.ids.set(meta.tag, meta.name);
+  }
+
+  static serverInitializer = async (serverMeta: ServerMetadata[]) => {
+    for (const meta of serverMeta) {
+      ServerHandler.setupServer(meta);
     }
   }
 }
 
-const setupChatStreaming = async(
+const setupChatStreaming = async (
   server: GameServer,
   serverName: string,
   channelIds: string[],
@@ -265,7 +278,7 @@ const setupChatStreaming = async(
           SERVER_NAME: serverName,
         }));
 
-        msg.channel.send({embeds: [embed]});
+        msg.channel.send({ embeds: [embed] });
       }
     });
   }

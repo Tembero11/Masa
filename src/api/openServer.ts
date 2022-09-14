@@ -5,6 +5,7 @@ import { WebSocketServer } from "ws";
 import serverListRouter from "./serverList";
 import playerListRouter from "./playerList";
 import serverInfoRouter from "./serverInfo";
+import changeServerNameRouter from "./changeServerName"
 import statusControlRouter from "./statusControl";
 import receiveCommandRouter from "./receiveCommand";
 import { ServerHandler } from "../serverHandler";
@@ -35,33 +36,38 @@ wss.on("connection", function connection(ws) {
             if (!gameServer.tag) return;
             sender.sendEvent("join", {
                 player: await sender.createSocketPlayer(event.player),
-                server: gameServer.tag
+                server: gameServer.tag,
+                isoDate: sender.ISOFromGameEvent(event)
             });
         });
         gameServer.on("quit", async(event) => {
             if (!gameServer.tag) return;
             sender.sendEvent("quit", {
                 player: await sender.createSocketPlayer(event.player),
-                server: gameServer.tag
+                server: gameServer.tag,
+                isoDate: sender.ISOFromGameEvent(event)
             });
         });
         gameServer.on("ready", (event) => {
             if (!gameServer.tag) return;
             sender.sendEvent("serverReady", {
-                server: gameServer.tag
+                server: gameServer.tag,
+                isoDate: sender.ISOFromGameEvent(event)
             });
         });
         gameServer.on("close", (event) => {
             if (!gameServer.tag) return;
             sender.sendEvent("serverClose", {
-                server: gameServer.tag
+                server: gameServer.tag,
+                isoDate: sender.ISOFromGameEvent(event)
             });
         });
         gameServer.std.on("out", reader => {
             if (!gameServer.tag) return;
             sender.sendEvent("serverConsole", {
                 data: reader.data,
-                server: gameServer.tag
+                server: gameServer.tag,
+                isoDate: reader.date.toISOString(),
             })
         });
         gameServer.on("chat", async event => {
@@ -69,7 +75,8 @@ wss.on("connection", function connection(ws) {
             sender.sendEvent("chat", {
                 server: gameServer.tag,
                 player: await sender.createSocketPlayer(event.player),
-                data: event.message
+                data: event.message,
+                isoDate: sender.ISOFromGameEvent(event)
             });
         });
     });
@@ -97,6 +104,7 @@ export function openRoutes() {
     app.use(API_PREFIX, serverInfoRouter);
     app.use(API_PREFIX, statusControlRouter);
     app.use(API_PREFIX, receiveCommandRouter);
+    app.use(API_PREFIX, changeServerNameRouter);
 
     app.disable("x-powered-by")
 }

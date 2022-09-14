@@ -22,7 +22,7 @@ export default class ConsoleReader {
     /**
      * The Date when the instance was made
      */
-    private date: Date;
+    date: Date;
 
     private isServerJoinable = false;
     readonly players;

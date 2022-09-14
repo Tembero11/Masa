@@ -1,4 +1,5 @@
 import WebSocket from "ws";
+import Event from "../classes/Event";
 import Player from "../classes/Player";
 
 export class WS_EventSender {
@@ -13,10 +14,18 @@ export class WS_EventSender {
         }));
     }
     async createSocketPlayer(player: Player): Promise<WS_EventPlayer> {
+        let uuid;
+        try {
+            uuid = await player.getUUID();
+        } catch (err) {}
         return {
             username: player.username,
-            uuid: await player.getUUID()
+            uuid
         }
+    }
+
+    ISOFromGameEvent(event: Event): string {
+        return event.date.toISOString();
     }
 }
 
@@ -30,7 +39,7 @@ interface WS_Events {
 }
 
 interface WS_BaseEvent {
-
+    isoDate: string
 }
 
 interface WS_JoinEvent extends WS_BaseEvent {
@@ -62,5 +71,5 @@ type ServerTag = string;
 
 interface WS_EventPlayer {
     username: string
-    uuid: string
+    uuid?: string
 }
