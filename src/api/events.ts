@@ -73,3 +73,9 @@ interface WS_EventPlayer {
     username: string
     uuid?: string
 }
+
+interface HTTP_BaseResponse {
+    msg: string
+    success: boolean
+    code: number
+}
