@@ -107,7 +107,7 @@ const setup = async () => {
 
     await ServerHandler.serverInitializer(serverMetaList);
     
-    // openHTTP({ log: true })
+    openHTTP({ log: true })
 
     return true;
 }

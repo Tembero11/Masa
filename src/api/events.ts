@@ -23,6 +23,7 @@ export class WS_EventSender {
 interface WS_Events {
     join: WS_JoinEvent,
     quit: WS_QuitEvent,
+    chat: WS_ChatEvent,
     serverReady: WS_ServerReadyEvent
     serverClose: WS_ServerCloseEvent
     serverConsole: WS_ServerConsoleEvent
@@ -38,6 +39,11 @@ interface WS_JoinEvent extends WS_BaseEvent {
 }
 interface WS_QuitEvent extends WS_BaseEvent {
     player: WS_EventPlayer
+    server: ServerTag
+}
+interface WS_ChatEvent extends WS_BaseEvent {
+    player: WS_EventPlayer
+    data: string
     server: ServerTag
 }
 interface WS_ServerReadyEvent extends WS_BaseEvent {

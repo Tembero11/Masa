@@ -64,6 +64,14 @@ wss.on("connection", function connection(ws) {
                 server: gameServer.tag
             })
         });
+        gameServer.on("chat", async event => {
+            if (!gameServer.tag) return;
+            sender.sendEvent("chat", {
+                server: gameServer.tag,
+                player: await sender.createSocketPlayer(event.player),
+                data: event.message
+            });
+        });
     });
 });
 

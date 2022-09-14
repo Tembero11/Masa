@@ -82,7 +82,7 @@ export abstract class ServerHandler {
     for (const meta of serverMeta) {
       assert(!ServerHandler.serversMap.get(meta.name), "One or more servers have the same name!");
 
-      let server = new GameServer(meta.command, meta.directory, meta);
+      let server = new GameServer(meta.command, meta.directory, { disableRCON: false, metadata: meta });
 
       setServerStatus(meta.name, server, Presence.SERVER_OFFLINE);
 

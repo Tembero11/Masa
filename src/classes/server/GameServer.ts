@@ -6,11 +6,11 @@ import { nanoid } from "nanoid";
 import PropertiesManager from "../PropertiesManager";
 import path from "path";
 import RCON from 'rcon-srcds';
+import { ServerMetadata } from "../../config";
 
 interface Options {
-  disableRCON?: boolean
-  name?: string
-  tag?: string
+  disableRCON?: boolean,
+  metadata?: ServerMetadata
 }
 
 export default class GameServer extends ServerCommunicator {
@@ -18,12 +18,13 @@ export default class GameServer extends ServerCommunicator {
   readonly dir;
   private serverProcess: ChildProcessWithoutNullStreams | null = null;
 
+  metadata?: ServerMetadata;
 
   get name() {
-    return this.options?.name;
+    return this.options?.metadata?.name;
   }
   get tag() {
-    return this.options?.tag || this._tag as string;
+    return this.options?.metadata?.tag || this._tag as string;
   }
 
   private readonly _tag?: string;
@@ -45,6 +46,7 @@ export default class GameServer extends ServerCommunicator {
 
     if (options) {
       this.options = options;
+      if (this.options.metadata) this.metadata = this.options.metadata;
     }else {
       this._tag = GameServer.generateTag();
     }
@@ -74,6 +76,7 @@ export default class GameServer extends ServerCommunicator {
       this.rcon = new GameServerRCON(this, "127.0.0.1", parseInt(rconPort), rconPass);
 
       this.on("rconReady", async e => {
+        if (this.rcon?.isConnected) return;
         if (await this.rcon!.establishConnection()) {
           console.log(`RCON successfully connected on server ${this.tag}`);
         } else {
