@@ -172,18 +172,6 @@ export default class GameServer extends ServerCommunicator {
 
     return false;
   }
-
-  /**
-   * 
-   * @param gameCommand {A string containing a gameCommand with or without a slash}
-   */
-  sendGameCommand(gameCommand: string) {
-    if (gameCommand.startsWith("/")) gameCommand = gameCommand.substring(1);
-
-    if (this.hasStreams) {
-      this.std.emit("in", gameCommand + "\n");
-    }
-  }
 }
 
 class GameServerRCON {
