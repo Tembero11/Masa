@@ -76,7 +76,7 @@ export default class VanillaInstaller extends Installer {
 
     return new Promise((resolve) => {
       res.data.on("end", async() => {
-        let server = new GameServer(`java -Xmx1024M -Xms1024M -jar ${filename} nogui`, directory);
+        let server = new GameServer(`java -Xmx1024M -Xms1024M -jar ${filename} nogui`, directory, { disableRCON: true });
 
         process.stdout.write("Installing...");
 

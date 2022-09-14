@@ -8,7 +8,7 @@ import path from "path";
 import RCON from 'rcon-srcds';
 
 interface Options {
-  enableRCON?: boolean
+  disableRCON?: boolean
   name?: string
   tag?: string
 }
@@ -44,7 +44,6 @@ export default class GameServer extends ServerCommunicator {
     super(null, null, null);
 
     if (options) {
-      if (options.enableRCON === undefined) options.enableRCON = true;
       this.options = options;
     }else {
       this._tag = GameServer.generateTag();
@@ -53,33 +52,35 @@ export default class GameServer extends ServerCommunicator {
     this.command = command;
     this.dir = directory;
 
-    const properties = new PropertiesManager(path.join(this.dir, "server.properties"));
+    if (!options?.disableRCON) {
+      const properties = new PropertiesManager(path.join(this.dir, "server.properties"));
 
-    properties.set("enable-rcon", "true");
+      properties.set("enable-rcon", "true");
 
-    let rconPass = properties.get("rcon.password");
-    if (!rconPass) {
-      rconPass = nanoid(25);
-      properties.set("rcon.password", rconPass);
-    }
-
-    let rconPort = properties.get("rcon.port");
-    if (!rconPort) {
-      rconPort = "27565";
-      properties.set("rcon.port", rconPort);
-    }
-
-    properties.writeSync();
-
-    this.rcon = new GameServerRCON(this, "127.0.0.1", parseInt(rconPort), rconPass);
-
-    this.on("rconReady", async e => {
-      if (await this.rcon!.establishConnection()) {
-        console.log(`RCON successfully connected on server ${this.tag}`);
-      } else {
-        console.log(`RCON connection failed on server ${this.tag}`);
+      let rconPass = properties.get("rcon.password");
+      if (!rconPass) {
+        rconPass = nanoid(25);
+        properties.set("rcon.password", rconPass);
       }
-    });
+
+      let rconPort = properties.get("rcon.port");
+      if (!rconPort) {
+        rconPort = "27565";
+        properties.set("rcon.port", rconPort);
+      }
+
+      properties.writeSync();
+
+      this.rcon = new GameServerRCON(this, "127.0.0.1", parseInt(rconPort), rconPass);
+
+      this.on("rconReady", async e => {
+        if (await this.rcon!.establishConnection()) {
+          console.log(`RCON successfully connected on server ${this.tag}`);
+        } else {
+          console.log(`RCON connection failed on server ${this.tag}`);
+        }
+      });
+    }
   }
 
   /**
