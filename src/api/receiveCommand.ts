@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { ServerHandler } from "../serverHandler";
 import express from "express";
+import { apiResponse } from "./openServer";
 
 
 const router = Router();
@@ -14,7 +15,7 @@ router.post("/server/send-command", (req, res) => {
 
   const gameServer = ServerHandler.getServerById(server);
 
-  if (!gameServer) return res.status(404).json({code: 404});
+  if (!gameServer) return apiResponse(res, 404);
 
   gameServer.sendGameCommand(command);
 

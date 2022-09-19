@@ -2,6 +2,7 @@ import express, { Router } from "express";
 import { ServerHandler } from "../serverHandler";
 import fs from "fs";
 import { readServerMetadata, writeServerMetadata } from "../config";
+import { apiResponse } from "./openServer";
 
 const router = Router();
 
@@ -9,19 +10,19 @@ router.use(express.json());
 
 router.post("/server/change-name/", async(req, res) => {
     const { server, newName } = req.body;
-    if (!server || !newName) return res.status(400).json({code: 400});
+    if (!server || !newName) return apiResponse(res, 400);
 
     if (typeof newName == "string" && !(newName.length <= 20 && newName.length > 3)) {
-        return res.status(400).json({code: 400});
+        return apiResponse(res, 400);
     }
 
     const gameServer = ServerHandler.getServerById(server);
 
-    if (!gameServer) return res.status(404).json({code: 404});
+    if (!gameServer) return apiResponse(res, 404);
 
-    if (gameServer.hasStreams) return res.status(503).json({code: 503});
+    if (gameServer.hasStreams) return apiResponse(res, 503);
 
-    if (newName === gameServer?.name) return res.status(200).json({code: 200});
+    if (newName === gameServer?.name) return apiResponse(res, 200);
 
     try {
         let meta = await readServerMetadata(gameServer.dir);
@@ -30,8 +31,8 @@ router.post("/server/change-name/", async(req, res) => {
 
         await ServerHandler.setupServer({...meta, tag: gameServer.tag, directory: gameServer.dir});
     } catch (err) {
-        return res.status(500).json({code: 500})
+        return apiResponse(res, 500);
     }
-    res.json({success: true});
+    return apiResponse(res, 200);
 });
 export default router;

@@ -1,5 +1,5 @@
-import express from "express";
-import { createServer } from "http";
+import express, { Request, Response } from "express";
+import http, { createServer } from "http";
 import { WebSocketServer } from "ws";
 
 import serverListRouter from "./serverList";
@@ -8,6 +8,7 @@ import serverInfoRouter from "./serverInfo";
 import changeServerNameRouter from "./changeServerName"
 import statusControlRouter from "./statusControl";
 import receiveCommandRouter from "./receiveCommand";
+import filesRouter from "./files";
 import { ServerHandler } from "../serverHandler";
 import { WS_EventSender } from "./events";
 
@@ -105,6 +106,21 @@ export function openRoutes() {
     app.use(API_PREFIX, statusControlRouter);
     app.use(API_PREFIX, receiveCommandRouter);
     app.use(API_PREFIX, changeServerNameRouter);
+    app.use(API_PREFIX, filesRouter);
 
     app.disable("x-powered-by")
+}
+
+interface ApiResponseOptions {
+    msg?: string
+    [key: string]: any
+}
+
+export function apiResponse(res: Response, code: number, options?: ApiResponseOptions) {
+    res.status(code).json({
+        ...options,
+        code,
+        msg: options?.msg ?? http.STATUS_CODES[code],
+        success: code >= 200 && code < 300,
+    });
 }
