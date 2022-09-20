@@ -52,9 +52,10 @@ export abstract class ServerHandler {
     return ServerHandler.ids.get(id);
   }
 
-  static deleteServerFromMemory(id: string, name: string) {
-    ServerHandler.ids.delete(id);
-    return ServerHandler.serversMap.delete(name);
+  static deleteServerFromMemory(id: string) {
+    const name = ServerHandler.ids.get(id);
+    if (name) ServerHandler.serversMap.delete(name);
+    return ServerHandler.ids.delete(id);
   }
 
   static start = async (serverName: string) => {
@@ -87,7 +88,7 @@ export abstract class ServerHandler {
     assert(!ServerHandler.serversMap.get(meta.name), "One or more servers have the same name!");
 
     if (ServerHandler.getServerById(meta.tag)) {
-      ServerHandler.deleteServerFromMemory(meta.tag, meta.name);
+      ServerHandler.deleteServerFromMemory(meta.tag);
     }
 
     let server = new GameServer(meta.command, meta.directory, { disableRCON: false, metadata: meta });
