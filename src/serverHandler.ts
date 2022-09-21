@@ -1,5 +1,5 @@
 import { setServerStatus, toArrayIfNot } from "./helpers";
-import { GameServer } from "./classes/MasaAPI";
+import GameServer from "./classes/server/GameServer";
 import { ServerMetadata } from "./config";
 import assert from "assert";
 import chalk from "chalk";
@@ -99,8 +99,8 @@ export abstract class ServerHandler {
     server.on("join", (e) => {
       if (meta.advanced?.welcomeMsg) {
         let msg = meta.advanced.welcomeMsg;
-        msg = msg.replaceAll("{PLAYER}", e.player.username);
-        msg = msg.replaceAll("{ONLINE}", e.player.server.playerCount.toString());
+        msg = msg.replaceAll("{PLAYER}", e.player.getUsername());
+        msg = msg.replaceAll("{ONLINE}", e.player.getServer().playerCount.toString());
         e.player.sendMessage(msg);
       }
       setServerStatus(meta.name, server, Presence.SERVER_ONLINE);
@@ -230,18 +230,18 @@ const setupChatStreaming = async (
   }));
 
   server.on("chat", event => {
-    channels.forEach(channel => channel.send(`\`\`\`<${event.player.username}> ${event.message}\`\`\``));
+    channels.forEach(channel => channel.send(`\`\`\`<${event.player.getUsername()}> ${event.message}\`\`\``));
   });
   if (sendPlayerNetworkEvents) {
     server.on("join", event => {
       channels.forEach(channel => channel.send(`${yellowMsgPrefix}${Lang.parse("chat.playerJoined", {
-        PLAYER_NAME: event.player.username,
+        PLAYER_NAME: event.player.getUsername(),
         paramBolding: false
       })}${yellowMsgSuffix}`));
     });
     server.on("quit", event => {
       channels.forEach(channel => channel.send(`${yellowMsgPrefix}${Lang.parse("chat.playerLeft", {
-        PLAYER_NAME: event.player.username,
+        PLAYER_NAME: event.player.getUsername(),
         paramBolding: false
       })}${yellowMsgSuffix}`));
     });

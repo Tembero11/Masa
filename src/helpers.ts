@@ -2,7 +2,7 @@ import {  ActivityType, MessageActionRow, MessageEmbed, PresenceStatusData } fro
 import { client, config } from "./index";
 import { nanoid } from "nanoid";
 import { Presence } from "./serverHandler";
-import { GameServer } from "./classes/MasaAPI";
+import GameServer from "./classes/server/GameServer";
 import assert from "assert";
 import date from "date-and-time";
 import Lang from "./classes/Lang";
@@ -74,7 +74,7 @@ export const setServerStatus = (serverName: string, server: GameServer, status: 
       if (server.playerCount === 1) {
         statusText = Lang.parse("commands.status.serverWithPlayer", {
           SERVER_NAME: serverName,
-          PLAYER_NAME: server.playersArray[0].username,
+          PLAYER_NAME: server.playersArray[0].getUsername(),
           paramBolding: false,
         });
       } else if (server.playerCount > 1) {

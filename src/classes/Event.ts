@@ -1,4 +1,4 @@
-import Player from "./Player";
+import { OnlinePlayer } from "./Player";
 
 export interface CommunicatorEvent {
     event: UnknownEvent,
@@ -88,8 +88,8 @@ export class UnknownEvent extends Event {
 export class PlayerJoinEvent extends Event {
     readonly date: Date;
     readonly type = EventType.PlayerJoinEvent;
-    readonly player: Player;
-    constructor(date: Date, player: Player) {
+    readonly player: OnlinePlayer;
+    constructor(date: Date, player: OnlinePlayer) {
         super();
         this.date = date;
         this.player = player;
@@ -98,8 +98,8 @@ export class PlayerJoinEvent extends Event {
 export class PlayerLoginEvent extends Event {
     readonly date: Date;
     readonly type = EventType.PlayerLoginEvent;
-    readonly player: Player;
-    constructor(date: Date, player: Player) {
+    readonly player: OnlinePlayer;
+    constructor(date: Date, player: OnlinePlayer) {
         super();
         this.date = date;
         this.player = player;
@@ -109,9 +109,9 @@ export class PlayerLoginEvent extends Event {
 export class PlayerQuitEvent extends Event {
     readonly date: Date;
     readonly type = EventType.PlayerQuitEvent;
-    readonly player: Player;
+    readonly player: OnlinePlayer;
     readonly reason: string;
-    constructor(date: Date, player: Player, reason: string) {
+    constructor(date: Date, player: OnlinePlayer, reason: string) {
         super();
         this.date = date;
         this.player = player;
@@ -170,13 +170,13 @@ export class GameCloseEvent extends Event {
         this.date = date;
     }
 }
-// TODO ADD PLAYER & CHAT MESSAGE
+
 export class PlayerChatEvent extends Event {
     readonly date: Date;
     readonly type = EventType.PlayerChatEvent;
     readonly player;
     readonly message;
-    constructor(date: Date, player: Player, message: string) {
+    constructor(date: Date, player: OnlinePlayer, message: string) {
         super();
         this.date = date;
         this.player = player;

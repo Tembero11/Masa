@@ -1,6 +1,6 @@
 import WebSocket from "ws";
 import Event from "../classes/Event";
-import Player from "../classes/Player";
+import { OnlinePlayer, OfflinePlayer } from "../classes/Player";
 
 export class WS_EventSender {
     websocket;
@@ -13,13 +13,13 @@ export class WS_EventSender {
             eventType: type
         }));
     }
-    async createSocketPlayer(player: Player): Promise<WS_EventPlayer> {
+    async createSocketPlayer(player: OnlinePlayer | OfflinePlayer): Promise<WS_EventPlayer> {
         let uuid;
         try {
             uuid = await player.getUUID();
         } catch (err) {}
         return {
-            username: player.username,
+            username: player.getUsername(),
             uuid
         }
     }

@@ -55,7 +55,7 @@ export class StatusCommand extends Command {
         if (server.isJoinable) {
           if (server.players.size > 0) {
             serverBlock.push(Lang.parse("commands.status.playersOnline", {PLAYER_COUNT: server.playerCount}));
-            serverBlock.push(...server.playersArray.map(player => player.username));
+            serverBlock.push(...server.playersArray.map(player => player.getUsername()));
           }else {
             serverBlock.push(Lang.parse("commands.status.noPlayers"));
           }

@@ -1,8 +1,9 @@
 import assert from "assert";
 import { NoPlayerError } from "./Errors";
 import Event, { AutosaveOffEvent, AutosaveOnEvent, PlayerChatEvent, GameReadyEvent, EventType, GameSaveEvent, PlayerJoinEvent, PlayerQuitEvent, UnknownEvent, PlayerLoginEvent, RconReadyEvent } from "./Event";
-import Player from "./Player";
-import ServerCommunicator from "./server/ServerCommunicator";
+import GameServer from "./server/GameServer";
+import { OnlinePlayer } from "./Player";
+import GameLiveConf from "./server/GameLiveConf";
 
 export default class ConsoleReader {
     
@@ -11,7 +12,7 @@ export default class ConsoleReader {
 
     private _isInfo: boolean | undefined;
 
-    public player: Player | undefined;
+    public player: OnlinePlayer | undefined;
 
     private _eventType: EventType | undefined;
 
@@ -26,7 +27,8 @@ export default class ConsoleReader {
 
     private isServerJoinable = false;
     readonly players;
-    readonly server: ServerCommunicator;
+    readonly server: GameServer;
+    readonly liveConf: GameLiveConf;
 
     
     protected usernameRegex = /[A-Za-z0-9_]{3,16}/;
@@ -95,7 +97,7 @@ export default class ConsoleReader {
      * @throws {NoPlayerError} if the event was not `EventType.PlayerQuitEvent` or the player was not found in the players map provided
      * @returns {Player} The player instance that previously joined
      */
-    getQuitPlayer(): Player {
+    getQuitPlayer(): OnlinePlayer {
         if (this.isQuitEvent) {
             let start = 0;
             let end = this.message.indexOf(" ");
@@ -130,7 +132,8 @@ export default class ConsoleReader {
             let start = 0;
             let end = this.message.indexOf("[");
             let playerName = this.message.substring(start, end);
-            let player = new Player(playerName, this.server);
+            // BR1
+            let player = new OnlinePlayer(playerName, this.liveConf, this.server);
             return player;
         }
         throw new NoPlayerError();
@@ -150,7 +153,7 @@ export default class ConsoleReader {
      * @throws {NoPlayerError} if the event was not `EventType.PlayerJoinEvent`
      * @returns {Player} A completely new instance of {Player}
      */
-    getJoinedPlayer(): Player {
+    getJoinedPlayer(): OnlinePlayer {
         if (this.isJoinEvent) {
             let start = 0;
             let end = this.message.indexOf(" ");
@@ -203,7 +206,7 @@ export default class ConsoleReader {
      * @throws {NoPlayerError} if the event was not EventType.ChatEvent
      * @returns {Player} The player that sent the chat
      */
-    getChatSender(): Player {
+    getChatSender(): OnlinePlayer {
         if (this.isChatMessage) {
             const end = this.message.indexOf(">");
             const start = 1;
@@ -251,11 +254,12 @@ export default class ConsoleReader {
         return !this.isChatMessage && (this.message.startsWith("Automatic saving is now enabled") || this.message.startsWith("Saving is already turned on"));
     }
 
-    constructor(data: string, server: ServerCommunicator, isJoinable: boolean, players: Map<string, Player>) {
+    constructor(data: string, server: GameServer, liveConf: GameLiveConf, isJoinable: boolean, players: Readonly<Map<string, OnlinePlayer>>) {
         this.isServerJoinable = isJoinable;
         this.data = data.replace(/\[[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}\] /, "");
         this.date = new Date();
         this.players = players;
         this.server = server;
+        this.liveConf = liveConf;
     }
 }
