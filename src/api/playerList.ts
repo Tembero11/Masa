@@ -1,13 +1,59 @@
 import { Router } from "express";
 import { ServerHandler } from "../serverHandler";
+import { apiResponse } from "./openServer";
 
 const router = Router();
-// TODO
-router.get("/players/:tag", (req, res) => {
-    const players = ServerHandler.getServerById(req.params.tag)?.players;
-    console.log(players)
-    throw new Error("Unimplemented!");
-    
+
+router.get("/players/all/:tag", (req, res) => {
+    const gameServer = ServerHandler.getServerById(req.params.tag);
+
+    if (!gameServer) return apiResponse(res, 404);
+
+    const resBody = gameServer.getAllPlayersArray().map(player => {
+        return {
+            username: player.getUsername(),
+            uuid: player.getUUID(),
+            isOnline: player.isOnline,
+            // ...(function() {
+            //     if (!player.isOnline) return {}
+            //    return {
+            //         joinTime: player.getJoinTime()
+            //    } 
+            // })()
+        }
+    });
+
+    apiResponse(res, 200, {players: resBody});
+});
+
+router.get("/players/online/:tag", (req, res) => {
+    const gameServer = ServerHandler.getServerById(req.params.tag);
+
+    if (!gameServer) return apiResponse(res, 404);
+
+    const resBody = gameServer.getOnlinePlayersArray().map(player => {
+        return {
+            username: player.getUsername(),
+            uuid: player.getUUID()
+        }
+    });
+
+    apiResponse(res, 200, resBody);
+});
+
+router.get("/players/offline/:tag", (req, res) => {
+    const gameServer = ServerHandler.getServerById(req.params.tag);
+
+    if (!gameServer) return apiResponse(res, 404);
+
+    const resBody = gameServer.getPlayersOfflineArray().map(player => {
+        return {
+            username: player.getUsername(),
+            uuid: player.getUUID()
+        }
+    });
+
+    apiResponse(res, 200, resBody);
 });
 
 export default router;

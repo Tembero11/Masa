@@ -1,4 +1,4 @@
-import { OnlinePlayer } from "./Player";
+import { OfflinePlayer, OnlinePlayer } from "./Player";
 
 export interface CommunicatorEvent {
     event: UnknownEvent,
@@ -109,9 +109,9 @@ export class PlayerLoginEvent extends Event {
 export class PlayerQuitEvent extends Event {
     readonly date: Date;
     readonly type = EventType.PlayerQuitEvent;
-    readonly player: OnlinePlayer;
+    readonly player: OfflinePlayer;
     readonly reason: string;
-    constructor(date: Date, player: OnlinePlayer, reason: string) {
+    constructor(date: Date, player: OfflinePlayer, reason: string) {
         super();
         this.date = date;
         this.player = player;

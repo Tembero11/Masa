@@ -53,9 +53,9 @@ export class StatusCommand extends Command {
           serverBlock.push(Lang.parse("commands.status.serverStarting", {SERVER_NAME: server.name}) + " :yellow_circle:");
         }
         if (server.isJoinable) {
-          if (server.players.size > 0) {
+          if (server.getPlayersOnline().size > 0) {
             serverBlock.push(Lang.parse("commands.status.playersOnline", {PLAYER_COUNT: server.playerCount}));
-            serverBlock.push(...server.playersArray.map(player => player.getUsername()));
+            serverBlock.push(...server.getOnlinePlayersArray().map(player => player.getUsername()));
           }else {
             serverBlock.push(Lang.parse("commands.status.noPlayers"));
           }

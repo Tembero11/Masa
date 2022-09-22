@@ -104,9 +104,17 @@ export abstract class ServerHandler {
         e.player.sendMessage(msg);
       }
       setServerStatus(meta.name, server, Presence.SERVER_ONLINE);
+
+      console.log("JOIN", e.player.getUsername(), e.player.getUUID());
+      console.log("ONLINE", Array.from(server.getPlayersOnline().keys()).join(", "));
+      console.log("OFFLINE", Array.from(server.getPlayersOfflineArray()).join(", "));
     });
     server.on("quit", (e) => {
       setServerStatus(meta.name, server, Presence.SERVER_ONLINE);
+
+      console.log("QUIT", e.player.getUsername(), e.player.getUUID());
+      console.log("ONLINE", Array.from(server.getPlayersOnline().keys()).join(", "));
+      console.log("OFFLINE", Array.from(server.getPlayersOfflineArray()).join(", "));
     });
 
     server.on("ready", () => {

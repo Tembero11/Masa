@@ -6,10 +6,10 @@ import PropertiesManager from "../PropertiesManager";
 import path from "path";
 import RCON from 'rcon-srcds';
 import { ServerMetadata } from "../../config";
-import GameLiveConf from "./GameLiveConf";
+import GameLiveConf, { FilePlayerEntry } from "./GameLiveConf";
 import Event, { AutosaveOffEvent, AutosaveOnEvent, CommunicatorEvent, GameCloseEvent, GameReadyEvent, GameSaveEvent, PlayerLoginEvent, PlayerQuitEvent } from "../Event";
 import { StandardEmitter } from "./StandardEmitter";
-import { OnlinePlayer } from "../Player";
+import { OfflinePlayer, OnlinePlayer } from "../Player";
 import { Readable, Writable } from "stream";
 import ConsoleReader from "../ConsoleReader";
 
@@ -52,13 +52,33 @@ export default class GameServer {
 
   // Player related stuff
   protected _players: Map<PlayerName, OnlinePlayer> = new Map();
-
-  get players() {
+  getPlayersOnline() {
     return Object.freeze(this._players);
   }
-  get playersArray(): OnlinePlayer[] {
+  getOnlinePlayersArray(): OnlinePlayer[] {
     return Array.from(this._players.values());
   }
+
+  getPlayersOffline() {
+    const usercache = this.liveConf.getFile("usercache") as FilePlayerEntry[];
+
+    const playerMap = new Map<PlayerName, OfflinePlayer>();
+
+    usercache.forEach(player => {
+      if (this.getPlayersOnline().has(player.name)) return;
+      playerMap.set(player.name, new OfflinePlayer(player.name, this.liveConf, this));
+    });
+
+    return playerMap;
+  }
+  getPlayersOfflineArray() {
+    return Array.from(this.getPlayersOffline().values());
+  }
+
+  getAllPlayersArray() {
+    return [...this.getPlayersOfflineArray(), ...this.getOnlinePlayersArray()];
+  }
+  
 
   /**
    * 
@@ -277,7 +297,7 @@ export default class GameServer {
     }
 
     private onMessage(data: any) {
-        let reader = new ConsoleReader(data.toString(),this, this.liveConf, this._isServerJoinable, this.players);
+        let reader = new ConsoleReader(data.toString(),this, this.liveConf, this._isServerJoinable, this.getPlayersOnline(), this.getPlayersOffline());
         // Notify the stdout EventEmitter
         this.std.emit("out", reader);
         this.notifyListeners(reader.generateEvent());

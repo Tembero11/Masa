@@ -14,9 +14,10 @@ const WATCHED_FILES = [
 ]
 
 export interface FilePlayerEntry {
-    username: string
+    name: string
     uuid: string
 }
+export type UsercacheItem = FilePlayerEntry & { expiresOn: string }
 
 export default class GameLiveConf {
     server: GameServer;

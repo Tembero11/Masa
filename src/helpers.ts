@@ -74,7 +74,7 @@ export const setServerStatus = (serverName: string, server: GameServer, status: 
       if (server.playerCount === 1) {
         statusText = Lang.parse("commands.status.serverWithPlayer", {
           SERVER_NAME: serverName,
-          PLAYER_NAME: server.playersArray[0].getUsername(),
+          PLAYER_NAME: server.getOnlinePlayersArray()[0].getUsername(),
           paramBolding: false,
         });
       } else if (server.playerCount > 1) {

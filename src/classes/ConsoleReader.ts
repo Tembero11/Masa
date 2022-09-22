@@ -2,7 +2,7 @@ import assert from "assert";
 import { NoPlayerError } from "./Errors";
 import Event, { AutosaveOffEvent, AutosaveOnEvent, PlayerChatEvent, GameReadyEvent, EventType, GameSaveEvent, PlayerJoinEvent, PlayerQuitEvent, UnknownEvent, PlayerLoginEvent, RconReadyEvent } from "./Event";
 import GameServer from "./server/GameServer";
-import { OnlinePlayer } from "./Player";
+import { OfflinePlayer, OnlinePlayer } from "./Player";
 import GameLiveConf from "./server/GameLiveConf";
 
 export default class ConsoleReader {
@@ -27,6 +27,7 @@ export default class ConsoleReader {
 
     private isServerJoinable = false;
     readonly players;
+    readonly offlinePlayers;
     readonly server: GameServer;
     readonly liveConf: GameLiveConf;
 
@@ -97,12 +98,12 @@ export default class ConsoleReader {
      * @throws {NoPlayerError} if the event was not `EventType.PlayerQuitEvent` or the player was not found in the players map provided
      * @returns {Player} The player instance that previously joined
      */
-    getQuitPlayer(): OnlinePlayer {
+    getQuitPlayer(): OfflinePlayer {
         if (this.isQuitEvent) {
             let start = 0;
             let end = this.message.indexOf(" ");
             let playerName = this.message.substring(start, end);
-            let player = this.players.get(playerName);
+            let player = this.players.get(playerName)?.toOfflinePlayer();
             assert(player, new NoPlayerError());
             return player;
         }
@@ -132,8 +133,12 @@ export default class ConsoleReader {
             let start = 0;
             let end = this.message.indexOf("[");
             let playerName = this.message.substring(start, end);
-            // BR1
-            let player = new OnlinePlayer(playerName, this.liveConf, this.server);
+            let player;
+            if (this.offlinePlayers.has(playerName)) {
+                player = this.offlinePlayers.get(playerName)!.toOnlinePlayer();
+            }else {
+                player = new OnlinePlayer(playerName, this.liveConf, this.server);
+            }
             return player;
         }
         throw new NoPlayerError();
@@ -254,11 +259,12 @@ export default class ConsoleReader {
         return !this.isChatMessage && (this.message.startsWith("Automatic saving is now enabled") || this.message.startsWith("Saving is already turned on"));
     }
 
-    constructor(data: string, server: GameServer, liveConf: GameLiveConf, isJoinable: boolean, players: Readonly<Map<string, OnlinePlayer>>) {
+    constructor(data: string, server: GameServer, liveConf: GameLiveConf, isJoinable: boolean, players: Readonly<Map<string, OnlinePlayer>>, offlinePlayers: Readonly<Map<string, OfflinePlayer>>) {
         this.isServerJoinable = isJoinable;
         this.data = data.replace(/\[[0-9]{1,2}:[0-9]{1,2}:[0-9]{1,2}\] /, "");
         this.date = new Date();
         this.players = players;
+        this.offlinePlayers = offlinePlayers;
         this.server = server;
         this.liveConf = liveConf;
     }
