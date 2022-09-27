@@ -52,31 +52,32 @@ export default class GameServer {
 
   // Player related stuff
   protected _players: Map<PlayerName, OnlinePlayer> = new Map();
-  getPlayersOnline() {
+  getOnlinePlayers() {
     return Object.freeze(this._players);
   }
   getOnlinePlayersArray(): OnlinePlayer[] {
     return Array.from(this._players.values());
   }
 
-  getPlayersOffline() {
+  getOfflinePlayers() {
+    if (!this.liveConf.hasFile("usercache")) return new Map<PlayerName, OfflinePlayer>();
     const usercache = this.liveConf.getFile("usercache") as FilePlayerEntry[];
 
     const playerMap = new Map<PlayerName, OfflinePlayer>();
 
     usercache.forEach(player => {
-      if (this.getPlayersOnline().has(player.name)) return;
+      if (this.getOnlinePlayers().has(player.name)) return;
       playerMap.set(player.name, new OfflinePlayer(player.name, this.liveConf, this));
     });
 
     return playerMap;
   }
-  getPlayersOfflineArray() {
-    return Array.from(this.getPlayersOffline().values());
+  getOfflinePlayersArray() {
+    return Array.from(this.getOfflinePlayers().values());
   }
 
   getAllPlayersArray() {
-    return [...this.getPlayersOfflineArray(), ...this.getOnlinePlayersArray()];
+    return [...this.getOfflinePlayersArray(), ...this.getOnlinePlayersArray()];
   }
   
 
@@ -297,7 +298,7 @@ export default class GameServer {
     }
 
     private onMessage(data: any) {
-        let reader = new ConsoleReader(data.toString(),this, this.liveConf, this._isServerJoinable, this.getPlayersOnline(), this.getPlayersOffline());
+        let reader = new ConsoleReader(data.toString(),this, this.liveConf, this._isServerJoinable, this.getOnlinePlayers(), this.getOfflinePlayers());
         // Notify the stdout EventEmitter
         this.std.emit("out", reader);
         this.notifyListeners(reader.generateEvent());

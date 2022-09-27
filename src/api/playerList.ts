@@ -46,7 +46,7 @@ router.get("/players/offline/:tag", (req, res) => {
 
     if (!gameServer) return apiResponse(res, 404);
 
-    const resBody = gameServer.getPlayersOfflineArray().map(player => {
+    const resBody = gameServer.getOfflinePlayersArray().map(player => {
         return {
             username: player.getUsername(),
             uuid: player.getUUID()

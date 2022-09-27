@@ -84,9 +84,12 @@ export default class GameLiveConf {
      * @param filename A filename with no extension.
      */
     getFile(filename: string) {
-        assert(Object.hasOwnProperty.call(this.files, filename));
+        assert(this.hasFile(filename));
 
         return this.files[filename].data;
+    }
+    hasFile(filename: string) {
+        return Object.hasOwnProperty.call(this.files, filename);
     }
 
 
