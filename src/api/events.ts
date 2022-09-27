@@ -14,13 +14,9 @@ export class WS_EventSender {
         }));
     }
     async createSocketPlayer(player: OnlinePlayer | OfflinePlayer): Promise<WS_EventPlayer> {
-        let uuid;
-        try {
-            uuid = await player.getUUID();
-        } catch (err) {}
         return {
             username: player.getUsername(),
-            uuid
+            uuid:  player.getUUID()
         }
     }
 
@@ -72,10 +68,4 @@ type ServerTag = string;
 interface WS_EventPlayer {
     username: string
     uuid?: string
-}
-
-interface HTTP_BaseResponse {
-    msg: string
-    success: boolean
-    code: number
 }

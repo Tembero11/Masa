@@ -12,6 +12,8 @@ import { StandardEmitter } from "./StandardEmitter";
 import { OfflinePlayer, OnlinePlayer } from "../Player";
 import { Readable, Writable } from "stream";
 import ConsoleReader from "../ConsoleReader";
+import { serverInstallerPrompt } from "../../serverInstallerPrompt";
+import GameServerRCON from "./GameServerRCON";
 
 interface Options {
   disableRCON?: boolean,
@@ -57,6 +59,9 @@ export default class GameServer {
   }
   getOnlinePlayersArray(): OnlinePlayer[] {
     return Array.from(this._players.values());
+  }
+  getOnlinePlayersCount() {
+    return this.getOnlinePlayers().size;
   }
 
   getOfflinePlayers() {
@@ -147,6 +152,9 @@ export default class GameServer {
           console.log(`RCON connection failed on server ${this.tag}`);
         }
       });
+      this.on("close", async e => {
+        this.rcon?.disconnect();
+      });
     }
 
     this.liveConf = new GameLiveConf(this);
@@ -154,18 +162,21 @@ export default class GameServer {
 
   /**
    * Sends a command to the game through RCON if available. Defaults to sending through stdin.
-   * @param gameCommand {A string containing a gameCommand with or without a slash}
+   * @param gameCommand A string containing a gameCommand with or without a slash
    */
   sendGameCommand(gameCommand: string) {
-    if (!this.hasStreams) return;
+    if (!this.hasStreams) return false;
 
     if (gameCommand.startsWith("/")) gameCommand = gameCommand.substring(1);
 
     if (this.rcon?.isConnected) {
-      this.rcon.sendGameCommand(gameCommand);
+      this.rcon.sendGameCommand(gameCommand).catch(reason => {
+        this.std.emit("in", gameCommand + "\n");
+      });
     }else {
       this.std.emit("in", gameCommand + "\n");
     }
+    return true;
   }
 
   static generateTag() {
@@ -239,6 +250,17 @@ export default class GameServer {
       });
       this.serverProcess.kill(signal || "SIGQUIT"); 
     });
+  }
+
+  safeStart() {
+    if (this.hasStreams) return;
+    this.serverProcess = GameServer.spawn(this.command, this.dir);
+    this.reload();
+  }
+  safeStop() {
+    if (this.hasStreams && this.serverProcess) {
+      this.sendGameCommand("stop");
+    }
   }
 
   /**
@@ -381,47 +403,6 @@ export default class GameServer {
             this._stdout.removeListener("data", this.onMessage);
         }
     }
-}
-
-class GameServerRCON {
-  gameServer: GameServer;
-  private host: string;
-  private port: number;
-  private password: string;
-
-  
-  get isConnected(): boolean {
-    return this.rawRcon?.isAuthenticated() || false;
-  }
-  
-
-  protected rawRcon: RCON | undefined;
-
-  constructor(gameServer: GameServer, host: string, port: number, password: string) {
-    this.gameServer = gameServer;
-    this.host = host;
-    this.port = port;
-    this.password = password;
-  }
-
-  async establishConnection(): Promise<boolean> {
-    assert(!this.isConnected, "establishConnection got called when RCON is already connected!");
-
-    this.rawRcon = new RCON({ host: this.host, port: this.port });
-
-    try {
-      await this.rawRcon.authenticate(this.password);
-      return true;
-    } catch (err) {
-      return false;
-    }
-  }
-
-  async sendGameCommand(gameCommand: string) {
-    assert(this.isConnected, "RCON is not connected!");
-
-    return await this.rawRcon!.execute(gameCommand);
-  }
 }
 
 // This contains all event emit functions

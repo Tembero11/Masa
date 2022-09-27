@@ -1,16 +1,17 @@
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import http, { createServer } from "http";
 import { WebSocketServer } from "ws";
 
 import serverListRouter from "./serverList";
-import playerListRouter from "./playerList";
-import serverInfoRouter from "./serverInfo";
-import changeServerNameRouter from "./changeServerName"
-import statusControlRouter from "./statusControl";
-import receiveCommandRouter from "./receiveCommand";
-import filesRouter from "./files";
+import playerListRouter from "./server/playerList";
+import serverInfoRouter from "./server/serverInfo";
+import changeServerNameRouter from "./server/changeServerName"
+import statusControlRouter from "./server/statusControl";
+import receiveCommandRouter from "./server/receiveCommand";
 import { ServerHandler } from "../serverHandler";
 import { WS_EventSender } from "./events";
+import { NetworkError } from "./NetworkError";
+import assert from "assert";
 
 /**
  * HTTP Server default port
@@ -106,9 +107,8 @@ export function openRoutes() {
     app.use(API_PREFIX, statusControlRouter);
     app.use(API_PREFIX, receiveCommandRouter);
     app.use(API_PREFIX, changeServerNameRouter);
-    app.use(API_PREFIX, filesRouter);
 
-    app.disable("x-powered-by")
+    app.disable("x-powered-by");
 }
 
 interface ApiResponseOptions {
@@ -116,11 +116,42 @@ interface ApiResponseOptions {
     [key: string]: any
 }
 
-export function apiResponse(res: Response, code: number, options?: ApiResponseOptions) {
-    res.status(code).json({
+function isOK(httpCode: number) {
+    return httpCode >= 200 && httpCode < 300;
+}
+
+export function apiResponse(res: Response, httpCode: number, code: NetworkError, options?: ApiResponseOptions) {
+    assert(isOK(httpCode) === (code === NetworkError.Ok));
+
+    res.status(httpCode).json({
         ...options,
-        code,
-        msg: options?.msg ?? http.STATUS_CODES[code],
-        success: code >= 200 && code < 300,
+        httpCode,
+        masaCode: "0x" + code.toString(16),
+        msg: options?.msg ?? http.STATUS_CODES[httpCode],
+        success: isOK(httpCode),
     });
+}
+
+export function fromTo(req: Request, maxItems: number): { from: number | undefined, to: number | undefined } {
+    const parseErrorResult = { from: undefined, to: undefined }
+
+    const positiveIntegerRegex = /^[0-9]{1,}$/;
+
+    let from = req.query.from;
+    let to = req.query.to;
+
+    if (typeof from != "string") return parseErrorResult;
+    if (typeof to != "string") return parseErrorResult;
+
+    if (!positiveIntegerRegex.test(from)) return parseErrorResult;
+    if (!positiveIntegerRegex.test(to)) return parseErrorResult;
+
+    const fromParsed = parseInt(from);
+    const toParsed = parseInt(to);
+
+    const difference = toParsed - fromParsed;
+
+    if (!(difference >= 0 && difference <= maxItems)) return parseErrorResult;
+
+    return { from: fromParsed, to: toParsed }
 }
