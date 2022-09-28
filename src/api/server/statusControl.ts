@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { ServerHandler } from "../../serverHandler";
+import Masa from "../../classes/Masa";
 import { NetworkError } from "../NetworkError";
 import { apiResponse } from "../openServer";
 
 const router = Router();
 
 router.post("/server/:tag/start/", (req, res) => {
-    const gameServer = ServerHandler.getServerById(req.params.tag);
+    const gameServer = Masa.getServerByTag(req.params.tag);
 
     if (!gameServer) return apiResponse(res, 404, NetworkError.GameServerNotFound);
 
@@ -15,7 +15,7 @@ router.post("/server/:tag/start/", (req, res) => {
     return apiResponse(res, 200, NetworkError.Ok);
 });
 router.post("/server/:tag/stop/", async (req, res) => {
-    const gameServer = ServerHandler.getServerById(req.params.tag);
+    const gameServer = Masa.getServerByTag(req.params.tag);
 
     if (!gameServer) return apiResponse(res, 404, NetworkError.GameServerNotFound);
 

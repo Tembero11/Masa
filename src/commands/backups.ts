@@ -1,7 +1,6 @@
 import  { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import { fieldFromBackup, getDefaultCommandEmbed } from "../helpers";
-import { ServerHandler } from "../serverHandler";
 import Command, { RegisteredCommand } from "./general";
 import Lang from "../classes/Lang";
 import { PermissionScope } from "../classes/PermissionManager";
@@ -25,7 +24,6 @@ export class BackupsCommand extends Command {
 
     let serverName = interaction.options.getString("server");
     if (serverName) {
-      let server = ServerHandler.getServerByName(serverName);
       // if (server) {
       //   if (server.backups) {
       //     let autoBackups = server.backups.listAutomatic();

@@ -3,9 +3,9 @@ import assert from "assert";
 import { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
 import { RepeatCommandButton } from "../buttons/RepeatCommandButton";
 import Lang from "../classes/Lang";
+import Masa from "../classes/Masa";
 import { PermissionScope } from "../classes/PermissionManager";
 import { getDefaultCommandEmbed, getExecutableGameCommand, getMessageGameCommand } from "../helpers";
-import { ServerHandler } from "../serverHandler";
 import Command, { RegisteredCommand } from "./general";
 
 @RegisteredCommand
@@ -33,7 +33,7 @@ export class ExecuteCommand extends Command {
     let serverName = interaction.options.getString("server");
     assert(serverName);
 
-    let server = ServerHandler.getServerByName(serverName);
+    let server = Masa.getServerByName(serverName);
 
     if (server) {
       if (server.isJoinable) {

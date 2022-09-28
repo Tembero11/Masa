@@ -2,10 +2,10 @@ import  { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import { generateServerButtonRow, getDefaultCommandEmbed } from "../helpers";
 import Command, { RegisteredCommand } from "./general";
-import { ServerHandler } from "../serverHandler";
 import assert from "assert";
 import Lang from "../classes/Lang";
 import { PermissionScope } from "../classes/PermissionManager";
+import Masa from "../classes/Masa";
 
 @RegisteredCommand
 export class StopCommand extends Command {
@@ -29,14 +29,15 @@ export class StopCommand extends Command {
       let serverName = interaction.options.getString("server");
       assert(serverName);
 
-      let server = ServerHandler.getServerByName(serverName);
+      let server = Masa.getServerByName(serverName);
       assert(server);
 
       if (server.hasStreams) {
         embed.setDescription(Lang.parse("commands.stop.attemptingStop", {SERVER_NAME: serverName}));
         await interaction.reply({ embeds: [embed] });
 
-        await ServerHandler.stop(serverName);
+        server.safeStop();
+        await server.waitfor("close")
 
         embed.setDescription(Lang.parse("commands.stop.stopped", {SERVER_NAME: serverName}));
         await interaction.editReply({embeds: [embed], components: [generateServerButtonRow(serverName, server)]});

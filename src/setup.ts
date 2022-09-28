@@ -1,5 +1,4 @@
 import figlet from "figlet";
-import { ServerHandler } from "./serverHandler";
 import {  BotConfig, ServerMetadata, createConfigs, loadConfig, prettyPrint, writeConfig, writeServerMetadata, ServerListEntry, readServerMetadata } from "./config";
 import inquirer from "inquirer";
 import inquirerAutocompletePrompt from "inquirer-autocomplete-prompt";
@@ -13,6 +12,7 @@ import { serverInstallerPrompt } from "./serverInstallerPrompt";
 import { getBorderCharacters, table } from "table";
 import openHTTP from "./api/openServer";
 import PropertiesManager from "./classes/PropertiesManager";
+import Masa from "./classes/Masa";
 
 inquirer.registerPrompt("autocomplete", inquirerAutocompletePrompt);
 
@@ -105,7 +105,7 @@ const setup = async () => {
 
     console.log(serverTable.trim());
 
-    await ServerHandler.serverInitializer(serverMetaList);
+    await Masa.initializeServers(serverMetaList);
     
     openHTTP({ log: true })
 

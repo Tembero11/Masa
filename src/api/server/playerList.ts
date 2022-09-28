@@ -1,6 +1,6 @@
 import { Router } from "express";
+import Masa from "../../classes/Masa";
 import { OfflinePlayer, OnlinePlayer } from "../../classes/Player";
-import { ServerHandler } from "../../serverHandler";
 import { NetworkError } from "../NetworkError";
 import { apiResponse, fromTo } from "../openServer";
 
@@ -24,7 +24,7 @@ router.get("/server/:tag/players/online", (req, res) => {
     const { from, to } = fromTo(req, 10);
     if (!(from || to)) return apiResponse(res, 400, NetworkError.InvalidRange);
 
-    const gameServer = ServerHandler.getServerById(req.params.tag);
+    const gameServer = Masa.getServerByTag(req.params.tag);
 
     if (!gameServer) return apiResponse(res, 404, NetworkError.GameServerNotFound);
 
@@ -37,7 +37,7 @@ router.get("/server/:tag/players/offline", (req, res) => {
     const { from, to } = fromTo(req, 10);
     if (!(from || to)) return apiResponse(res, 400, NetworkError.InvalidRange);
 
-    const gameServer = ServerHandler.getServerById(req.params.tag);
+    const gameServer = Masa.getServerByTag(req.params.tag);
 
     if (!gameServer) return apiResponse(res, 404, NetworkError.GameServerNotFound);
 

@@ -2,7 +2,6 @@ import  { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import { fieldFromBackup, getDefaultCommandEmbed } from "../helpers";
 import Command, { RegisteredCommand } from "./general";
-import { ServerHandler } from "../serverHandler";
 import Lang from "../classes/Lang";
 import { PermissionScope } from "../classes/PermissionManager";
 

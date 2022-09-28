@@ -1,8 +1,8 @@
 import assert from "assert";
 import { MessageButtonStyleResolvable, ButtonInteraction, MessageEmbed } from "discord.js";
 import Lang from "../classes/Lang";
+import Masa from "../classes/Masa";
 import { PermissionScope } from "../classes/PermissionManager";
-import { ServerHandler } from "../serverHandler";
 import { GenericButton } from "./GenericButton";
 
 export class StopButton extends GenericButton {
@@ -18,13 +18,14 @@ export class StopButton extends GenericButton {
     const { serverName } = params;
     assert(serverName);
 
-    const server = ServerHandler.getServerByName(serverName);
+    const server = Masa.getServerByName(serverName);
     assert(server);
 
     let embed = new MessageEmbed();
 
     if (server.hasStreams) {
-      await ServerHandler.stop(serverName);
+      server.safeStop();
+      await server.waitfor("close");
       embed.setDescription(Lang.parse("commands.stop.stopped", { SERVER_NAME: serverName }));
     }else {
       embed.setDescription(Lang.parse("commands.stop.alreadyOffline", { SERVER_NAME: serverName }));

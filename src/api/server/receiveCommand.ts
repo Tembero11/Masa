@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { ServerHandler } from "../../serverHandler";
 import express from "express";
 import { apiResponse } from "../openServer";
 import { NetworkError } from "../NetworkError";
+import Masa from "../../classes/Masa";
 
 
 const router = Router();
@@ -15,7 +15,7 @@ router.post("/server/:tag/send-command", (req, res) => {
 
   if (!command) return apiResponse(res, 400, NetworkError.GameCommandMissing);
 
-  const gameServer = ServerHandler.getServerById(tag);
+  const gameServer = Masa.getServerByTag(tag);
 
   if (!gameServer) return apiResponse(res, 404, NetworkError.GameServerNotFound);
 

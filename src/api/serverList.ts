@@ -1,10 +1,10 @@
 import { Router } from "express";
-import { ServerHandler } from "../serverHandler";
+import Masa from "../classes/Masa";
 
 const router = Router();
 
 router.get("/server-list", (req, res) => {
-    res.json(ServerHandler.servers.map(gameServer => {
+    res.json(Masa.getServers().map(gameServer => {
         const meta = gameServer.metadata;
         return {
             name: meta?.name,

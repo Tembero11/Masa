@@ -1,12 +1,12 @@
 import { Router } from "express";
-import { ServerHandler } from "../../serverHandler";
+import Masa from "../../classes/Masa";
 import { NetworkError } from "../NetworkError";
 import { apiResponse } from "../openServer";
 
 const router = Router();
 
 router.get("/server/:tag", (req, res) => {
-  const gameServer = ServerHandler.getServerById(req.params.tag);
+  const gameServer = Masa.getServerByTag(req.params.tag);
   if (!gameServer) return apiResponse(res, 404, NetworkError.GameServerNotFound);
 
 

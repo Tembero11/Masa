@@ -1,7 +1,6 @@
 import {  ActivityType, MessageActionRow, MessageEmbed, PresenceStatusData } from "discord.js";
 import { client, config } from "./index";
 import { nanoid } from "nanoid";
-import { Presence } from "./serverHandler";
 import GameServer from "./classes/server/GameServer";
 import assert from "assert";
 import date from "date-and-time";
@@ -9,8 +8,8 @@ import Lang from "./classes/Lang";
 import { StartButton } from "./buttons/StartButton";
 import { RestartButton } from "./buttons/RestartButton";
 import { StopButton } from "./buttons/StopButton";
-import path from "path";
 import { ManualBackupMetadata } from "./classes/server/backup/BackupManifest";
+import Masa, { Presence } from "./classes/Masa";
 
 
 
@@ -67,7 +66,7 @@ export const setServerStatus = (serverName: string, server: GameServer, status: 
   let activityType: ActivityType | undefined;
 
   switch (status) {
-    case Presence.SERVER_ONLINE:
+    case Masa.Presence.SERVER_ONLINE:
       statusType = "online";
       activityType = "PLAYING";
 
@@ -90,13 +89,13 @@ export const setServerStatus = (serverName: string, server: GameServer, status: 
         });
       }
       break;
-    case Presence.SERVER_STARTING:
+    case Masa.Presence.SERVER_STARTING:
       statusType = "dnd";
       activityType = "WATCHING";
       statusText = Lang.parse("commands.status.serverStarting", {SERVER_NAME: serverName, paramBolding: false});
       break;
 
-    case Presence.SERVER_STOPPING:
+    case Masa.Presence.SERVER_STOPPING:
       statusType = "dnd";
       activityType = "WATCHING";
       statusText = Lang.parse("commands.status.serverStopping", {SERVER_NAME: serverName, paramBolding: false});

@@ -2,11 +2,11 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction, MessageEmbed } from "discord.js";
 import { getDefaultCommandEmbed } from "../helpers";
 import Command, { RegisteredCommand } from "./general";
-import {ServerHandler} from "../serverHandler";
 import { config } from "../index";
 import Lang from "../classes/Lang";
 import path from "path";
 import { PermissionScope } from "../classes/PermissionManager";
+import Masa from "../classes/Masa";
 
 @RegisteredCommand
 export class StatusCommand extends Command {
@@ -27,11 +27,11 @@ export class StatusCommand extends Command {
 
     embed.setTitle(Lang.parse("commands.status.serverStatusHeader"));
 
-    let servers = ServerHandler.servers;
+    let servers = Masa.getServers();
 
     let serverName = interaction.options.getString("server");
     if (serverName) {
-      let server = ServerHandler.getServerByName(serverName);
+      let server = Masa.getServerByName(serverName);
       if (server) {
         servers = [server];
       }else {

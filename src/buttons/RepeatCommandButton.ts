@@ -1,9 +1,9 @@
 import assert from "assert";
 import { ButtonInteraction, EmojiIdentifierResolvable, MessageEmbed } from "discord.js";
 import Lang, { LangPath } from "../classes/Lang";
+import Masa from "../classes/Masa";
 import { PermissionScope } from "../classes/PermissionManager";
 import { getExecutableGameCommand, getMessageGameCommand } from "../helpers";
-import { ServerHandler } from "../serverHandler";
 import { GenericButton } from "./GenericButton";
 
 export class RepeatCommandButton extends GenericButton {
@@ -20,7 +20,7 @@ export class RepeatCommandButton extends GenericButton {
     const { serverName, cmd } = params;
     assert(serverName && cmd);
 
-    let server = ServerHandler.getServerByName(serverName);
+    let server = Masa.getServerByName(serverName);
 
     const embed = new MessageEmbed();
 

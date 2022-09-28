@@ -8,10 +8,10 @@ import serverInfoRouter from "./server/serverInfo";
 import changeServerNameRouter from "./server/changeServerName"
 import statusControlRouter from "./server/statusControl";
 import receiveCommandRouter from "./server/receiveCommand";
-import { ServerHandler } from "../serverHandler";
 import { WS_EventSender } from "./events";
 import { NetworkError } from "./NetworkError";
 import assert from "assert";
+import Masa from "../classes/Masa";
 
 /**
  * HTTP Server default port
@@ -33,7 +33,7 @@ wss.on("connection", function connection(ws) {
 
     const sender = new WS_EventSender(ws);
 
-    ServerHandler.servers.forEach(gameServer => {
+    Masa.getServers().forEach(gameServer => {
         gameServer.on("join", async(event) => {
             if (!gameServer.tag) return;
             sender.sendEvent("join", {

@@ -2,10 +2,10 @@ import { SlashCommandBuilder } from "@discordjs/builders";
 import { CommandInteraction } from "discord.js";
 import { generateServerButtonRow, getDefaultCommandEmbed } from "../helpers";
 import Command, { RegisteredCommand } from "./general";
-import { ServerHandler } from "../serverHandler";
 import assert from "assert";
 import Lang from "../classes/Lang";
 import { PermissionScope } from "../classes/PermissionManager";
+import Masa from "../classes/Masa";
 
 @RegisteredCommand
 export class RestartCommand extends Command {
@@ -29,7 +29,7 @@ export class RestartCommand extends Command {
       let serverName = interaction.options.getString("server");
       assert(serverName);
 
-      let server = ServerHandler.getServerByName(serverName);
+      let server = Masa.getServerByName(serverName);
       assert(server);
 
       if (server.hasStreams) {
@@ -39,8 +39,8 @@ export class RestartCommand extends Command {
       }
       
       await interaction.reply({ embeds: [embed] });
-
-      await ServerHandler.restart(serverName);
+      // TODO: RESTART
+      // await ServerHandler.restart(serverName);
       embed.setDescription(Lang.parse("commands.restart.restarted", {SERVER_NAME: serverName}));
       await interaction.editReply({ embeds: [embed], components: [generateServerButtonRow(serverName, server)] });
     } catch (err) {
