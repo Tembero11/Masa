@@ -54,7 +54,7 @@ function deleteFromMemoryByName(name: string) {
 
 async function initializeServers(serverMeta: ServerMetadata[]) {
     for (const meta of serverMeta) {
-        createServer(meta);
+        await createServer(meta);
     }
 }
 
@@ -66,7 +66,7 @@ async function createServer(meta: ServerMetadata) {
         deleteFromMemoryByTag(meta.tag);
     }
 
-    let server = new GameServer(meta.command, meta.directory, { disableRCON: false, metadata: meta });
+    const server = new GameServer(meta.command, meta.directory, { disableRCON: false, metadata: meta });
 
     setServerStatus(meta.name, server, Presence.SERVER_OFFLINE);
 
@@ -102,7 +102,7 @@ async function createServer(meta: ServerMetadata) {
         const { sendPlayerNetworkEvents, sendServerReadyEvent, allowDuplex } = meta.advanced.chat;
         const channels = toArrayIfNot(meta.advanced.chat.channels);
         if (client.user) {
-            setupChatStreaming(
+            void setupChatStreaming(
                 server,
                 meta.name,
                 channels,
@@ -128,7 +128,7 @@ async function createServer(meta: ServerMetadata) {
     if (meta.backups) {
         const { backupInterval, backupLimit } = meta.backups;
 
-        let backupIntervalMs = typeof backupInterval == "string" ? ms(backupInterval) : backupInterval;
+        const backupIntervalMs = typeof backupInterval == "string" ? ms(backupInterval) : backupInterval;
 
         assert(backupInterval && backupLimit);
 

@@ -1,4 +1,4 @@
-import express, { NextFunction, Request, Response } from "express";
+import express, { Request, Response } from "express";
 import http, { createServer } from "http";
 import { WebSocketServer } from "ws";
 
@@ -113,7 +113,7 @@ export function openRoutes() {
 
 interface ApiResponseOptions {
     msg?: string
-    [key: string]: any
+    [key: string]: unknown
 }
 
 function isOK(httpCode: number) {
@@ -137,8 +137,8 @@ export function fromTo(req: Request, maxItems: number): { from: number | undefin
 
     const positiveIntegerRegex = /^[0-9]{1,}$/;
 
-    let from = req.query.from;
-    let to = req.query.to;
+    const from = req.query.from;
+    const to = req.query.to;
 
     if (typeof from != "string") return parseErrorResult;
     if (typeof to != "string") return parseErrorResult;

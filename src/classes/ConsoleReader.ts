@@ -17,8 +17,8 @@ export default class ConsoleReader {
     private _eventType: EventType | undefined;
 
     // These are true if their getters have been called
-    private _joinedPlayerCalled: boolean = false;
-    private _leftPlayerCalled: boolean = false;
+    private _joinedPlayerCalled = false;
+    private _leftPlayerCalled = false;
 
     /**
      * The Date when the instance was made
@@ -42,8 +42,8 @@ export default class ConsoleReader {
     generateEvent(): Event {
         if (this.isServerJoinable) {
             if (this.isChatMessage) {
-                let player = this.getChatSender();
-                let msg = this.getChatMessage();
+                const player = this.getChatSender();
+                const msg = this.getChatMessage();
                 return new PlayerChatEvent(this.date, player, msg);
             }
             if (this.isQuitEvent) {
@@ -100,10 +100,10 @@ export default class ConsoleReader {
      */
     getQuitPlayer(): OfflinePlayer {
         if (this.isQuitEvent) {
-            let start = 0;
-            let end = this.message.indexOf(" ");
-            let playerName = this.message.substring(start, end);
-            let player = this.players.get(playerName)?.toOfflinePlayer();
+            const start = 0;
+            const end = this.message.indexOf(" ");
+            const playerName = this.message.substring(start, end);
+            const player = this.players.get(playerName)?.toOfflinePlayer();
             assert(player, new NoPlayerError());
             return player;
         }
@@ -111,7 +111,7 @@ export default class ConsoleReader {
     }
     getQuitReason(): string {
         if (this.isQuitEvent) {
-            let message = this.message.split(":")[1].substring(1);
+            const message = this.message.split(":")[1].substring(1);
             return message;
         }
         throw new NoPlayerError();
@@ -130,11 +130,12 @@ export default class ConsoleReader {
     }
     getLoggedInPlayer() {
         if (this.isLoginEvent) {
-            let start = 0;
-            let end = this.message.indexOf("[");
-            let playerName = this.message.substring(start, end);
+            const start = 0;
+            const end = this.message.indexOf("[");
+            const playerName = this.message.substring(start, end);
             let player;
             if (this.offlinePlayers.has(playerName)) {
+                // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
                 player = this.offlinePlayers.get(playerName)!.toOnlinePlayer();
             }else {
                 player = new OnlinePlayer(playerName, this.liveConf, this.server);
@@ -160,10 +161,10 @@ export default class ConsoleReader {
      */
     getJoinedPlayer(): OnlinePlayer {
         if (this.isJoinEvent) {
-            let start = 0;
-            let end = this.message.indexOf(" ");
-            let playerName = this.message.substring(start, end);
-            let player = this.players.get(playerName);
+            const start = 0;
+            const end = this.message.indexOf(" ");
+            const playerName = this.message.substring(start, end);
+            const player = this.players.get(playerName);
             assert(player, new NoPlayerError());
             return player;
         }
@@ -198,7 +199,7 @@ export default class ConsoleReader {
     get isChatMessage(): boolean {
         if (this._eventType == EventType.PlayerChatEvent) return true;
 
-        let is = this.message.search(this.chatMessageRegex) > -1;
+        const is = this.message.search(this.chatMessageRegex) > -1;
 
         if (is) {
             this._eventType = EventType.PlayerChatEvent;
@@ -237,7 +238,7 @@ export default class ConsoleReader {
     }
 
     get isDoneMessage() { 
-        return !this.isChatMessage && this.data.search(/Done \(.{1,}\)\!/) > -1;
+        return !this.isChatMessage && this.data.search(/Done \(.{1,}\)!/) > -1;
     }
 
     get isRconReadyEvent() {

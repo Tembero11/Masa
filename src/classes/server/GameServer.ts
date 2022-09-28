@@ -4,15 +4,13 @@ import { NoListenersError, NoStandardStreamsError } from "../Errors";
 import { nanoid } from "nanoid";
 import PropertiesManager from "../PropertiesManager";
 import path from "path";
-import RCON from 'rcon-srcds';
 import { ServerMetadata } from "../../config";
 import GameLiveConf, { FilePlayerEntry } from "./GameLiveConf";
-import Event, { AutosaveOffEvent, AutosaveOnEvent, CommunicatorEvent, GameCloseEvent, GameReadyEvent, GameSaveEvent, PlayerLoginEvent, PlayerQuitEvent } from "../Event";
+import Event, { AutosaveOffEvent, AutosaveOnEvent, CommunicatorEvent, GameCloseEvent, GameSaveEvent, PlayerLoginEvent, PlayerQuitEvent } from "../Event";
 import { StandardEmitter } from "./StandardEmitter";
 import { OfflinePlayer, OnlinePlayer } from "../Player";
 import { Readable, Writable } from "stream";
 import ConsoleReader from "../ConsoleReader";
-import { serverInstallerPrompt } from "../../serverInstallerPrompt";
 import GameServerRCON from "./GameServerRCON";
 
 interface Options {
@@ -25,7 +23,7 @@ interface Options {
  */
 type PlayerName = string;
 
-type CommunicatorEventListener<T extends Event> = (event: T) => void;
+type CommunicatorEventListener<T extends Event> = (event: T) => void | Promise<void>;
 
 export default class GameServer {
   private command;
@@ -144,16 +142,17 @@ export default class GameServer {
 
       this.rcon = new GameServerRCON(this, "127.0.0.1", parseInt(rconPort), rconPass);
 
-      this.on("rconReady", async e => {
+      this.on("rconReady", async () => {
         if (this.rcon?.isConnected) return;
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         if (await this.rcon!.establishConnection()) {
           console.log(`RCON successfully connected on server ${this.tag}`);
         } else {
           console.log(`RCON connection failed on server ${this.tag}`);
         }
       });
-      this.on("close", async e => {
-        this.rcon?.disconnect();
+      this.on("close", async () => {
+        await this.rcon?.disconnect();
       });
     }
 
@@ -170,7 +169,7 @@ export default class GameServer {
     if (gameCommand.startsWith("/")) gameCommand = gameCommand.substring(1);
 
     if (this.rcon?.isConnected) {
-      this.rcon.sendGameCommand(gameCommand).catch(reason => {
+      this.rcon.sendGameCommand(gameCommand).catch(() => {
         this.std.emit("in", gameCommand + "\n");
       });
     }else {
@@ -200,7 +199,7 @@ export default class GameServer {
     this._stdout.on("end", () => this.notifyListeners(new GameCloseEvent(new Date())));
 
     // Add listeners for handling server closing
-    this.serverProcess.on("close", (code) => this.resetState());
+    this.serverProcess.on("close", () => this.resetState());
   }
 
       /**
@@ -226,7 +225,7 @@ export default class GameServer {
    * @throws {NoStandardStreamsError} if the server is already stopped
    */
   stop(): Promise<number | null> {
-    return new Promise((res, rej) => {
+    return new Promise((res) => {
       assert(this._stdin && this.serverProcess, new NoStandardStreamsError("stdin"));
       this.serverProcess.once("close", (code) => {
         this.serverProcess = null;
@@ -242,7 +241,7 @@ export default class GameServer {
    * @throws {NoStandardStreamsError} if the server is already stopped
    */
   forceStop(signal?: NodeJS.Signals): Promise<number | null> {
-    return new Promise((res, rej) => {
+    return new Promise((res) => {
       assert(this.serverProcess, new NoStandardStreamsError());
       this.serverProcess.once("close", (code) => {
         this.serverProcess = null;
@@ -297,7 +296,7 @@ export default class GameServer {
         return this._players.size;
     }
 
-    protected _isServerJoinable: boolean = false;
+    protected _isServerJoinable = false;
     get isJoinable() {
         return this._isServerJoinable;
     }
@@ -320,7 +319,7 @@ export default class GameServer {
     }
 
     private onMessage(data: any) {
-        let reader = new ConsoleReader(data.toString(),this, this.liveConf, this._isServerJoinable, this.getOnlinePlayers(), this.getOfflinePlayers());
+        const reader = new ConsoleReader(data.toString(), this, this.liveConf, this._isServerJoinable, this.getOnlinePlayers(), this.getOfflinePlayers());
         // Notify the stdout EventEmitter
         this.std.emit("out", reader);
         this.notifyListeners(reader.generateEvent());
@@ -331,14 +330,15 @@ export default class GameServer {
     private onLeave(e: PlayerQuitEvent) {
         this._players.delete(e.player.getUsername());
     }
-    private onReady(e: GameReadyEvent) {
+    private onReady() {
         this._isServerJoinable = true;
     }
  
 
     private notifyListeners(event: Event) {
         if (!(event.type in this.listeners)) this.listeners[event.type] = [];
-
+      
+        // eslint-disable-next-line @typescript-eslint/no-misused-promises
         this.listeners[event.type].forEach(e => e.listener(event));
     }
 
@@ -348,7 +348,7 @@ export default class GameServer {
      * @param event The type of the event
      * @param listener The listener called everytime the event occurs
      */
-    on<T extends keyof CommunicatorEvent>(event: T, listener: CommunicatorEventListener<CommunicatorEvent[T]>) {
+    on<T extends keyof CommunicatorEvent>(event: T, listener:  CommunicatorEventListener<CommunicatorEvent[T]>) {
         if (!(event in this.listeners)) this.listeners[event] = [];
         this.listeners[event].push(new ServerListener(event, listener));
     }
@@ -369,7 +369,7 @@ export default class GameServer {
                 res(e)
             }
             const listenerInstance = new ServerListener(event, listener.bind(this));
-            let index = this.listeners[event].push(listenerInstance) - 1;
+            const index = this.listeners[event].push(listenerInstance) - 1;
         });
     }
 
@@ -381,7 +381,7 @@ export default class GameServer {
     once<T extends keyof CommunicatorEvent>(event: T, listener: CommunicatorEventListener<CommunicatorEvent[T]>) {
         if (!(event in this.listeners)) this.listeners[event] = [];
 
-        this.waitfor(event).then(listener);
+        void this.waitfor(event).then(listener);
     }
 
     /**
@@ -400,6 +400,7 @@ export default class GameServer {
      */
     dispose() {
         if (this._stdout) {
+            // eslint-disable-next-line @typescript-eslint/unbound-method
             this._stdout.removeListener("data", this.onMessage);
         }
     }
@@ -419,7 +420,7 @@ class CommunicatorEventEmitter {
       assert(this.communicator.hasStreams, new NoStandardStreamsError());
       this.communicator.std.emit("in", "save-all\n");
 
-      let event = await this.communicator.waitfor("save");
+      const event = await this.communicator.waitfor("save");
 
       return event;
   }
@@ -427,7 +428,7 @@ class CommunicatorEventEmitter {
       assert(this.communicator.hasStreams, new NoStandardStreamsError());
       this.communicator.std.emit("in", "save-off\n");
 
-      let event = await this.communicator.waitfor("autosaveOff");
+      const event = await this.communicator.waitfor("autosaveOff");
 
       return event;
   }
@@ -435,7 +436,7 @@ class CommunicatorEventEmitter {
       assert(this.communicator.hasStreams, new NoStandardStreamsError());
       this.communicator.std.emit("in", "save-on\n");
 
-      let event = await this.communicator.waitfor("autosaveOn");
+      const event = await this.communicator.waitfor("autosaveOn");
 
       return event;
   }

@@ -1,5 +1,5 @@
 import figlet from "figlet";
-import {  BotConfig, ServerMetadata, createConfigs, loadConfig, prettyPrint, writeConfig, writeServerMetadata, ServerListEntry, readServerMetadata } from "./config";
+import {  BotConfig, ServerMetadata, createConfigs, loadConfig, prettyPrint, writeConfig, writeServerMetadata, ServerListEntry, readServerMetadata, RawServerMetadata } from "./config";
 import inquirer from "inquirer";
 import inquirerAutocompletePrompt from "inquirer-autocomplete-prompt";
 import chalk from "chalk";
@@ -11,7 +11,6 @@ import pjson from "../package.json";
 import { serverInstallerPrompt } from "./serverInstallerPrompt";
 import { getBorderCharacters, table } from "table";
 import openHTTP from "./api/openServer";
-import PropertiesManager from "./classes/PropertiesManager";
 import Masa from "./classes/Masa";
 
 inquirer.registerPrompt("autocomplete", inquirerAutocompletePrompt);
@@ -37,19 +36,20 @@ const setup = async () => {
         switch (filename) {
             case "bot.json":
                 return prettyPrint(await botSetup());
-            case "servers.json":
+            case "servers.json": {
                 const installerResult = await serverInstallerPrompt([]);
                 
                 if (installerResult) {
                     const { dir } = installerResult;
-                    const serverMeta: any = installerResult;
-                    delete serverMeta.dir;
+                    const serverMeta = installerResult;
+                    delete (serverMeta as RawServerMetadata & { dir?: string }).dir;
                     await writeServerMetadata(dir, serverMeta);
 
                     return prettyPrint([{ dir }])
                 }
 
                 return prettyPrint([]);
+            }
             default:
                 return null;
         }
@@ -58,7 +58,7 @@ const setup = async () => {
     // await createBackupsFolder(BackupType.Automatic);
     // await createBackupsFolder(BackupType.User);
 
-    let serverList = await loadConfig<ServerListEntry[]>("servers.json");
+    const serverList = await loadConfig<ServerListEntry[]>("servers.json");
     
     const serverMetaList: ServerMetadata[] = [];
     for (let i = 0; i < serverList.length; i++) {
@@ -68,9 +68,9 @@ const setup = async () => {
             serverEntry.tag = nanoid(9);
         }
         try {
-            let rawMeta = await readServerMetadata(serverEntry.dir);
+            const rawMeta = await readServerMetadata(serverEntry.dir);
 
-            let meta: ServerMetadata = {
+            const meta: ServerMetadata = {
                 ...rawMeta,
                 tag: serverEntry.tag,
                 directory: serverEntry.dir,
@@ -141,7 +141,7 @@ async function connectToDiscord() {
 export const botSetup = async (): Promise<BotConfig> => {
     console.log(`Welcome to using ${chalk.red("Masa")}. To start off let's run a simple setup!`);
 
-    let options: BotConfig = await inquirer.prompt(
+    const options: BotConfig = await inquirer.prompt(
         [
             {
                 message: "Enter bot token",

@@ -28,7 +28,7 @@ export default class GameLiveConf {
 
     private watcher;
 
-    isLoaded: boolean = false;
+    isLoaded = false;
 
     constructor(server: GameServer) {
         this.server = server;
@@ -73,11 +73,6 @@ export default class GameLiveConf {
 
 
     files: { [filename: string]: { mtime: Date, data: any } } = {}
-
-    isEulaAccepted() {
-        assert(this.isLoaded);
-        return /^eula {0,}= {0,}true/.test(this.files["eula"].data);
-    }
 
     /**
      * 
