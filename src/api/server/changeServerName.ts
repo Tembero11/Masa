@@ -8,15 +8,19 @@ const router = Router();
 
 router.use(express.json());
 
-router.post("/server/change-name/", async(req, res) => {
-    const { server, newName } = req.body;
-    if (!server || !newName) return apiResponse(res, 400, NetworkError.UnknownError);
+// eslint-disable-next-line @typescript-eslint/no-misused-promises
+router.post("/server/:tag/change-name/", async(req, res) => {
+    const { tag } = req.params;
 
-    if (typeof newName == "string" && !(newName.length <= 20 && newName.length > 3)) {
+    const { newName } = req.body as { newName: unknown };
+
+    if (typeof newName != "string") return apiResponse(res, 400, NetworkError.UnknownError);
+
+    if (!(newName.length <= 20 && newName.length > 3)) {
         return apiResponse(res, 400, NetworkError.UnknownError);
     }
-
-    const gameServer = Masa.getServerByTag(server);
+    
+    const gameServer = Masa.getServerByTag(tag);
 
     if (!gameServer) return apiResponse(res, 404, NetworkError.GameServerNotFound);
 
@@ -25,7 +29,7 @@ router.post("/server/change-name/", async(req, res) => {
     if (newName === gameServer?.name) return apiResponse(res, 200, NetworkError.Ok);
 
     try {
-        let meta = await readServerMetadata(gameServer.dir);
+        const meta = await readServerMetadata(gameServer.dir);
         meta.name = newName;
         await writeServerMetadata(gameServer.dir, meta);
 

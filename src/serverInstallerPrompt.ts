@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import inquirer from "inquirer";
 import fs from "fs"
 import assert from "assert";
@@ -7,8 +9,11 @@ import VanillaInstaller from "./classes/server/installer/VanillaInstaller";
 import { RawServerMetadata, ServerMetadata } from "./config";
 import { normalizeFilePath } from "./helpers";
 
+
+// this code is HORRRIBLE and needs a cleanup
+
 export async function serverInstallerPrompt(serverList: ServerMetadata[]): Promise<RawServerMetadata & {dir: string} | undefined> {
-  let options: { [key: string]: any } = {};
+  const options: { version: string, dir: string, [key: string]: any } = {version: "", dir: ""};
 
   options.willInstall = (await inquirer.prompt(
       [{
@@ -31,7 +36,7 @@ export async function serverInstallerPrompt(serverList: ServerMetadata[]): Promi
           { name: "Vanilla" },
           { name: "Paper" },
       ]
-  }])).serverType as string;
+  }])).serverType;
 
   options.version = (await inquirer.prompt([{
       message: "What version do you want to play?",
@@ -43,8 +48,10 @@ export async function serverInstallerPrompt(serverList: ServerMetadata[]): Promi
           switch (options.serverType) {
               case "Vanilla":
                   manifest = await VanillaInstaller.getVersions();
+                  break;
               case "Paper":
                   manifest = await PaperInstaller.getVersions();
+                  break;
               default:
                   break;
           }
@@ -65,8 +72,8 @@ export async function serverInstallerPrompt(serverList: ServerMetadata[]): Promi
       name: "dir",
       type: "input",
       validate: async (input) => {
-          if (fs.existsSync(input)) {
-              let contents = await fs.promises.readdir(input);
+          if (fs.existsSync(input as string)) {
+              const contents = await fs.promises.readdir(input as string);
               if (contents.length != 0) {
                   return "Directory not empty!";
               }
@@ -79,8 +86,8 @@ export async function serverInstallerPrompt(serverList: ServerMetadata[]): Promi
       message: "What should we call the server?",
       name: "name",
       type: "input",
-      validate: async (input) => {
-          let server = serverList.find((e => e.name == input));
+      validate: (input) => {
+          const server = serverList.find((e => e.name == input));
           if (server) {
               return "Server name is taken";
           }
@@ -88,7 +95,7 @@ export async function serverInstallerPrompt(serverList: ServerMetadata[]): Promi
       }
   }])).name as string;
 
-  let eula = (await inquirer.prompt([{
+  const eula = (await inquirer.prompt([{
       message: "Do you accept the End User License Agreement (EULA) (https://account.mojang.com/documents/minecraft_eula)?",
       name: "eula",
       type: "confirm",
@@ -115,7 +122,7 @@ export async function serverInstallerPrompt(serverList: ServerMetadata[]): Promi
           name: options.name as string,
           command: `java -Xmx1024M -Xms1024M -jar ${installer.filename} nogui`,
           description: "",
-          dir: normalizeFilePath(options.dir as string),
+          dir: normalizeFilePath(options.dir),
       };
   }
 }

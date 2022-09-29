@@ -49,6 +49,7 @@ export default class PropertiesManager extends Map<string, string | undefined> {
 
   toString() {
     return Array.from(this.entries()).map(([key, value]) => {
+      // eslint-disable-next-line @typescript-eslint/restrict-plus-operands
       if (key.startsWith("#comment_")) return "#" + value;
 
       return `${key}=${value ? value.replaceAll("=", "\\=") : ""}`

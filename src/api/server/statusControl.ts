@@ -14,7 +14,8 @@ router.post("/server/:tag/start/", (req, res) => {
 
     return apiResponse(res, 200, NetworkError.Ok);
 });
-router.post("/server/:tag/stop/", async (req, res) => {
+
+router.post("/server/:tag/stop/", (req, res) => {
     const gameServer = Masa.getServerByTag(req.params.tag);
 
     if (!gameServer) return apiResponse(res, 404, NetworkError.GameServerNotFound);

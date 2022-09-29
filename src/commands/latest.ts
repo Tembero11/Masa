@@ -21,9 +21,9 @@ export class LatestCommand extends Command {
   ];
 
   handler = async(interaction: CommandInteraction): Promise<void> => {
-    let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
+    // let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
 
-    let serverName = interaction.options.getString("server");
+    // let serverName = interaction.options.getString("server");
     // if (serverName) {
     //   let server = ServerHandler.getServerByName(serverName);
     //   if (server) {
@@ -54,7 +54,7 @@ export class LatestCommand extends Command {
     //     embed.setDescription(Lang.parse("common.serverNotFound", {SERVER_NAME: serverName}));
     //   }
     // }
-    await interaction.reply({embeds: [embed]});
+    // await interaction.reply({embeds: [embed]});
   };
   
   constructor() {

@@ -15,14 +15,14 @@ export class RestartButton extends GenericButton {
   ]
 
   handler = async (params: any, interaction: ButtonInteraction) => {
-    const { serverName } = params;
-    assert(serverName);
+    // const { serverName } = params;
+    // assert(serverName);
 
-    let embed = new MessageEmbed();
-    // TODO: RESTART
-    // await ServerHandler.restart(serverName);
-    embed.setDescription(Lang.parse("commands.restart.restarted", { SERVER_NAME: serverName }));
-    await interaction.editReply({ embeds: [embed] });
+    // let embed = new MessageEmbed();
+    // // TODO: RESTART
+    // // await ServerHandler.restart(serverName);
+    // embed.setDescription(Lang.parse("commands.restart.restarted", { SERVER_NAME: serverName }));
+    // await interaction.editReply({ embeds: [embed] });
   }
 
   setParameters!: (params: {

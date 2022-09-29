@@ -27,7 +27,7 @@ export abstract class GenericButton {
 
   private generatedCustomId: string | undefined;
 
-  getMessageButton = (disabled: boolean = false) => {
+  getMessageButton = (disabled = false) => {
     assert(this.params);
     assert(!this.isGlobal);
 

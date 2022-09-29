@@ -13,7 +13,7 @@ export class WS_EventSender {
             eventType: type
         }));
     }
-    async createSocketPlayer(player: OnlinePlayer | OfflinePlayer): Promise<WS_EventPlayer> {
+    createSocketPlayer(player: OnlinePlayer | OfflinePlayer): WS_EventPlayer {
         return {
             username: player.getUsername(),
             uuid:  player.getUUID()

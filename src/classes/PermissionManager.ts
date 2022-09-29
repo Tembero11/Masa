@@ -71,7 +71,7 @@ export class PermissionManager {
         all,
         scopes: scopes.map(e => {
           if (typeof e == "string") {
-            return PermissionScope[e as keyof typeof PermissionScope];
+            return PermissionScope[e];
           }
           return e;
         })
@@ -90,7 +90,7 @@ export class PermissionManager {
         return 1;
       }
       return -1;
-    }).map(([roleId, { level, scopes, all }]) => {
+    }).map(([roleId, { scopes, all }]) => {
       // If all is true this sets the role on all scopes to be permission: true
       if (!all) {
         scopes.forEach(v => lowerScopes.add(v));
@@ -118,11 +118,11 @@ export class PermissionManager {
    * @returns  {GuildApplicationCommandPermissionData[]}
    */
   genDiscordCommandPerms = (cmds: { name: string, id: string }[]) => {
-    let commandPerms = cmds.map((cmd, index) => {
+    const commandPerms = cmds.map((cmd) => {
       const requiredScopes = commands.get(cmd.name)?.permissionScopes;
       assert(requiredScopes);
 
-      let permissions = {
+      const permissions = {
         name: cmd.name,
         id: cmd.id,
         permissions: this.scopes.map(({roleId, scopes}) => {

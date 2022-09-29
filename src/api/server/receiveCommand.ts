@@ -10,10 +10,10 @@ const router = Router();
 router.use(express.json());
 
 router.post("/server/:tag/send-command", (req, res) => {
-  const { command } = req.body;
+  const { command } = req.body as { command: unknown };
   const { tag } = req.params;
 
-  if (!command) return apiResponse(res, 400, NetworkError.GameCommandMissing);
+  if (typeof command != "string") return apiResponse(res, 400, NetworkError.GameCommandMissing);
 
   const gameServer = Masa.getServerByTag(tag);
 

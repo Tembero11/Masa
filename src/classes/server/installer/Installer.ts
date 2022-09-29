@@ -19,9 +19,9 @@ export interface VersionManifest {
 
 
 export default abstract class Installer {
-  installed: boolean = false;
-  eula: boolean = false;
-  useLogs: boolean = false;
+  installed = false;
+  eula = false;
+  useLogs = false;
   version: string;
 
   protected _filename: string | undefined;
@@ -47,7 +47,7 @@ export default abstract class Installer {
 
     // Accept the eula
     await fs.promises.writeFile(path.join(directory, "eula.txt"), "eula=true");
-  };
+  }
   acceptEULA() {
     this.eula = true;
     return this;

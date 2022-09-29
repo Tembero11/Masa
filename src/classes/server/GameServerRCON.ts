@@ -31,7 +31,7 @@ export default class GameServerRCON {
       try {
         await this.rawRcon.authenticate(this.password);
         // If the server crashes Masa doesn't crash
-        this.rawRcon.connection.on("error", async err => console.log(err));
+        this.rawRcon.connection.on("error", err => console.log(err));
         this.rawRcon.connection.on("close", () => console.log("RCON CLOSED"))
         return true;
       } catch (err) {
@@ -40,12 +40,13 @@ export default class GameServerRCON {
     }
 
     async disconnect() {
-        this.rawRcon?.disconnect();
+        await this.rawRcon?.disconnect();
     }
   
     async sendGameCommand(gameCommand: string) {
       assert(this.isConnected, "RCON is not connected!");
   
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       return await this.rawRcon!.execute(gameCommand);
     }
   }

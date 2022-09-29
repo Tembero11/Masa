@@ -34,14 +34,14 @@ export default class ProgressBar {
   }
 
   toString() {
-    let progress = new Array(Math.floor(this.percentage * this.width)).fill(" ").join("");
-    let progressLeft = new Array(Math.round((1 - this.percentage) * this.width)).fill("░").join("");
-    let components = [
+    const progress = new Array(Math.floor(this.percentage * this.width)).fill(" ").join("");
+    const progressLeft = new Array(Math.round((1 - this.percentage) * this.width)).fill("░").join("");
+    const components = [
       chalk.white("|"),
       chalk.bgGreen(progress),
       progressLeft,
       chalk.white("|"),
-      this.showProgress ? " " + Math.round(this.percentage * 100) + "%" : ""
+      this.showProgress ? " " + Math.round(this.percentage * 100).toString() + "%" : ""
     ];
     return components.join("");
   }

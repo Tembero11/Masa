@@ -42,7 +42,7 @@ export const getMessageGameCommand = (command: string) => {
   return command;
 }
 
-export const generateServerButtonRow = (serverName: string, server: GameServer) => {
+export const generateServerButtonRow = (serverName: string) => {
   return new MessageActionRow().addComponents([
     new StartButton().setParameters({serverName}).getMessageButton(),
     new StopButton().setParameters({serverName}).getMessageButton(),

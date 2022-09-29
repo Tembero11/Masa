@@ -70,7 +70,7 @@ interface ConfigCreationResult {
   content: string,
 }
 
-export const createConfigs = async(content?: (filename: string) => Promise<string | null>, soft: boolean = true): Promise<ConfigCreationResult[]> => {
+export const createConfigs = async(content?: (filename: string) => Promise<string | null>, soft = true): Promise<ConfigCreationResult[]> => {
   // Create the config folder if needed
   try {
     await fs.promises.stat(configDir);
@@ -78,7 +78,7 @@ export const createConfigs = async(content?: (filename: string) => Promise<strin
     await fs.promises.mkdir(configDir);
   }
 
-  let createdConfigs: ConfigCreationResult[] = [];
+  const createdConfigs: ConfigCreationResult[] = [];
   
   for (const filename of configFiles) {
     const filepath = path.join(configDir, filename);
@@ -87,9 +87,11 @@ export const createConfigs = async(content?: (filename: string) => Promise<strin
       try {
         await fs.promises.stat(filepath);
         continue;
-      }catch(err) {}
+      }catch(err) {
+        console.log(err);
+      }
     }
-    let fileContent: string = "";
+    let fileContent = "";
     if (content) {
       fileContent = (await content(filename)) || "";
     }
@@ -109,10 +111,11 @@ export const prettyPrint = (data: object) => {
   return JSON.stringify(data, null, 2);
 }
 
-export const loadConfig = async<T extends any>(filename: string): Promise<T> => {
+export const loadConfig = async<T>(filename: string): Promise<T> => {
   const filePath = path.join(configDir, filename);
   
   const content = await fs.promises.readFile(filePath, "utf8");
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
   const contentParsed = JSON.parse(content);
   return contentParsed as T;
 }

@@ -28,17 +28,17 @@ export default abstract class EnvCheck {
 
         const p = await lookpath(program);
         if (p) {
-            return new Promise<boolean>((res, rej) => {
+            return new Promise<boolean>(res => {
                 try {
                     const proc = spawn(program, ["--version"]);
     
                     let output = "";
     
                     proc.stdout.on("data", (chunk) => {
-                        output += chunk.toString();
+                        output += (chunk as {toString: () => string;}).toString();
                     });
     
-                    proc.on("exit", (code) => {
+                    proc.on("exit", () => {
                         if (output.search(/^(openjdk|java)/) > -1) {
                             if (logOutput) {
                                 process.stdout.write(`Java found at ${chalk.yellow`"${p}"`}\n`);
