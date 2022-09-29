@@ -34,18 +34,18 @@ wss.on("connection", function connection(ws) {
     const sender = new WS_EventSender(ws);
 
     Masa.getServers().forEach(gameServer => {
-        gameServer.on("join", async(event) => {
+        gameServer.on("join", event => {
             if (!gameServer.tag) return;
             sender.sendEvent("join", {
-                player: await sender.createSocketPlayer(event.player),
+                player: sender.createSocketPlayer(event.player),
                 server: gameServer.tag,
                 isoDate: sender.ISOFromGameEvent(event)
             });
         });
-        gameServer.on("quit", async(event) => {
+        gameServer.on("quit", event => {
             if (!gameServer.tag) return;
             sender.sendEvent("quit", {
-                player: await sender.createSocketPlayer(event.player),
+                player: sender.createSocketPlayer(event.player),
                 server: gameServer.tag,
                 isoDate: sender.ISOFromGameEvent(event)
             });
@@ -72,11 +72,11 @@ wss.on("connection", function connection(ws) {
                 isoDate: reader.date.toISOString(),
             })
         });
-        gameServer.on("chat", async event => {
+        gameServer.on("chat", event => {
             if (!gameServer.tag) return;
             sender.sendEvent("chat", {
                 server: gameServer.tag,
-                player: await sender.createSocketPlayer(event.player),
+                player: sender.createSocketPlayer(event.player),
                 data: event.message,
                 isoDate: sender.ISOFromGameEvent(event)
             });

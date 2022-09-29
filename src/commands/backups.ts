@@ -20,10 +20,10 @@ export class BackupsCommand extends Command {
   ];
 
   handler = async(interaction: CommandInteraction): Promise<void> => {
-    let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
+    // let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
 
-    let serverName = interaction.options.getString("server");
-    if (serverName) {
+    // let serverName = interaction.options.getString("server");
+    // if (serverName) {
       // if (server) {
       //   if (server.backups) {
       //     let autoBackups = server.backups.listAutomatic();
@@ -45,7 +45,7 @@ export class BackupsCommand extends Command {
       // }else {
       //   embed.setDescription(Lang.parse("common.serverNotFound", {SERVER_NAME: serverName}));
       // }
-    }
-    await interaction.reply({embeds: [embed]});
+    // }
+    // await interaction.reply({embeds: [embed]});
   };
 }

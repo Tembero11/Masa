@@ -18,8 +18,9 @@ export class HelpCommand extends Command {
     PermissionScope.HarmlessCommands
   ];
 
-  handler = async (interaction: CommandInteraction): Promise<void> => {
-    let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
+  // eslint-disable-next-line @typescript-eslint/require-await
+  handler = async (interaction: CommandInteraction) => {
+    const embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
 
     embed.setTitle(Lang.parse("commands.help.listOfCommands"));
     embed.setDescription(Lang.parse("commands.help.helpDesc"));

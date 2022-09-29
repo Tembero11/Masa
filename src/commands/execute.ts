@@ -1,6 +1,6 @@
 import  { SlashCommandBuilder } from "@discordjs/builders";
 import assert from "assert";
-import { CommandInteraction, MessageActionRow, MessageButton } from "discord.js";
+import { CommandInteraction, MessageActionRow } from "discord.js";
 import { RepeatCommandButton } from "../buttons/RepeatCommandButton";
 import Lang from "../classes/Lang";
 import Masa from "../classes/Masa";
@@ -30,14 +30,14 @@ export class ExecuteCommand extends Command {
     const embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
     const actionRow = new MessageActionRow();
     
-    let serverName = interaction.options.getString("server");
+    const serverName = interaction.options.getString("server");
     assert(serverName);
 
-    let server = Masa.getServerByName(serverName);
+    const server = Masa.getServerByName(serverName);
 
     if (server) {
       if (server.isJoinable) {
-        let command = interaction.options.getString("command")?.trim();
+        const command = interaction.options.getString("command")?.trim();
         assert(command);
 
 
@@ -72,12 +72,14 @@ export class ExecuteCommand extends Command {
       }));
     }
 
-    let res: any = {embeds: [embed]};
+    const res: any = {embeds: [embed]};
 
     if (actionRow.components.length > 0) {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
       res.components = [actionRow];
     }
 
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     await interaction.editReply(res);
   }
 }

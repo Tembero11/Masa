@@ -25,7 +25,7 @@ client.once("ready", () => {
     const rest = new REST({ version: '9' }).setToken(token);
 
 
-    (async () => {
+    void (async () => {
       console.log("Started refreshing application (/) commands.");
 
       const permissionsDefined = config.permissions?.roles !== undefined;
@@ -40,6 +40,7 @@ client.once("ready", () => {
       );
 
       if (permissionsDefined) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         manager = new PermissionManager(config.permissions!.roles);
 
         const commandIds = await manager.getDiscordCommands(rest, clientId, guildId);
@@ -58,7 +59,7 @@ client.on("interactionCreate", async (interaction) => {
   if (!interaction.isCommand()) return;
 
 
-  let command = commands.get(interaction.commandName);
+  const command = commands.get(interaction.commandName);
   if (command) {
     try {
       await command.handler(interaction);
@@ -66,7 +67,7 @@ client.on("interactionCreate", async (interaction) => {
       console.log(err);
       // Note: !interaction.replied seemed to crash even though it shouldn't
       try {
-        let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
+        const embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
         embed.setDescription(Lang.parse("common.unknownErr"));
         await interaction.reply({embeds: [embed]})
       }catch(err) {
@@ -81,14 +82,15 @@ client.on("interactionCreate", async (interaction) => {
 
   await interaction.deferReply({ ephemeral: true });
 
-  let id = interaction.customId;
+  const id = interaction.customId;
 
   try {
     const embed = new MessageEmbed();
 
     const firstColon = id.indexOf(":");
-    let action = id.substring(0, firstColon);
-    let params = JSON.parse(id.substring(firstColon + 1));
+    const action = id.substring(0, firstColon);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const params = JSON.parse(id.substring(firstColon + 1));
     
     if (interaction.member) {
       const globalButton = buttons.get(action);
@@ -129,7 +131,7 @@ client.on("interactionCreate", async (interaction) => {
     console.log(err);
     // Note: !interaction.replied seemed to crash even though it shouldn't
     try {
-      let embed = new MessageEmbed();
+      const embed = new MessageEmbed();
       embed.setDescription(Lang.parse("common.unknownErr"));
       await interaction.editReply({ embeds: [embed] });
     } catch (err) {

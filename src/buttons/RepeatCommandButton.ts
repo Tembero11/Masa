@@ -17,36 +17,36 @@ export class RepeatCommandButton extends GenericButton {
 
 
   handler = async (params: any, interaction: ButtonInteraction) => {
-    const { serverName, cmd } = params;
-    assert(serverName && cmd);
+    // const { serverName, cmd } = params;
+    // assert(serverName && cmd);
 
-    let server = Masa.getServerByName(serverName);
+    // let server = Masa.getServerByName(serverName);
 
-    const embed = new MessageEmbed();
+    // const embed = new MessageEmbed();
 
-    if (server) {
-      if (server.isJoinable) {
-        const executableCommand = getExecutableGameCommand(cmd);
-        const msgCommand = getMessageGameCommand(cmd);
+    // if (server) {
+    //   if (server.isJoinable) {
+    //     const executableCommand = getExecutableGameCommand(cmd);
+    //     const msgCommand = getMessageGameCommand(cmd);
 
-        server.std.emit("in", executableCommand);
+    //     server.std.emit("in", executableCommand);
 
-        embed.setDescription(Lang.parse("commands.execute.commandSent", {
-          SERVER_NAME: serverName,
-          GAME_COMMAND: msgCommand
-        }));
-      } else {
-        embed.setDescription(Lang.parse("commands.status.serverOffline", {
-          SERVER_NAME: serverName
-        }));
-      }
-    } else {
-      embed.setDescription(Lang.parse("common.serverNotFound", {
-        SERVER_NAME: serverName
-      }));
-    }
+    //     embed.setDescription(Lang.parse("commands.execute.commandSent", {
+    //       SERVER_NAME: serverName,
+    //       GAME_COMMAND: msgCommand
+    //     }));
+    //   } else {
+    //     embed.setDescription(Lang.parse("commands.status.serverOffline", {
+    //       SERVER_NAME: serverName
+    //     }));
+    //   }
+    // } else {
+    //   embed.setDescription(Lang.parse("common.serverNotFound", {
+    //     SERVER_NAME: serverName
+    //   }));
+    // }
 
-    interaction.editReply({ embeds: [embed] });
+    // interaction.editReply({ embeds: [embed] });
   }
 
   setParameters!: (params: {

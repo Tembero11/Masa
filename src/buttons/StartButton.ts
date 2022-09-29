@@ -15,23 +15,23 @@ export class StartButton extends GenericButton {
   ]
 
   handler = async (params: any, interaction: ButtonInteraction) => {
-    const { serverName } = params;
-    assert(serverName);
+    // const { serverName } = params;
+    // assert(serverName);
 
-    const server = Masa.getServerByName(serverName);
-    assert(server);
+    // const server = Masa.getServerByName(serverName);
+    // assert(server);
 
-    let embed = new MessageEmbed();
+    // let embed = new MessageEmbed();
 
-    if (!server.hasStreams) {
-      server.safeStart();
-      await server.waitfor("ready");
-      embed.setDescription(Lang.parse("commands.start.started", { SERVER_NAME: serverName }));
-    }else {
-      embed.setDescription(Lang.parse("commands.start.alreadyOnline", { SERVER_NAME: serverName }));
-    }
+    // if (!server.hasStreams) {
+    //   server.safeStart();
+    //   await server.waitfor("ready");
+    //   embed.setDescription(Lang.parse("commands.start.started", { SERVER_NAME: serverName }));
+    // }else {
+    //   embed.setDescription(Lang.parse("commands.start.alreadyOnline", { SERVER_NAME: serverName }));
+    // }
 
-    await interaction.editReply({ embeds: [embed] });
+    // await interaction.editReply({ embeds: [embed] });
   }
 
   setParameters!: (params: {

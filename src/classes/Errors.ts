@@ -1,3 +1,5 @@
+import { toArrayIfNot } from "../helpers";
+
 export class NoListenersError extends Error {
   constructor() {
     super("Cannot remove empty listeners");
@@ -20,7 +22,7 @@ export class NoStandardStreamsError extends Error {
       msg = `${stream.splice(0, stream.length - 2).join(",")} & ${stream[stream.length - 1]} were missing`;
     }else {
       if (stream) {
-        msg = `${stream} was missing`;
+        msg = `${toArrayIfNot(stream).join(", ")} was missing`;
       }else {
         msg = `One or more streams were missing`;
       }

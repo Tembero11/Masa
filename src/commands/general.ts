@@ -22,7 +22,9 @@ export const commands = new Map<string, Command>();
 
 // Used as a decorator when creating a command
 export function RegisteredCommand(Cmd: any) {
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call
   const cmd = new Cmd();
   // console.log(cmd);
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-argument, @typescript-eslint/no-unsafe-member-access
   commands.set(cmd.name, cmd);
 }

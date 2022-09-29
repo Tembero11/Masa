@@ -120,11 +120,12 @@ async function connectToDiscord() {
     }catch(err) {
         console.log(chalk.red`Could not connect to Discord! The token might be expired or invalid.\n`);
 
-        const { setup } = await inquirer.prompt({
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+        const { setup } = (await inquirer.prompt({
             message: "Do you want to reset the bot configuration?",
             name: "setup",
             type: "confirm",
-        });
+        }));
 
         if (setup) {
             config = await botSetup();
@@ -141,7 +142,7 @@ async function connectToDiscord() {
 export const botSetup = async (): Promise<BotConfig> => {
     console.log(`Welcome to using ${chalk.red("Masa")}. To start off let's run a simple setup!`);
 
-    const options: BotConfig = await inquirer.prompt(
+    const options = await inquirer.prompt(
         [
             {
                 message: "Enter bot token",
@@ -159,7 +160,7 @@ export const botSetup = async (): Promise<BotConfig> => {
                 type: "input",
             },
         ],
-    );
+    ) as BotConfig;
     return options;
 }
 

@@ -22,13 +22,13 @@ export class StartCommand extends Command {
   ];
 
   handler = async (interaction: CommandInteraction): Promise<void> => {
-    let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
+    const embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
 
     try {
-      let serverName = interaction.options.getString("server");
+      const serverName = interaction.options.getString("server");
       assert(serverName);
 
-      let server = Masa.getServerByName(serverName);
+      const server = Masa.getServerByName(serverName);
       assert(server);
 
       if (server.hasStreams) {
@@ -45,7 +45,7 @@ export class StartCommand extends Command {
         server.safeStart();
         await server.waitfor("ready");
         embed.setDescription(Lang.parse("commands.start.started", {SERVER_NAME: serverName}));
-        await interaction.editReply({ embeds: [embed], components: [generateServerButtonRow(serverName, server)] });
+        await interaction.editReply({ embeds: [embed], components: [generateServerButtonRow(serverName)] });
       }
     } catch (err) {
       console.error(err);

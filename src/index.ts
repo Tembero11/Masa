@@ -14,7 +14,7 @@ process.on("uncaughtException", (err) => {
     // Stop all game servers safely
     Masa.getServers().forEach(gameServer => {
       if (gameServer.hasStreams) {
-          gameServer.stop();
+          void gameServer.stop();
       }
     });
   } catch (err) {

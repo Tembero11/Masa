@@ -1,5 +1,5 @@
 import assert from "assert";
-import GameLiveConf, { FilePlayerEntry } from "./server/GameLiveConf";
+import GameLiveConf from "./server/GameLiveConf";
 import GameServer from "./server/GameServer";
 
 abstract class BasePlayer {
@@ -25,7 +25,7 @@ abstract class BasePlayer {
   }
 
   getUUID() {
-    const usercache = this.liveConf.getFile("usercache") as FilePlayerEntry[];
+    const usercache = this.liveConf.getFile("usercache");
     const uuid = usercache.find(player => player.name === this.username)?.uuid;
 
     assert(uuid);
@@ -33,7 +33,7 @@ abstract class BasePlayer {
   }
 
   isWhitelisted() {
-    const whitelist = this.liveConf.getFile("whitelist") as FilePlayerEntry[];
+    const whitelist = this.liveConf.getFile("whitelist");
     const player = whitelist.find(player => player.name === this.username);
 
     return player ? true : false;

@@ -23,15 +23,15 @@ export class StatusCommand extends Command {
   ];
 
   handler = async (interaction: CommandInteraction): Promise<void> => {
-    let embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
+    const embed = getDefaultCommandEmbed(interaction.user.username, interaction.user.avatarURL());
 
     embed.setTitle(Lang.parse("commands.status.serverStatusHeader"));
 
     let servers = Masa.getServers();
 
-    let serverName = interaction.options.getString("server");
+    const serverName = interaction.options.getString("server");
     if (serverName) {
-      let server = Masa.getServerByName(serverName);
+      const server = Masa.getServerByName(serverName);
       if (server) {
         servers = [server];
       }else {
@@ -44,7 +44,7 @@ export class StatusCommand extends Command {
 
     for (const server of servers) {
       if (server.name) {
-        let serverBlock: string[] = [];
+        const serverBlock: string[] = [];
         if (server.isJoinable) {
           serverBlock.push(Lang.parse("commands.status.serverOnline", {SERVER_NAME: server.name}) + " :green_circle:");
         } else if (!server.hasStreams) {

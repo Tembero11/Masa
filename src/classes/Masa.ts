@@ -80,7 +80,7 @@ async function createServer(meta: ServerMetadata) {
         }
         setServerStatus(meta.name, server, Presence.SERVER_ONLINE);
     });
-    server.on("quit", (e) => {
+    server.on("quit", () => {
         setServerStatus(meta.name, server, Presence.SERVER_ONLINE);
     });
 
@@ -95,7 +95,7 @@ async function createServer(meta: ServerMetadata) {
         });
     }
 
-    server.on("close", e => setServerStatus(meta.name, server, Presence.SERVER_OFFLINE));
+    server.on("close", () => setServerStatus(meta.name, server, Presence.SERVER_OFFLINE));
 
 
     if (meta.advanced?.chat?.channels) {
@@ -111,7 +111,7 @@ async function createServer(meta: ServerMetadata) {
                 allowDuplex
             );
         } else {
-            client.once("ready", _ => setupChatStreaming(
+            client.once("ready", () => setupChatStreaming(
                 server,
                 meta.name,
                 channels,
@@ -140,17 +140,21 @@ async function createServer(meta: ServerMetadata) {
 
         await manager.createBackupDir()
 
-        setInterval(async () => {
-            if (manager.manifest.backupCount >= backupLimit) {
-                const backupMeta = manager.manifest.getOldestAutomatic();
-                if (backupMeta) {
-                    await manager.deleteBackup(backupMeta.id);
+    
+
+        setInterval(() => {
+            (async function () {
+                if (manager.manifest.backupCount >= backupLimit) {
+                    const backupMeta = manager.manifest.getOldestAutomatic();
+                    if (backupMeta) {
+                        await manager.deleteBackup(backupMeta.id);
+                    }
                 }
-            }
-            await manager.prepareForBackup();
-            const backup = await manager.createBackup();
-            await manager.afterBackup();
-            console.log(`An automatic backup was succesfully created! ${manager.getFilename(backup.id)}`);
+                await manager.prepareForBackup();
+                const backup = await manager.createBackup();
+                await manager.afterBackup();
+                console.log(`An automatic backup was succesfully created! ${manager.getFilename(backup.id)}`);
+            })
         }, backupIntervalMs);
     } else {
         console.warn(chalk.yellow(`Automatic backups are ${chalk.bold("disabled")} for server "${chalk.underline(meta.name)}".`))
@@ -182,28 +186,34 @@ const setupChatStreaming = async (
     }));
 
     server.on("chat", event => {
-        channels.forEach(channel => channel.send(`\`\`\`<${event.player.getUsername()}> ${event.message}\`\`\``));
+        channels.forEach(channel => void channel.send(`\`\`\`<${event.player.getUsername()}> ${event.message}\`\`\``));
     });
     if (sendPlayerNetworkEvents) {
         server.on("join", event => {
-            channels.forEach(channel => channel.send(`${yellowMsgPrefix}${Lang.parse("chat.playerJoined", {
-                PLAYER_NAME: event.player.getUsername(),
-                paramBolding: false
-            })}${yellowMsgSuffix}`));
+            channels.forEach(channel => {
+                void channel.send(`${yellowMsgPrefix}${Lang.parse("chat.playerJoined", {
+                    PLAYER_NAME: event.player.getUsername(),
+                    paramBolding: false
+                })}${yellowMsgSuffix}`)
+            });
         });
         server.on("quit", event => {
-            channels.forEach(channel => channel.send(`${yellowMsgPrefix}${Lang.parse("chat.playerLeft", {
-                PLAYER_NAME: event.player.getUsername(),
-                paramBolding: false
-            })}${yellowMsgSuffix}`));
+            channels.forEach(channel => {
+                void channel.send(`${yellowMsgPrefix}${Lang.parse("chat.playerLeft", {
+                    PLAYER_NAME: event.player.getUsername(),
+                    paramBolding: false
+                })}${yellowMsgSuffix}`)
+            });
         });
     }
     if (sendServerReadyEvent) {
-        server.on("ready", event => {
-            channels.forEach(channel => channel.send(`${yellowMsgPrefix}${Lang.parse("chat.serverReady", {
-                SERVER_NAME: serverName,
-                paramBolding: false
-            })}${yellowMsgSuffix}`));
+        server.on("ready", () => {
+            channels.forEach(channel => {
+                void channel.send(`${yellowMsgPrefix}${Lang.parse("chat.serverReady", {
+                    SERVER_NAME: serverName,
+                    paramBolding: false
+                })}${yellowMsgSuffix}`)
+            });
         });
     }
 
@@ -231,7 +241,7 @@ const setupChatStreaming = async (
                     SERVER_NAME: serverName,
                 }));
 
-                msg.channel.send({ embeds: [embed] });
+                void msg.channel.send({ embeds: [embed] });
             }
         });
     }

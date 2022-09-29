@@ -39,7 +39,7 @@ export default abstract class Lang {
   static monthsAndDays: [string, string][];
 
   static setLocale(lang: Language = "en") {
-    const file = JSON.parse(fs.readFileSync(path.join(process.cwd(), "locales", lang + ".json"), "utf8"));
+    const file = JSON.parse(fs.readFileSync(path.join(process.cwd(), "locales", lang + ".json"), "utf8")) as typeof en;
     Lang.langFile = merge.withOptions({}, en, file);
 
     Lang.monthsAndDays = [
@@ -57,7 +57,10 @@ export default abstract class Lang {
       text = path as string;
     }else {
       let current: any = Lang.langFile["translations"];
-      path.split(".").forEach(key => current = current[key]);
+      path.split(".").forEach(key => {
+        // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-member-access
+        current = current[key]
+      });
 
       text = current as string;
     }
@@ -67,10 +70,10 @@ export default abstract class Lang {
         if (key === key.toUpperCase()) {
           if (!key.includes("LINK")) {
             if (options.paramBolding === undefined || options.paramBolding == true) {
-              value = `**${value}**`;
+              value = `**${value as string | number}**`;
             }
           }
-          text = text.replaceAll(`%${key}%`, value);
+          text = text.replaceAll(`%${key}%`, (value as string | number).toString());
         }
       });
     }

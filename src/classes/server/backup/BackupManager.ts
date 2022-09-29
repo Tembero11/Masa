@@ -3,7 +3,6 @@ import tar from "tar";
 import fs from "fs";
 import path from "path";
 import { Readable } from "stream";
-import GameServer from "../GameServer";
 import { AutoBackupMetadata, AutoOrManualBackupMetadata, BackupManifestController, BackupType, ManualBackupMetadata } from "./BackupManifest";
 import { nanoid } from "nanoid";
 import { NoBackupError } from "../../Errors";
@@ -44,10 +43,10 @@ export class BackupManager {
 
   async readdirRecursiveFlat(dir: string, options?: { ignoreDestDir?: boolean, filter?: (filepath: string, dirent: fs.Dirent) => boolean}) {
     const contents = await fs.promises.readdir(dir, { withFileTypes: true });
-    let flatList: string[] = [];
+    const flatList: string[] = [];
 
     for (const dirent of contents) {
-      let direntPath = this.normalizePathDelimiters(path.join(dir, dirent.name));
+      const direntPath = this.normalizePathDelimiters(path.join(dir, dirent.name));
 
       if (options?.ignoreDestDir) {
         if (direntPath.startsWith(this.dest)) {
@@ -69,10 +68,10 @@ export class BackupManager {
 
   async createReadStream(files: string[], options?: { compression?: CompressionType, withOriginDir?: boolean }) {
     let compression = options?.compression;
-    let withOriginDir = options?.withOriginDir;
+    const withOriginDir = options?.withOriginDir;
     if (!options?.compression) compression = this.compression;
 
-    let relativeFiles = files.map(filePath => {
+    const relativeFiles = files.map(filePath => {
       // Remove origin directory
       if (!withOriginDir) {
         filePath = filePath.replace(new RegExp(`^${this.origin}`), "");
@@ -128,7 +127,7 @@ export class BackupManager {
 
     const isoDate = new Date().toISOString();
 
-    let backup: AutoOrManualBackupMetadata = {
+    const backup: AutoOrManualBackupMetadata = {
       id,
       created: isoDate,
       compression,

@@ -7,7 +7,6 @@ import assert from "assert";
 const WATCHED_FILES = [
     "usercache.json",
     "whitelist.json",
-    "eula.txt",
     "ops.json",
     "banned-ips.json",
     "banned-players.json"
@@ -72,7 +71,7 @@ export default class GameLiveConf {
     }
 
 
-    files: { [filename: string]: { mtime: Date, data: any } } = {}
+    files: { [filename: string]: { mtime: Date, data: FilePlayerEntry[] } } = {}
 
     /**
      * 
@@ -90,7 +89,7 @@ export default class GameLiveConf {
 
     private parseFilePlayerEntries(data: string): FilePlayerEntry[] {
         try {
-            const parsed = JSON.parse(data);
+            const parsed = JSON.parse(data) as FilePlayerEntry[];
             return parsed;
         } catch (err) {
             return []

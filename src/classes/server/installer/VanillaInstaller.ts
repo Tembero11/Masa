@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 import assert from "assert";
 import fs from "fs";
 import path from "path";
@@ -17,8 +19,8 @@ interface GameVersion {
 
 
 export default class VanillaInstaller extends Installer {
-  installed: boolean = false;
-  eula: boolean = false;
+  installed = false;
+  eula = false;
   useLogs;
   version;
 
@@ -50,38 +52,42 @@ export default class VanillaInstaller extends Installer {
     assert((await fs.promises.readdir(directory)).length == 0, new InstallDirectoryNotEmptyError(this.version));
 
     // Accept the eula
-    fs.promises.writeFile(path.join(directory, "eula.txt"), "eula=true");
+    void await fs.promises.writeFile(path.join(directory, "eula.txt"), "eula=true");
 
     this.log("Getting version manifest...");
-    let manifest = await VanillaInstaller.getVersions();
+    const manifest = await VanillaInstaller.getVersions();
 
     this.log("Finding requested version...");
-    let version = this.version == "latest" ? manifest.latest.release : this.version;
-    let versionData = manifest.versions.find(e => e.id == version);
+    const version = this.version == "latest" ? manifest.latest.release : this.version;
+    const versionData = manifest.versions.find(e => e.id == version);
     assert(versionData && versionData.url);
 
     this.log("Getting the download URL...");
-    var res = await axios.get(versionData.url);
-    let downloadURL = res.data["downloads"]["server"]["url"];
+    const versionResponse = await axios.get(versionData.url);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const downloadURL = versionResponse.data["downloads"]["server"]["url"];
 
-    let filename = `server_${version}.jar`;
+    const filename = `server_${version}.jar`;
     this._filename = filename;
 
-    let jarFileStream = fs.createWriteStream(path.join(directory, filename));
+    const jarFileStream = fs.createWriteStream(path.join(directory, filename));
 
     this.log("Downloading jar file...");
-    var res = await axios.get(downloadURL, {responseType: "stream"});
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const stream = (await axios.get(downloadURL, {responseType: "stream"})).data;
 
-    res.data.pipe(jarFileStream);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+    stream.pipe(jarFileStream);
 
     return new Promise((resolve) => {
-      res.data.on("end", async() => {
-        let server = new GameServer(`java -Xmx1024M -Xms1024M -jar ${filename} nogui`, directory, { disableRCON: true });
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-call
+      stream.on("end", async() => {
+        const server = new GameServer(`java -Xmx1024M -Xms1024M -jar ${filename} nogui`, directory, { disableRCON: true });
 
         process.stdout.write("Installing...");
 
 
-        let progress = new ProgressBar(0, 50);
+        const progress = new ProgressBar(0, 50);
 
         server.std.on("out", e => {
           progress.increment();
@@ -113,7 +119,7 @@ export default class VanillaInstaller extends Installer {
     if (VanillaInstaller.versionCache) {
       return VanillaInstaller.versionCache;
     }
-    let data = (await axios.get(VanillaInstaller.versionManifestURL)).data as VersionManifest;
+    const data = (await axios.get(VanillaInstaller.versionManifestURL)).data as VersionManifest;
     VanillaInstaller.versionCache = data;
     return data;
   }

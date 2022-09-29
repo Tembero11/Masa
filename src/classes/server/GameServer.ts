@@ -64,7 +64,7 @@ export default class GameServer {
 
   getOfflinePlayers() {
     if (!this.liveConf.hasFile("usercache")) return new Map<PlayerName, OfflinePlayer>();
-    const usercache = this.liveConf.getFile("usercache") as FilePlayerEntry[];
+    const usercache = this.liveConf.getFile("usercache");
 
     const playerMap = new Map<PlayerName, OfflinePlayer>();
 
@@ -314,11 +314,11 @@ export default class GameServer {
 
     // =================================
 
-    private onError(data: any) {
+    private onError(data: { toString: () => string }) {
         this.std.emit("err", data.toString());
     }
 
-    private onMessage(data: any) {
+    private onMessage(data: { toString: () => string }) {
         const reader = new ConsoleReader(data.toString(), this, this.liveConf, this._isServerJoinable, this.getOnlinePlayers(), this.getOfflinePlayers());
         // Notify the stdout EventEmitter
         this.std.emit("out", reader);
