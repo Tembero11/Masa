@@ -1,10 +1,8 @@
 import { SlashCommandBuilder } from "@discordjs/builders";
-import { CommandInteraction, MessageEmbed } from "discord.js";
+import { CommandInteraction } from "discord.js";
 import { getDefaultCommandEmbed } from "../helpers";
 import Command, { RegisteredCommand } from "./general";
-import { config } from "../index";
 import Lang from "../classes/Lang";
-import path from "path";
 import { PermissionScope } from "../classes/PermissionManager";
 import Masa from "../classes/Masa";
 

@@ -1,5 +1,5 @@
 import {  ActivityType, MessageActionRow, MessageEmbed, PresenceStatusData } from "discord.js";
-import { client, config } from "./index";
+import { client } from "./index";
 import { nanoid } from "nanoid";
 import GameServer from "./classes/server/GameServer";
 import assert from "assert";
@@ -14,6 +14,7 @@ import Masa, { Presence } from "./classes/Masa";
 
 
 export const isAllowedChannel = (channelID: string) => {
+  const config = Masa.getConf().getFile("bot");
   if (!config.allowedChannels) return true;
   for (const allowedChannel of config.allowedChannels) {
     if (allowedChannel === channelID) {

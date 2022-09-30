@@ -1,5 +1,5 @@
 import express, { Router } from "express";
-import { readServerMetadata, writeServerMetadata } from "../../config";
+import { readServerMetadata, writeServerMetadata } from "../../conf/config";
 import { apiResponse } from "../openServer";
 import { NetworkError } from "../NetworkError";
 import Masa from "../../classes/Masa";

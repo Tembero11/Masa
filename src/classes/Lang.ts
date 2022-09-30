@@ -1,12 +1,11 @@
-import assert from "assert";
 import fs from "fs";
 import { PropertyStringPath } from "property-string-path";
 import path from "path";
 import merge from "ts-deepmerge";
-import { NullRequiredLanguageParameterError, UnknownLanguageError } from "./Errors";
+import { NullRequiredLanguageParameterError } from "./Errors";
 import en from "../../locales/en.json";
 import languageIndex from "../../locales/index.json";
-import { config } from "../setup";
+import Masa from "./Masa";
 
 export type Language = keyof typeof languageIndex.languages;
 export type DateFormatType = keyof typeof en["dateFormat"];
@@ -53,7 +52,7 @@ export default abstract class Lang {
   static parse(path: LangPath, options?: LanguageParseOptions) {
     // Parse language path
     let text: string;
-    if (config.developer?.skipLanguageParsing) {
+    if (Masa.getConf().getFile("bot").developer?.skipLanguageParsing) {
       text = path as string;
     }else {
       let current: any = Lang.langFile["translations"];

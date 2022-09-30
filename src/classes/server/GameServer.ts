@@ -4,7 +4,7 @@ import { NoListenersError, NoStandardStreamsError } from "../Errors";
 import { nanoid } from "nanoid";
 import PropertiesManager from "../PropertiesManager";
 import path from "path";
-import { ServerMetadata } from "../../config";
+import { ServerMetadata } from "../../conf/ServerMetadata";
 import GameLiveConf, { FilePlayerEntry } from "./GameLiveConf";
 import Event, { AutosaveOffEvent, AutosaveOnEvent, CommunicatorEvent, GameCloseEvent, GameSaveEvent, PlayerLoginEvent, PlayerQuitEvent } from "../Event";
 import { StandardEmitter } from "./StandardEmitter";

@@ -1,5 +1,5 @@
 import figlet from "figlet";
-import {  BotConfig, ServerMetadata, createConfigs, loadConfig, prettyPrint, writeConfig, writeServerMetadata, ServerListEntry, readServerMetadata, RawServerMetadata } from "./config";
+import { prettyPrint, writeServerMetadata, readServerMetadata } from "./conf/config";
 import inquirer from "inquirer";
 import inquirerAutocompletePrompt from "inquirer-autocomplete-prompt";
 import chalk from "chalk";
@@ -12,10 +12,10 @@ import { serverInstallerPrompt } from "./serverInstallerPrompt";
 import { getBorderCharacters, table } from "table";
 import openHTTP from "./api/openServer";
 import Masa from "./classes/Masa";
+import BotConfig from "./conf/BotConfig";
+import { RawServerMetadata, ServerMetadata } from "./conf/ServerMetadata";
 
 inquirer.registerPrompt("autocomplete", inquirerAutocompletePrompt);
-
-export let config: BotConfig;
 
 const setup = async () => {
     // Print a cool 3D logo
@@ -32,11 +32,11 @@ const setup = async () => {
     }
 
     // Create all config files that don't already exist
-    await createConfigs(async(filename) => {
+    void await Masa.getConf().createAll(async filename => {
         switch (filename) {
-            case "bot.json":
+            case "bot":
                 return prettyPrint(await botSetup());
-            case "servers.json": {
+            case "servers": {
                 const installerResult = await serverInstallerPrompt([]);
                 
                 if (installerResult) {
@@ -50,6 +50,12 @@ const setup = async () => {
 
                 return prettyPrint([]);
             }
+            case "dash":
+                return prettyPrint({
+                    users: [
+                        { username: "admin", password: "1234" }
+                    ]
+                });
             default:
                 return null;
         }
@@ -58,7 +64,7 @@ const setup = async () => {
     // await createBackupsFolder(BackupType.Automatic);
     // await createBackupsFolder(BackupType.User);
 
-    const serverList = await loadConfig<ServerListEntry[]>("servers.json");
+    const serverList = Masa.getConf().getFile("servers");
     
     const serverMetaList: ServerMetadata[] = [];
     for (let i = 0; i < serverList.length; i++) {
@@ -80,9 +86,9 @@ const setup = async () => {
             console.log(chalk.yellow`WARNING: Server "${serverEntry.tag}" in directory "${serverEntry.dir}" has an invalid configuration and could not be loaded.`);
         }
     }
-    await writeConfig("servers.json", prettyPrint(serverList));
+    Masa.getConf().write("servers", serverList);
 
-    config = await loadConfig<BotConfig>("bot.json");
+    const config = Masa.getConf().getFile("bot");
 
     // Set the bot locale
     Lang.setLocale(config.language);
@@ -115,7 +121,7 @@ const setup = async () => {
 async function connectToDiscord() {
     console.log(`Connecting to ${chalk.blueBright("Discord")}...`);
     try {
-        await client.login(config["token"]);
+        await client.login(Masa.getConf().getFile("bot").token);
 
     }catch(err) {
         console.log(chalk.red`Could not connect to Discord! The token might be expired or invalid.\n`);
@@ -128,8 +134,8 @@ async function connectToDiscord() {
         }));
 
         if (setup) {
-            config = await botSetup();
-            await writeConfig("bot.json", prettyPrint(config));
+            const config = await botSetup();
+            Masa.getConf().write("bot", config);
             console.log(chalk.greenBright`Configuration saved successfully.`);
             await connectToDiscord();
         }else {

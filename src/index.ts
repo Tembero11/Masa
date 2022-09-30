@@ -1,6 +1,5 @@
 import Masa from "./classes/Masa";
 import setup from "./setup";
-export { config } from "./setup";
 export { client } from "./client";
 
 setup().then((success) => {

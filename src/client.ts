@@ -2,12 +2,12 @@ import Discord, { Intents, MessageEmbed } from "discord.js";
 import { REST } from "@discordjs/rest";
 import { Routes } from "discord-api-types/v9";
 import { getDefaultCommandEmbed } from "./helpers";
-import { config } from "./setup";
 import commands from "./commands/commands";
 import Lang from "./classes/Lang";
 import buttons from "./buttons/buttons";
 import { PermissionManager } from "./classes/PermissionManager";
 import chalk from "chalk";
+import Masa from "./classes/Masa";
 
 let manager: PermissionManager | undefined;
 
@@ -17,6 +17,7 @@ client.once("ready", () => {
   if (client.user) {
     console.log(chalk.greenBright`Successfully logged in as "${client.user.tag}"!`)
 
+    const config = Masa.getConf().getFile("bot");
     const token: string = config["token"];
     const clientId: string = config["clientID"];
     const guildId: string = config["guildID"];

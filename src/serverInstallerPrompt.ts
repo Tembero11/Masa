@@ -6,7 +6,7 @@ import assert from "assert";
 import Installer, { VersionManifest } from "./classes/server/installer/Installer";
 import PaperInstaller from "./classes/server/installer/PaperInstaller";
 import VanillaInstaller from "./classes/server/installer/VanillaInstaller";
-import { RawServerMetadata, ServerMetadata } from "./config";
+import { RawServerMetadata, ServerMetadata } from "./conf/ServerMetadata";
 import { normalizeFilePath } from "./helpers";
 
 

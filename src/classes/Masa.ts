@@ -4,7 +4,8 @@ import { MessageEmbed } from "discord.js";
 import ms from "ms";
 import path from "path";
 import { client } from "../client";
-import { ServerMetadata } from "../config";
+import Conf from "../conf/Conf";
+import { ServerMetadata } from "../conf/ServerMetadata";
 import { setServerStatus, toArrayIfNot } from "../helpers";
 import Lang from "./Lang";
 import GameServerBackupManager from "./server/backup/GameServerBackupManager";
@@ -25,6 +26,12 @@ interface ServerItem {
 }
 
 const serverList: ServerItem[] = [];
+
+const conf = new Conf();
+
+function getConf() {
+    return conf;
+}
 
 function getServers() {
     return Object.freeze(serverList.map(server => server.gameServer));
@@ -250,6 +257,7 @@ const setupChatStreaming = async (
 }
 
 const Masa = {
+    getConf,
     getServers,
     getServerNames,
     getServerByTag,
