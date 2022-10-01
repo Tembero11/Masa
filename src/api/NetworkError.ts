@@ -6,5 +6,6 @@ export enum NetworkError {
     GameServerNotFound,
     // Server is in the wrong state for the required action
     GameServerBadState,
-    GameCommandMissing
+    GameCommandMissing,
+    InvalidLoginCredentials
 }

@@ -14,6 +14,7 @@ import openHTTP from "./api/openServer";
 import Masa from "./classes/Masa";
 import BotConfig from "./conf/BotConfig";
 import { RawServerMetadata, ServerMetadata } from "./conf/ServerMetadata";
+import DashKeyManager from "./generateKeys";
 
 inquirer.registerPrompt("autocomplete", inquirerAutocompletePrompt);
 

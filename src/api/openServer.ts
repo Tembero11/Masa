@@ -8,10 +8,12 @@ import serverInfoRouter from "./server/serverInfo";
 import changeServerNameRouter from "./server/changeServerName"
 import statusControlRouter from "./server/statusControl";
 import receiveCommandRouter from "./server/receiveCommand";
+import loginRouter from "./login"
 import { WS_EventSender } from "./events";
 import { NetworkError } from "./NetworkError";
 import assert from "assert";
 import Masa from "../classes/Masa";
+import DashKeyManager from "./DashKeyManager";
 
 /**
  * HTTP Server default port
@@ -24,6 +26,8 @@ const app = express();
 const server = createServer(app);
 
 const wss = new WebSocketServer({ server, path: "/dash" });
+
+export const keyManager = new DashKeyManager();
 
 wss.on("connection", function connection(ws) {
     ws.on("message", function message(d) {
@@ -107,6 +111,7 @@ export function openRoutes() {
     app.use(API_PREFIX, statusControlRouter);
     app.use(API_PREFIX, receiveCommandRouter);
     app.use(API_PREFIX, changeServerNameRouter);
+    app.use(API_PREFIX, loginRouter);
 
     app.disable("x-powered-by");
 }

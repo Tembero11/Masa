@@ -5,3 +5,4 @@ logs
 /server
 package-lock.json
 config
+keys
