@@ -12,6 +12,8 @@ import { OfflinePlayer, OnlinePlayer } from "../Player";
 import { Readable, Writable } from "stream";
 import ConsoleReader from "../ConsoleReader";
 import GameServerRCON from "./GameServerRCON";
+import HelpCommandParser from "./HelpCommandParser";
+import util from "util";
 
 interface Options {
   disableRCON?: boolean,
@@ -147,6 +149,15 @@ export default class GameServer {
         // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         if (await this.rcon!.establishConnection()) {
           console.log(`RCON successfully connected on server ${this.tag}`);
+
+          // Get all commands
+          setTimeout(() => {
+            const helpParser = new HelpCommandParser(this);
+            void this.sendGameCommand("help", true).then(commandData => {
+              console.log(commandData);
+              console.log(util.inspect(helpParser.parse(commandData), true, 4, true));
+            });
+          }, 2000);
         } else {
           console.log(`RCON connection failed on server ${this.tag}`);
         }
@@ -160,19 +171,41 @@ export default class GameServer {
   }
 
   /**
-   * Sends a command to the game through RCON if available. Defaults to sending through stdin.
-   * @param gameCommand A string containing a gameCommand with or without a slash
-   */
-  sendGameCommand(gameCommand: string) {
-    if (!this.hasStreams) return false;
+     * Sends a command to the game through RCON if available. Defaults to sending through stdin.
+     * @param gameCommand A string containing a gameCommand with or without a slash.
+     * @param waitForResponse When `true` forces the use of rcon and returns the response from the command.
+     * When enabled returns a promise that might reject. When disabled `rcon` might be used if available but the response is ignored.
+     */
+  sendGameCommand(gameCommand: string, waitForResponse: false): Promise<boolean>;
+  sendGameCommand(gameCommand: string): Promise<boolean>;
+  sendGameCommand(gameCommand: string, waitForResponse: true): Promise<string>;
+  async sendGameCommand(gameCommand: string, waitForResponse = false): Promise<boolean | string> {
 
     if (gameCommand.startsWith("/")) gameCommand = gameCommand.substring(1);
 
+    if (waitForResponse) {
+      if (!this.hasStreams) throw new NoStandardStreamsError();
+      if (this.rcon?.isConnected) {
+        const response = await this.rcon.sendGameCommand(gameCommand);
+
+        if (typeof response == "string") {
+          return response;
+        }
+        return "";
+      } else {
+        throw new Error(`RCON is not enabled on server "${this.tag}"`);
+      }
+    }
+
+    if (!this.hasStreams) return false;
+
     if (this.rcon?.isConnected) {
-      this.rcon.sendGameCommand(gameCommand).catch(() => {
+      try {
+        void await this.rcon.sendGameCommand(gameCommand);
+      } catch (err) {
         this.std.emit("in", gameCommand + "\n");
-      });
-    }else {
+      }
+    } else {
       this.std.emit("in", gameCommand + "\n");
     }
     return true;
@@ -258,7 +291,7 @@ export default class GameServer {
   }
   safeStop() {
     if (this.hasStreams && this.serverProcess) {
-      this.sendGameCommand("stop");
+      void this.sendGameCommand("stop");
     }
   }
 
